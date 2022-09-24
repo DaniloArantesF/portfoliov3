@@ -1,0 +1,17 @@
+---
+export interface Props {
+  icon: string
+  color: string
+}
+
+const { icon: filename, color } = Astro.props as Props
+const { default: icon } = await import(`../svg/${filename}.svg?raw`)
+---
+
+<span><Fragment set:html={icon} /></span>
+
+<style define:vars={{ color }} is:global>
+  span svg {
+    color: var(--color);
+  }
+</style>
