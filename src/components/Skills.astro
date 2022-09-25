@@ -1,0 +1,156 @@
+---
+---
+
+<section id="skills">
+  <div class="skill-container">
+    <h3>Web Development</h3>
+    <div class="body">
+      <p>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+        illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+        explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+        odit aut fugit, sed quia consequuntur magni dolores eos qui ratione
+        voluptatem sequi nesciunt.
+      </p>
+    </div>
+
+    <div class="skill-list">
+      <ul>
+        <h4>Frontend</h4>
+        <li>React.js</li>
+        <li>Next.js</li>
+        <li>CSS3</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+    </div>
+  </div>
+  <div class="skill-container">
+    <h3>Web Development</h3>
+    <div class="body">
+      <p>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+        illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+        explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+        odit aut fugit, sed quia consequuntur magni dolores eos qui ratione
+        voluptatem sequi nesciunt.
+      </p>
+    </div>
+
+    <div class="skill-list">
+      <ul>
+        <h4>Frontend</h4>
+        <li>React.js</li>
+        <li>Next.js</li>
+        <li>CSS3</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+    </div>
+  </div>
+  <div class="skill-container">
+    <h3>Web Development</h3>
+    <div class="body">
+      <p>
+        Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+        accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab
+        illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+        explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+        odit aut fugit, sed quia consequuntur magni dolores eos qui ratione
+        voluptatem sequi nesciunt.
+      </p>
+    </div>
+
+    <div class="skill-list">
+      <ul>
+        <h4>Frontend</h4>
+        <li>React.js</li>
+        <li>Next.js</li>
+        <li>CSS3</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+      <ul>
+        <h4>Backend</h4>
+        <li>Express.js</li>
+        <li>PHP</li>
+        <li>Laravel</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  #skills {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    justify-content: center;
+    padding: 0 1rem;
+  }
+
+  .skill-container {
+    background: var(--color-surface-1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 1.5rem 2rem;
+    align-items: center;
+    border-radius: var(--border-radius);
+  }
+
+  .skill-container h3 {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    text-decoration: underline;
+    text-underline-offset: 0.5rem;
+  }
+
+  .skill-list {
+    width: 100%;
+    text-align: left;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(auto, min(50%, 150px)));
+    gap: 2rem;
+  }
+
+  ul h4 {
+    padding-bottom: 0.5rem;
+  }
+
+  li {
+    list-style-position: inside;
+  }
+
+  @media only screen and (min-width: 1000px) {
+    #skills {
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+  }
+</style>
