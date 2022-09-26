@@ -1,6 +1,7 @@
 ---
 import Card from '../components/Card.astro';
 import CardList from '../components/CardList.astro';
+import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Skills from '../components/Skills.astro';
 import Layout from '../layouts/Layout.astro';
@@ -42,6 +43,7 @@ import Layout from '../layouts/Layout.astro';
         picture="project-picture-sample.webp"
       />
     </CardList>
+    <ContactPrompt text="give job pls" />
   </main>
 </Layout>
 
@@ -51,7 +53,7 @@ import Layout from '../layouts/Layout.astro';
     flex-direction: column;
     gap: 5rem;
     max-width: var(--content-max-width);
-    padding: 0 1.5rem 5rem;
+    padding: 0 1.5rem 4rem;
     margin: 0 auto;
   }
 </style>

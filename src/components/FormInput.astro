@@ -1,0 +1,40 @@
+---
+export interface Props {
+  label: string;
+  name: string;
+  id: string;
+  placeholder?: string;
+  required?: boolean;
+}
+
+const { label, name, id, placeholder = '', required = false } = Astro.props;
+---
+
+<div class="form-field">
+  <label for={id}
+    >{label}{required ? <span class="required">&nbsp*</span> : ''}
+  </label>
+  <input id={id} name={name} placeholder={placeholder} required={required} />
+</div>
+
+<style is:global>
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .form-field input,
+  .form-field textarea {
+    padding: 0.5rem;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus {
+    outline: none;
+  }
+
+  span.required {
+    color: red;
+  }
+</style>

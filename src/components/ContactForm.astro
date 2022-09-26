@@ -1,0 +1,42 @@
+---
+import FormInput from './FormInput.astro';
+---
+
+<section>
+  <h1>Contact Me</h1>
+  <form>
+    <FormInput id="name" label="Name" name="payload[name]" />
+    <FormInput id="email" label="Email" name="payload[email]" required={true} />
+    <div class="form-field">
+      <label for="message">Message</label>
+      <textarea id="message" name="payload[message]" rows="10" required
+      ></textarea>
+    </div>
+
+    <button class="button"> Submit</button>
+  </form>
+</section>
+
+<style>
+  section {
+    width: 100%;
+    max-width: calc(0.5 * var(--content-max-width));
+    padding: 4rem 0;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-decoration: underline;
+    text-underline-offset: 0.5rem;
+  }
+
+  form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  textarea {
+    resize: vertical;
+  }
+</style>

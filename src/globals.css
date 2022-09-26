@@ -33,7 +33,7 @@
   font-family: 'Montserrat', sans-serif;
 }
 
-a.button {
+.button {
   display: inline-block;
   width: 100%;
   padding: 0.75rem 2rem;
@@ -43,9 +43,10 @@ a.button {
   font-weight: 600;
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
 }
 
-a.button.outlined {
+.button.outlined {
   background: transparent;
   border: 2px solid var(--color-accent);
   color: var(--color-accent);

@@ -1,0 +1,35 @@
+---
+export interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<section id="contact-prompt">
+  <h3>{text}</h3>
+  <a href="/contact" class="button">Contact</a>
+</section>
+
+<style>
+  section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    padding: 4rem 2rem;
+    background: var(--color-surface-2);
+    border-radius: var(--border-radius);
+  }
+
+  a.button {
+    max-width: 200px;
+  }
+
+  @media only screen and (min-width: 600px) {
+    section {
+      flex-direction: row;
+    }
+  }
+</style>

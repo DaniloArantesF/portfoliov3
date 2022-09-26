@@ -1,11 +1,18 @@
 ---
+import ContactForm from '../components/ContactForm.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Contact Me">
-  <main></main>
+  <main>
+    <ContactForm />
+  </main>
 </Layout>
 
 <style>
-
+  main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
