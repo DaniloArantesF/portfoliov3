@@ -1,0 +1,57 @@
+---
+import Card from '../components/Card.astro';
+import CardList from '../components/CardList.astro';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Portfolio">
+  <main>
+    <CardList name="Projects">
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+        description={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '}
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+        description={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '}
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+        description={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '}
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="design"
+        picture="project-picture-sample.webp"
+        description={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '}
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+        description={'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. '}
+      />
+    </CardList>
+  </main>
+</Layout>
+
+<style>
+  main {
+    background: var(--color-surface-1);
+    padding: 4rem 1rem;
+    max-width: var(--content-max-width);
+    width: 100%;
+    margin: 0 auto;
+  }
+</style>

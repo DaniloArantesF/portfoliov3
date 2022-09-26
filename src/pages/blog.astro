@@ -1,11 +1,57 @@
 ---
+import Card from '../components/Card.astro';
+import CardList from '../components/CardList.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Blog">
-  <main></main>
+  <main>
+    <CardList name="Recent Posts" viewAll="/blog/posts">
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="post-picture-sample.webp"
+        date="September 22, 2022"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="post-picture-sample.webp"
+        date="September 22, 2022"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="post-picture-sample.webp"
+        date="September 22, 2022"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="design"
+        picture="post-picture-sample.webp"
+        date="September 22, 2022"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="post-picture-sample.webp"
+        date="September 22, 2022"
+      />
+    </CardList>
+  </main>
 </Layout>
 
 <style>
-
+  main {
+    background: var(--color-surface-1);
+    padding: 4rem 1rem;
+    max-width: var(--content-max-width);
+    width: 100%;
+    margin: 0 auto;
+  }
 </style>

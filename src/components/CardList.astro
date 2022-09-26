@@ -1,10 +1,22 @@
 ---
+interface Props {
+  viewAll?: string;
+  name: string;
+}
+
+const { viewAll, name } = Astro.props;
 ---
 
 <section>
   <div class="section-details">
-    <h3>Projects</h3>
-    <a class="button" href="/projects">View All</a>
+    <h2>{name}</h2>
+    {
+      viewAll && (
+        <a class="button outlined" href={viewAll}>
+          View All
+        </a>
+      )
+    }
   </div>
   <div class="cards-container">
     <slot />
@@ -12,9 +24,8 @@
 </section>
 
 <style>
-  section > h3 {
-    margin-bottom: 1rem;
-    font-size: var(--text-lg);
+  section h2 {
+    font-size: var(--text-xl);
   }
 
   section > .cards-container {
@@ -23,7 +34,6 @@
     gap: 2rem;
     justify-content: center;
     justify-items: center;
-    align-items: center;
   }
 
   .section-details {
@@ -34,7 +44,7 @@
   }
 
   a.button {
-    max-width: 200px;
+    max-width: 150px;
   }
 
   /* section :global(> *) {
