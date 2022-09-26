@@ -1,0 +1,106 @@
+---
+import Icon from './Icon.astro';
+---
+
+<footer>
+  <div>
+    <h4>DaniloArantesF</h4>
+    <div id="social-links">
+      <a href="https://github.com"
+        ><Icon color="#ffffff" icon="github-icon" />
+      </a>
+      <a href="https://github.com"
+        ><Icon color="#ffffff" icon="github-icon" />
+      </a>
+      <a href="https://github.com"
+        ><Icon color="#ffffff" icon="github-icon" />
+      </a>
+    </div>
+    <ul id="quick-links">
+      <h4>Quick Links</h4>
+      <li><a href="">Home</a></li>
+      <li><a href="">Projects</a></li>
+      <li><a href="">Blog</a></li>
+      <li><a href="">Contact</a></li>
+    </ul>
+  </div>
+  <div>
+    <span>All rights reserved or something 2022</span>
+  </div>
+</footer>
+
+<style>
+  :root {
+    --padding-y: 1.5rem;
+    --padding-x: 2rem;
+  }
+
+  footer {
+    padding: var(--padding-y) var(--padding-x);
+    background: var(--color-surface-0);
+  }
+
+  footer a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  footer > * {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+  }
+
+  footer > div:first-child {
+    display: grid;
+    grid-template-areas:
+      'title links1 links2'
+      'socials links1 links2';
+  }
+
+  footer > div:last-child {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid white;
+  }
+
+  footer > div h4 {
+    grid-area: title;
+  }
+
+  #social-links {
+    grid-area: socials;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  #social-links a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--color-surface-2);
+  }
+
+  #quick-links {
+    grid-area: links1;
+    list-style: none;
+  }
+
+  #quick-links h4 {
+    margin-bottom: 0.5rem;
+  }
+
+  #quick-links li {
+    width: fit-content;
+    transition: margin 200ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
+  }
+
+  #quick-links li:hover {
+    margin: 0 0.25rem;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>

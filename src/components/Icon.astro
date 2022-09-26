@@ -1,17 +1,28 @@
 ---
 export interface Props {
-  icon: string
-  color: string
+  icon: string;
+  color: string;
+  height?: number;
+  width?: number;
 }
 
-const { icon: filename, color } = Astro.props as Props
-const { default: icon } = await import(`../svg/${filename}.svg?raw`)
+const { icon: filename, width = '1.5rem', color } = Astro.props as Props;
+const { default: icon } = await import(`../svg/${filename}.svg?raw`);
 ---
 
 <span><Fragment set:html={icon} /></span>
 
-<style define:vars={{ color }} is:global>
+<style define:vars={{ color, width }} is:global>
+  span {
+    /*  TODO: find out why this is needed ? */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   span svg {
+    width: var(--width);
+    height: auto;
     color: var(--color);
   }
 </style>

@@ -11,9 +11,14 @@
 :root {
   --color-accent: #5d5fef;
   --color-background: #121212;
+  --color-surface-0: #000000;
   --color-surface-1: #262626;
   --color-surface-2: #424242;
 
+  --color-text-main: #ffffff;
+  --color-text-sub: #c4c4c4;
+
+  --text-xs: 0.85rem;
   --text-sm: 1rem;
   --text-default: 1rem;
   --text-md: 1.25rem;
@@ -26,4 +31,22 @@
 
   color: white;
   font-family: 'Montserrat', sans-serif;
+}
+
+a.button {
+  display: inline-block;
+  width: 100%;
+  padding: 0.75rem 2rem;
+  background: var(--color-accent);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+}
+
+a.button.outlined {
+  background: transparent;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
 }

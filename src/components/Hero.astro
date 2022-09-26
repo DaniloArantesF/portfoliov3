@@ -1,10 +1,10 @@
 ---
 export interface Props {
-  heading: string
-  text: string
+  heading: string;
+  text: string;
 }
 
-const { heading, text } = Astro.props
+const { heading, text } = Astro.props;
 ---
 
 <div id="hero">
@@ -37,22 +37,6 @@ const { heading, text } = Astro.props
     grid-template-columns: 1fr;
     justify-content: center;
     gap: 1rem;
-  }
-
-  a.button {
-    display: inline-block;
-    width: 100%;
-    padding: 0.75rem 2rem;
-    background: var(--color-accent);
-    border-radius: var(--border-radius);
-    text-align: center;
-    font-weight: 600;
-  }
-
-  a.button.outlined {
-    background: transparent;
-    border: 2px solid var(--color-accent);
-    color: var(--color-accent);
   }
 
   @media only screen and (min-width: 600px) {

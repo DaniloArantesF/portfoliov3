@@ -1,16 +1,16 @@
 ---
-import Icon from './Icon.astro'
+import Icon from './Icon.astro';
 export interface Props {}
 
 // TODO: block scroll when mobile nav menu is open
 // TODO: open header in view when user scrolls up
-const page = Astro.url.pathname
+const page = Astro.url.pathname;
 const getLinkClasses = (path: string) => {
   if (path === '/') {
-    return page === path ? 'active' : ''
+    return page === path ? 'active' : '';
   }
-  return page.startsWith(path) ? 'active' : ''
-}
+  return page.startsWith(path) ? 'active' : '';
+};
 ---
 
 <header>
@@ -34,15 +34,15 @@ const getLinkClasses = (path: string) => {
 
 <script defer>
   // Mobile Menu Button
-  const mobileNav = document.getElementById('mobile_nav')
-  const mobileNavButton = document.getElementById('mobile_nav_button')
+  const mobileNav = document.getElementById('mobile_nav');
+  const mobileNavButton = document.getElementById('mobile_nav_button');
 
   // Toggle Mobile Nav Menu
   if (mobileNavButton) {
     mobileNavButton.addEventListener('click', (event) => {
-      event.preventDefault()
-      mobileNav.classList.toggle('open')
-    })
+      event.preventDefault();
+      mobileNav.classList.toggle('open');
+    });
   }
 </script>
 

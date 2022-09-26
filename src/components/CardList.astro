@@ -1,0 +1,42 @@
+---
+---
+
+<section>
+  <div class="section-details">
+    <h3>Projects</h3>
+    <a class="button" href="/projects">View All</a>
+  </div>
+  <div class="cards-container">
+    <slot />
+  </div>
+</section>
+
+<style>
+  section > h3 {
+    margin-bottom: 1rem;
+    font-size: var(--text-lg);
+  }
+
+  section > .cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+  }
+
+  .section-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  a.button {
+    max-width: 200px;
+  }
+
+  /* section :global(> *) {
+  } */
+</style>

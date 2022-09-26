@@ -1,18 +1,55 @@
 ---
-import Hero from '../components/Hero.astro'
-import Skills from '../components/Skills.astro'
-import Layout from '../layouts/Layout.astro'
+import Card from '../components/Card.astro';
+import CardList from '../components/CardList.astro';
+import Hero from '../components/Hero.astro';
+import Skills from '../components/Skills.astro';
+import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="DaniloArantesF">
   <main>
     <Hero heading="Hello friends" text="this is my website" />
     <Skills />
+    <CardList>
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="design"
+        picture="project-picture-sample.webp"
+      />
+      <Card
+        href="projects/project1"
+        title="Cool Project 1"
+        subtitle="web dev"
+        picture="project-picture-sample.webp"
+      />
+    </CardList>
   </main>
 </Layout>
 
 <style>
   main {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
     max-width: var(--content-max-width);
     padding: 0 1.5rem 5rem;
     margin: 0 auto;
