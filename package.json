@@ -9,16 +9,25 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "fix": "prettier --write ."
+    "fix": "prettier --write .",
+    "post-pull": "node src/NotionIntegration.js pull",
+    "post-clean": "node src/NotionIntegration.js clean"
   },
   "dependencies": {
     "astro": "^1.3.0"
   },
   "devDependencies": {
     "@astrojs/react": "^1.1.4",
+    "@notionhq/client": "^2.2.0",
+    "@types/marked": "^4.0.7",
+    "dotenv": "^16.0.2",
+    "marked": "^4.1.0",
+    "notion-to-md": "^2.5.5",
     "prettier": "^2.7.1",
     "prettier-plugin-astro": "^0.5.4",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "throttled-queue": "^2.1.4",
+    "ts-node": "^10.9.1"
   }
 }

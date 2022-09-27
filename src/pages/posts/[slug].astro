@@ -1,0 +1,38 @@
+---
+import Code from 'astro/components/Code.astro';
+import Layout from '../../layouts/Layout.astro';
+
+interface PostProps {
+  title: string;
+  createdAt: string;
+  lastUpdate: string;
+  slug: string;
+}
+
+export async function getStaticPaths() {
+  try {
+    const posts = await Astro.glob<PostProps>('/src/posts/*.md');
+    return posts.map((post) => {
+      return {
+        params: { slug: post.frontmatter.slug },
+        props: { post },
+      };
+    });
+  } catch (error) {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+const { post } = Astro.props;
+const { Content, frontmatter, url } = post;
+const { title, date } = frontmatter;
+---
+
+<Layout title={''}>
+  <div set:html={post.compiledContent()}></div>
+</Layout>
+
+<style>
+
+</style>
