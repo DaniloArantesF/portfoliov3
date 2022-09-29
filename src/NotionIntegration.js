@@ -42,6 +42,12 @@ async function getDatabasePageIds() {
 async function fetchPages() {
   const startTime = Date.now();
 
+  // Create dir if none exists
+  const postDir = path.resolve('src', 'posts');
+  if (!fs.existsSync(postDir)) {
+    fs.mkdirSync(postDir);
+  }
+
   // Get all pages
   const pages = await getDatabasePageIds();
 
@@ -78,8 +84,11 @@ async function fetchPages() {
 }
 
 function cleanup() {
-  // const filePath = process.argv[1];
   const postDir = path.resolve('src', 'posts');
+  if (!fs.existsSync(postDir)) {
+    return;
+  }
+  // const filePath = process.argv[1];
   const files = fs.readdirSync(postDir);
 
   for (const file of files) {

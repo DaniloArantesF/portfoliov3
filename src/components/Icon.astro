@@ -3,17 +3,17 @@ export interface Props {
   icon: string;
   color: string;
   height?: number;
-  width?: number;
+  width?: string;
 }
 
 const { icon: filename, width = '1.5rem', color } = Astro.props as Props;
 const { default: icon } = await import(`../svg/${filename}.svg?raw`);
 ---
 
-<span><Fragment set:html={icon} /></span>
+<span class="icon"><Fragment set:html={icon} /></span>
 
 <style define:vars={{ color, width }} is:global>
-  span {
+  span.icon {
     /*  TODO: find out why this is needed ? */
     display: inline-flex;
     align-items: center;
@@ -24,5 +24,22 @@ const { default: icon } = await import(`../svg/${filename}.svg?raw`);
     width: var(--width);
     height: auto;
     color: var(--color);
+  }
+
+  #mobile_nav_button path {
+    transition: transform 100ms ease-out;
+    transform-origin: 50% 50%;
+  }
+
+  #mobile_nav_button.open #menu-icon-top {
+    transform: translate(-8px, 7px) rotate(45deg);
+  }
+
+  #mobile_nav_button.open #menu-icon-mid {
+    display: none;
+  }
+
+  #mobile_nav_button.open #menu-icon-bottom {
+    transform: translate(-8px, -8px) rotate(-45deg);
   }
 </style>

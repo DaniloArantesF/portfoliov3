@@ -26,13 +26,66 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const { post } = Astro.props;
 const { Content, frontmatter, url } = post;
-const { title, date } = frontmatter;
+const { title, createdAt } = frontmatter;
 ---
 
-<Layout title={''}>
-  <div set:html={post.compiledContent()}></div>
+<Layout title={title}>
+  <main class="md-container">
+    <div class="details">
+      <h1>{title}</h1>
+      <span>{new Date(createdAt).toDateString()}</span>
+    </div>
+    <Content />
+  </main>
 </Layout>
 
 <style>
+  .details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
 
+  .details span {
+    color: var(--color-text-sub);
+  }
+</style>
+<style is:global>
+  .md-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: calc(var(--content-max-width) * 0.75);
+    padding: 0rem var(--padding-x);
+    gap: 0.5rem;
+    margin: 0 auto;
+  }
+
+  .md-container h1 {
+    text-align: center;
+  }
+
+  .md-container img {
+    width: 100%;
+  }
+
+  .md-container li {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  .md-container pre {
+    padding: 1rem;
+    margin: 2rem 0;
+    border-radius: var(--border-radius);
+  }
+
+  .md-container pre,
+  .md-container code {
+    white-space: pre-wrap;
+  }
 </style>

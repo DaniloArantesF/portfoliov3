@@ -30,12 +30,8 @@ import Icon from './Icon.astro';
 </footer>
 
 <style>
-  :root {
-    --padding-y: 1.5rem;
-    --padding-x: 2rem;
-  }
-
   footer {
+    margin-top: var(--main-margin-y);
     padding: var(--padding-y) var(--padding-x);
     background: var(--color-surface-0);
   }
@@ -55,12 +51,14 @@ import Icon from './Icon.astro';
     grid-template-areas:
       'title links1 links2'
       'socials links1 links2';
+    justify-content: space-between;
   }
 
   footer > div:last-child {
     margin-top: 2rem;
     padding-top: 1rem;
     border-top: 1px solid white;
+    text-align: center;
   }
 
   footer > div h4 {
