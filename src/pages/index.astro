@@ -5,6 +5,9 @@ import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Skills from '../components/Skills.astro';
 import Layout from '../layouts/Layout.astro';
+import type { ProjectProps } from './projects/[slug].astro';
+
+const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
 ---
 
 <Layout title="DaniloArantesF">
@@ -12,36 +15,25 @@ import Layout from '../layouts/Layout.astro';
     <Hero heading="Hello friends" text="this is my website" />
     <Skills />
     <CardList name="Projects" viewAll="/projects">
-      <Card
-        href="projects/project1"
-        title="Cool Project 1"
-        subtitle="web dev"
-        picture="project-picture-sample.webp"
-      />
-      <Card
-        href="projects/project1"
-        title="Cool Project 1"
-        subtitle="web dev"
-        picture="project-picture-sample.webp"
-      />
-      <Card
-        href="projects/project1"
-        title="Cool Project 1"
-        subtitle="web dev"
-        picture="project-picture-sample.webp"
-      />
-      <Card
-        href="projects/project1"
-        title="Cool Project 1"
-        subtitle="design"
-        picture="project-picture-sample.webp"
-      />
-      <Card
-        href="projects/project1"
-        title="Cool Project 1"
-        subtitle="web dev"
-        picture="project-picture-sample.webp"
-      />
+      {
+        projects
+          .filter((p) => p.frontmatter.featured)
+          .map((project) => {
+            const slug = project.file.substring(
+              project.file.lastIndexOf('/') + 1,
+              project.file.length - 3,
+            );
+            const { title, subtitle, picture } = project.frontmatter;
+            return (
+              <Card
+                href={`/projects/${slug}`}
+                title={title}
+                subtitle={subtitle}
+                picture={picture}
+              />
+            );
+          })
+      }
     </CardList>
     <ContactPrompt text="give job pls" />
   </main>

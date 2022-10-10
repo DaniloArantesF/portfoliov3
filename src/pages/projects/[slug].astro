@@ -1,0 +1,52 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+export interface ProjectProps {
+  title: string;
+  subtitle: string;
+  description: string;
+  picture: string;
+  lastUpdated: string;
+  featured: boolean;
+}
+
+export async function getStaticPaths() {
+  try {
+    const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
+    return projects.map((project) => {
+      return {
+        params: {
+          slug: project.file.substring(
+            project.file.lastIndexOf('/') + 1,
+            project.file.length - 3,
+          ),
+        },
+        props: { project },
+      };
+    });
+  } catch (error) {
+    return [];
+  }
+}
+
+const { slug } = Astro.params;
+const { project } = Astro.props;
+const { Content, frontmatter, url } = project;
+const { title } = frontmatter;
+---
+
+<Layout title={title}>
+  <main>
+    <h1>{title}</h1>
+    <Content />
+  </main>
+</Layout>
+
+<style>
+  main {
+    width: 100%;
+    max-width: calc(var(--content-max-width) * 0.75);
+    padding: 0rem var(--padding-x);
+    margin: 0 auto;
+  }
+</style>

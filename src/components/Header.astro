@@ -17,7 +17,7 @@ const getLinkClasses = (path: string) => {
     <nav>
       <div class="navlinks">
         <a href="/">Home</a>
-        <a href="/portfolio">Portfolio</a>
+        <a href="/projects">Portfolio</a>
         <a href="/blog">Blog</a>
         <a href="/contact">Contact</a>
       </div>
@@ -26,7 +26,7 @@ const getLinkClasses = (path: string) => {
       </a>
       <div id="mobile_nav">
         <a href="/" class={getLinkClasses('/')}>Home</a>
-        <a href="/portfolio" class={getLinkClasses('/portfolio')}>Portfolio</a>
+        <a href="/projects" class={getLinkClasses('/projects')}>Portfolio</a>
         <a href="/blog" class={getLinkClasses('/blog')}>Blog</a>
         <a href="/contact" class={getLinkClasses('/contact')}>Contact</a>
       </div>
@@ -166,6 +166,10 @@ const getLinkClasses = (path: string) => {
   }
 
   @media only screen and (min-width: 600px) {
+    header {
+      padding: var(--padding-y) 0;
+    }
+
     .navlinks {
       display: flex;
       gap: 1em;

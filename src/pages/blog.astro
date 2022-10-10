@@ -1,24 +1,43 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import type { PostProps } from './posts/[slug].astro';
+import Card from '../components/Card.astro';
 
-interface PostProps {
-  title: string;
-  date: string;
-  lastUpdate: string;
-  slug: string;
-}
+const posts = await Astro.glob<PostProps>('/src/posts/*.md');
 ---
 
 <Layout title="Blog">
-  <main></main>
+  <main>
+    <h1>All Posts</h1>
+    <div class="posts-grid">
+      {
+        posts.map((p) => (
+          <Card
+            title={p.frontmatter.title}
+            picture="post-picture-sample.webp"
+            href={`/posts/${p.frontmatter.slug}`}
+          />
+        ))
+      }
+    </div>
+  </main>
 </Layout>
 
 <style>
   main {
-    background: var(--color-surface-1);
+    /* background: var(--color-surface-1); */
     padding: 0rem var(--padding-x);
     max-width: var(--content-max-width);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
     width: 100%;
     margin: 0 auto;
+  }
+
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 400px));
+    gap: 0.5rem;
   }
 </style>

@@ -1,0 +1,33 @@
+---
+import Card from '../components/Card.astro';
+import CardList from '../components/CardList.astro';
+import Layout from '../layouts/Layout.astro';
+import type { ProjectProps } from './projects/[slug].astro';
+
+const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
+---
+
+<Layout title="Portfolio">
+  <main>
+    <CardList name="Projects">
+      {
+        projects.map((project) => {
+          const slug = project.file.substring(
+            project.file.lastIndexOf('/') + 1,
+            project.file.length - 3,
+          );
+          return <Card href={`/projects/${slug}`} {...project.frontmatter} />;
+        })
+      }
+    </CardList>
+  </main>
+</Layout>
+
+<style>
+  main {
+    padding: 0rem var(--main-margin-x);
+    max-width: var(--content-max-width);
+    width: 100%;
+    margin: 0 auto;
+  }
+</style>
