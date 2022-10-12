@@ -31,7 +31,8 @@ const { viewAll, name } = Astro.props;
   section > .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    row-gap: 5rem;
+    column-gap: 3rem;
     justify-content: center;
     justify-items: center;
   }
@@ -48,5 +49,11 @@ const { viewAll, name } = Astro.props;
   }
 
   /* section :global(> *) {
+  } */
+
+  /* @media only screen and (min-width: 600px) {
+    section > .cards-container {
+      grid-template-columns: repeat(auto-fit, minmax(calc(100% / var(--columns) - var(--columns) * 2rem), 1fr));
+    }
   } */
 </style>

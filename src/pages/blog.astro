@@ -30,14 +30,15 @@ const posts = await Astro.glob<PostProps>('/src/posts/*.md');
     max-width: var(--content-max-width);
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 4em;
     width: 100%;
     margin: 0 auto;
   }
 
   .posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 400px));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 0.5rem;
+    justify-content: center;
   }
 </style>

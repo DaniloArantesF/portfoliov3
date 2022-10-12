@@ -12,7 +12,10 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
 
 <Layout title="DaniloArantesF">
   <main>
-    <Hero heading="Hello friends" text="this is my website" />
+    <Hero
+      heading="Hello There"
+      text="this is my website. I like programming stuff. gibe me money plz"
+    />
     <Skills />
     <CardList name="Projects" viewAll="/projects">
       {
@@ -30,6 +33,7 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
                 title={title}
                 subtitle={subtitle}
                 picture={picture}
+                description={''}
               />
             );
           })

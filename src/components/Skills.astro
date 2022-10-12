@@ -3,7 +3,7 @@
 
 <section id="skills">
   <div class="skill-container">
-    <h3>Web Development</h3>
+    <h3>Software Development</h3>
     <div class="body">
       <p>
         Sed ut perspiciatis unde omnis iste natus error sit voluptatem
@@ -20,24 +20,18 @@
         <h4>Frontend</h4>
         <li>React.js</li>
         <li>Next.js</li>
-        <li>CSS3</li>
+        <li>CSS3 & SASS</li>
       </ul>
       <ul>
         <h4>Backend</h4>
         <li>Express.js</li>
         <li>PHP</li>
-        <li>Laravel</li>
-      </ul>
-      <ul>
-        <h4>Backend</h4>
-        <li>Express.js</li>
-        <li>PHP</li>
-        <li>Laravel</li>
+        <li>Shopify Liquid</li>
       </ul>
     </div>
   </div>
   <div class="skill-container">
-    <h3>Web Development</h3>
+    <h3>Web Design & 3D</h3>
     <div class="body">
       <p>
         Sed ut perspiciatis unde omnis iste natus error sit voluptatem
@@ -51,27 +45,20 @@
 
     <div class="skill-list">
       <ul>
-        <h4>Frontend</h4>
-        <li>React.js</li>
-        <li>Next.js</li>
-        <li>CSS3</li>
+        <h4>Design</h4>
+        <li>Figma</li>
+        <li>Photoshop</li>
+        <li>Rive</li>
       </ul>
       <ul>
-        <h4>Backend</h4>
-        <li>Express.js</li>
-        <li>PHP</li>
-        <li>Laravel</li>
-      </ul>
-      <ul>
-        <h4>Backend</h4>
-        <li>Express.js</li>
-        <li>PHP</li>
-        <li>Laravel</li>
+        <h4>3D Tools</h4>
+        <li>Blender</li>
+        <li>Three.js</li>
       </ul>
     </div>
   </div>
   <div class="skill-container">
-    <h3>Web Development</h3>
+    <h3>Databases & Data Visualization</h3>
     <div class="body">
       <p>
         Sed ut perspiciatis unde omnis iste natus error sit voluptatem
@@ -85,28 +72,24 @@
 
     <div class="skill-list">
       <ul>
-        <h4>Frontend</h4>
-        <li>React.js</li>
-        <li>Next.js</li>
-        <li>CSS3</li>
+        <h4>Databases</h4>
+        <li>MySQL</li>
+        <li>PostgreSQL</li>
+        <li>DynamoDB</li>
+        <li>Redis</li>
       </ul>
       <ul>
-        <h4>Backend</h4>
-        <li>Express.js</li>
-        <li>PHP</li>
-        <li>Laravel</li>
-      </ul>
-      <ul>
-        <h4>Backend</h4>
-        <li>Express.js</li>
-        <li>PHP</li>
-        <li>Laravel</li>
+        <h4>Tools</h4>
+        <li>Python (numpy & pandas)</li>
+        <li>R</li>
+        <li>Grafana</li>
+        <li>Prometheus</li>
       </ul>
     </div>
   </div>
 </section>
 
-<style>
+<style lang="scss">
   #skills {
     display: grid;
     grid-template-columns: 1fr;
@@ -115,6 +98,7 @@
   }
 
   .skill-container {
+    position: relative;
     background: var(--color-surface-1);
     display: flex;
     flex-direction: column;
@@ -122,6 +106,47 @@
     padding: 1.5rem 1.5rem 2rem;
     align-items: center;
     border-radius: var(--border-radius);
+
+    &:after,
+    &:before,
+    & .skill-list:before,
+    & .skill-list:after {
+      content: '';
+      position: absolute;
+      content: ' ';
+      width: 20px;
+      height: 20px;
+      border-color: var(--color-accent); /* or whatever colour */
+      border-style: solid; /* or whatever style */
+    }
+
+    // Top left corner
+    &:before {
+      top: 0;
+      left: 0;
+      border-width: 1px 0 0 1px;
+    }
+
+    // Top right corner
+    &:after {
+      top: 0;
+      right: 0;
+      border-width: 1px 1px 0 0;
+    }
+
+    // Bottom right corner
+    & .skill-list:before {
+      bottom: 0;
+      right: 0;
+      border-width: 0 1px 1px 0;
+    }
+
+    // Bottom left corner
+    & .skill-list:after {
+      bottom: 0;
+      left: 0;
+      border-width: 0 0 1px 1px;
+    }
   }
 
   .skill-container h3 {
@@ -129,22 +154,43 @@
     margin-bottom: 0.5rem;
     text-decoration: underline;
     text-underline-offset: 0.5rem;
+    line-height: 2rem;
   }
 
   .skill-list {
     width: 100%;
+    height: 100%;
     text-align: left;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(auto, min(50%, 150px)));
+    // display: grid;
+    // grid-template-columns: repeat(
+    //   auto-fit,
+    //   minmax(auto, max(calc(50% - 2rem), 200px))
+    // );
+    display: flex;
+    justify-content: space-around;
+    margin: 2rem 0;
     gap: 2rem;
+
+    & > ul {
+      margin: 0 auto;
+    }
   }
 
   ul h4 {
-    padding-bottom: 0.5rem;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: white;
+    margin-bottom: 0.5rem;
+    color: #000000;
+    border-radius: var(--border-radius);
   }
 
   li {
     list-style-position: inside;
+    // white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
   }
 
   @media only screen and (min-width: 1000px) {

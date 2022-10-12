@@ -27,7 +27,7 @@
 
   --padding-y: 1.5rem;
   --padding-x: 1rem;
-  --main-margin-y: 2rem;
+  --main-margin-y: 4rem;
   --main-margin-x: 1rem;
   --border-radius: 3px;
   --content-max-width: 1600px;
@@ -44,6 +44,7 @@ a {
 .button {
   display: inline-block;
   width: 100%;
+  max-width: 400px;
   padding: 0.75rem 2rem;
   background: var(--color-accent);
   border-radius: var(--border-radius);

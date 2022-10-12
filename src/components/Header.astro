@@ -14,7 +14,7 @@ const getLinkClasses = (path: string) => {
 <div class="header-container">
   <header>
     <a href="/"><h2>DA.</h2></a>
-    <nav>
+    <nav role="navigation">
       <div class="navlinks">
         <a href="/">Home</a>
         <a href="/projects">Portfolio</a>
@@ -22,7 +22,7 @@ const getLinkClasses = (path: string) => {
         <a href="/contact">Contact</a>
       </div>
       <a id="mobile_nav_button"
-        ><Icon icon="menu-icon" color="#5D5FEF" width="2rem" />
+        ><Icon icon="menu" color="#5D5FEF" width="2rem" />
       </a>
       <div id="mobile_nav">
         <a href="/" class={getLinkClasses('/')}>Home</a>
@@ -81,6 +81,7 @@ const getLinkClasses = (path: string) => {
     cursor: pointer;
     text-decoration: none;
     color: inherit;
+    transition: color 100ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
   }
 
   nav a:hover {
@@ -166,10 +167,6 @@ const getLinkClasses = (path: string) => {
   }
 
   @media only screen and (min-width: 600px) {
-    header {
-      padding: var(--padding-y) 0;
-    }
-
     .navlinks {
       display: flex;
       gap: 1em;
@@ -181,6 +178,12 @@ const getLinkClasses = (path: string) => {
     #mobile_nav,
     #mobile_nav.open {
       display: none;
+    }
+  }
+
+  @media only screen and (min-width: 1800px) {
+    header {
+      padding: var(--padding-y) 0;
     }
   }
 </style>
