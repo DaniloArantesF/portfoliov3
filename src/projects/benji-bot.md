@@ -5,4 +5,5 @@ description: Felis eget nunc lobortis mattis aliquam faucibus. Morbi tempus iacu
 picture: project-desktop-sample.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
+tags: ['reactjs', 'expressjs', 'socketio', 'redux']
 ---

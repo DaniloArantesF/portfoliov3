@@ -23,7 +23,7 @@ const { viewAll, name } = Astro.props;
   </div>
 </section>
 
-<style>
+<style lang="scss">
   section h2 {
     font-size: var(--text-xl);
   }
@@ -41,7 +41,11 @@ const { viewAll, name } = Astro.props;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--main-margin-y);
+
+    // & > h2 {
+    //   margin: 0 auto;
+    // }
   }
 
   a.button {

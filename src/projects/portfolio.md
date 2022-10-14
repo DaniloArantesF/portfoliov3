@@ -5,4 +5,5 @@ description: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiu
 picture: project-desktop-sample.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
+tags: ['astrojs', 'sass']
 ---

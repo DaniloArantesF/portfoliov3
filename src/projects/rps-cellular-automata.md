@@ -5,4 +5,5 @@ description: Quisque sagittis purus sit amet volutpat. Amet venenatis urna cursu
 picture: project-desktop-sample.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: false
+tags: ['reactjs', 'typescript']
 ---

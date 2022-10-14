@@ -116,8 +116,7 @@
       content: ' ';
       width: 20px;
       height: 20px;
-      border-color: var(--color-accent); /* or whatever colour */
-      border-style: solid; /* or whatever style */
+      border: 1px solid white;
     }
 
     // Top left corner
@@ -125,6 +124,7 @@
       top: 0;
       left: 0;
       border-width: 1px 0 0 1px;
+      border-radius: var(--border-radius) 0 0 0;
     }
 
     // Top right corner
@@ -132,6 +132,7 @@
       top: 0;
       right: 0;
       border-width: 1px 1px 0 0;
+      border-radius: 0 var(--border-radius) 0 0;
     }
 
     // Bottom right corner
@@ -139,6 +140,7 @@
       bottom: 0;
       right: 0;
       border-width: 0 1px 1px 0;
+      border-radius: 0 0 var(--border-radius) 0;
     }
 
     // Bottom left corner
@@ -146,6 +148,7 @@
       bottom: 0;
       left: 0;
       border-width: 0 0 1px 1px;
+      border-radius: 0 0 0 var(--border-radius);
     }
   }
 
@@ -155,6 +158,7 @@
     text-decoration: underline;
     text-underline-offset: 0.5rem;
     line-height: 2rem;
+    color: var(--color-accent-4);
   }
 
   .skill-list {

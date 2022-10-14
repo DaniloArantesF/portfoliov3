@@ -6,9 +6,21 @@ export interface Props {
   href: string;
   date?: string | number;
   description?: string;
+  tags: string[];
 }
 
-const { title, subtitle, href, picture, date, description } = Astro.props;
+const { title, subtitle, href, picture, date, description, tags } = Astro.props;
+import tagsMap, { Tag } from '../projects/tags';
+let tagData: Tag[] = [];
+
+// If tags are supplied, get their title and url from tagsmap
+if (tags) {
+  tagData = tags.map((t) => {
+    return t in tagsMap
+      ? tagsMap[t as keyof typeof tagsMap]
+      : { title: '', href: '' };
+  });
+}
 ---
 
 <div class="card">
@@ -21,13 +33,30 @@ const { title, subtitle, href, picture, date, description } = Astro.props;
     </div>
   </a>
   {description && <p>{description}</p>}
+  <div class="tags">
+    {
+      tagData &&
+        tagData.map(
+          ({ title, href }) =>
+            title && (
+              <a target="_blank" href={href} class="tag">
+                {title}
+              </a>
+            ),
+        )
+    }
+  </div>
 </div>
 
-<style>
+<style lang="scss" define:vars={{ length: '10px' }}>
   a > div {
     display: flex;
     justify-content: space-between;
     margin: 0.5rem 0;
+  }
+
+  .card {
+    width: 100%;
   }
 
   .card a {
@@ -60,5 +89,36 @@ const { title, subtitle, href, picture, date, description } = Astro.props;
     font-weight: 400;
     font-size: var(--text-xs);
     opacity: 0.7;
+  }
+
+  .tags {
+    display: flex;
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: var(--text-xs);
+    background: var(--color-surface-2);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  // loop through tags changing color
+  // because custom properties only work in property declarations
+  // we need to specify a max number of elements
+  $n: 4;
+  @for $i from 0 to $n {
+    $hue: 239;
+    $saturation: 82;
+    $lightness: 65;
+    $alpha: 1;
+
+    .tags a:nth-child(#{$i + 1}) {
+      background: hsla($hue, $saturation, $lightness, $alpha);
+    }
   }
 </style>

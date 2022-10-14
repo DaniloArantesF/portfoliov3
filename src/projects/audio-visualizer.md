@@ -5,4 +5,5 @@ description: Ornare suspendisse sed nisi lacus sed viverra. Odio ut sem nulla ph
 picture: project-desktop-sample.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: false
+tags: ['threejs', 'typescript']
 ---

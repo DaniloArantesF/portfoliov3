@@ -78,6 +78,8 @@ import Icon from './Icon.astro';
     grid-area: socials;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    /* margin: 1rem 2rem 0 0; */
     gap: 1rem;
   }
 
@@ -102,12 +104,13 @@ import Icon from './Icon.astro';
 
   #quick-links li {
     width: fit-content;
-    transition: margin 100ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
+    transition: left 100ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
     margin: 0.5rem 0;
   }
 
   #quick-links li:hover {
-    margin: 0 0.25rem;
+    position: relative;
+    left: 0.25rem;
     text-decoration: underline;
     cursor: pointer;
   }

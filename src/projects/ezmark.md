@@ -5,4 +5,5 @@ description: Tellus pellentesque eu tincidunt tortor aliquam nulla. Neque aliqua
 picture: project-desktop-sample.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: false
+tags: ['reactjs', 'serverless', 'aws', 'auth0']
 ---

@@ -26,13 +26,10 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
               project.file.lastIndexOf('/') + 1,
               project.file.length - 3,
             );
-            const { title, subtitle, picture } = project.frontmatter;
             return (
               <Card
                 href={`/projects/${slug}`}
-                title={title}
-                subtitle={subtitle}
-                picture={picture}
+                {...project.frontmatter}
                 description={''}
               />
             );
