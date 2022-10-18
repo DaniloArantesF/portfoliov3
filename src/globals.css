@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;1,700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,300;0,400;0,500;0,600;0,700;1,700&display=swap'); */
+@import url('https://use.typekit.net/jvm2oyf.css');
 
 *,
 *::before,
@@ -9,17 +10,16 @@
 }
 
 :root {
-  --color-accent: #5d5fef;
-  --color-accent-1: #626ef3;
+  --color-accent: #4143e1;
+  --color-accent-1: #8c8eed;
   --color-accent-2: #697df7;
-  --color-accent-3: #728bfa;
-  --color-accent-4: #7c99fb;
-  --color-accent-5: #89a6fc;
 
-  --color-background: #121212;
-  --color-surface-0: #000000;
-  --color-surface-1: #262626;
-  --color-surface-2: #424242;
+  --color-background: #090c1b;
+  --color-surface-0: #000015;
+  --color-surface-1: #2a2c38;
+  --color-surface-2: #121522;
+  --color-surface-3: #151925;
+  --color-surface-4: #191c29;
 
   --color-text-main: #ffffff;
   --color-text-sub: #c4c4c4;
@@ -39,31 +39,27 @@
   --content-max-width: 1600px;
 
   color: white;
-  font-family: 'Montserrat', sans-serif;
+  font-family: ibm-plex-sans, sans-serif;
+}
+
+html {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-1) var(--color-surface-2);
+}
+
+html::-webkit-scrollbar {
+  width: 0.5em;
+}
+
+html::-webkit-scrollbar-track {
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-1);
 }
 
 a {
   text-decoration: none;
   color: inherit;
-}
-
-.button {
-  display: inline-block;
-  width: 100%;
-  max-width: 400px;
-  padding: 0.75rem 2rem;
-  background: var(--color-accent);
-  border-radius: var(--border-radius);
-  text-align: center;
-  font-weight: 600;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-  border: none;
-}
-
-.button.outlined {
-  background: transparent;
-  border: 2px solid var(--color-accent);
-  color: var(--color-accent);
 }

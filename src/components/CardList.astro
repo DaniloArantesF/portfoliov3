@@ -1,4 +1,5 @@
 ---
+import button from '../styles/button.module.scss';
 interface Props {
   viewAll?: string;
   name: string;
@@ -12,7 +13,7 @@ const { viewAll, name } = Astro.props;
     <h2>{name}</h2>
     {
       viewAll && (
-        <a class="button outlined" href={viewAll}>
+        <a class={`${button.button} ${button.outlined}`} href={viewAll}>
           View All
         </a>
       )
@@ -23,15 +24,28 @@ const { viewAll, name } = Astro.props;
   </div>
 </section>
 
+<!-- <style is:global>
+  @media only screen and (min-width: 600px) {
+    .cards-container .card {
+      height: 500px;
+    }
+    .cards-container .card:nth-child(1),
+    .cards-container .card:nth-child(2) {
+      grid-column: span 2;
+    }
+  }
+</style> -->
+
 <style lang="scss">
   section h2 {
     font-size: var(--text-xl);
   }
 
-  section > .cards-container {
+  .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    row-gap: 5rem;
+    grid-template-rows: repeat(auto-fit, 1fr);
+    row-gap: 2rem;
     column-gap: 3rem;
     justify-content: center;
     justify-items: center;
@@ -39,22 +53,27 @@ const { viewAll, name } = Astro.props;
 
   .section-details {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
+    gap: 1rem;
     margin-bottom: var(--main-margin-y);
-
-    // & > h2 {
-    //   margin: 0 auto;
-    // }
-  }
-
-  a.button {
-    max-width: 150px;
   }
 
   /* section :global(> *) {
   } */
 
+  @media only screen and (min-width: 600px) {
+    .section-details {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    a.button {
+      max-width: 150px;
+    }
+  }
   /* @media only screen and (min-width: 600px) {
     section > .cards-container {
       grid-template-columns: repeat(auto-fit, minmax(calc(100% / var(--columns) - var(--columns) * 2rem), 1fr));

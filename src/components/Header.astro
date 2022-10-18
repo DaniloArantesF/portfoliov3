@@ -38,11 +38,13 @@ const getLinkClasses = (path: string) => {
   // Mobile Menu Button
   const mobileNav = document.getElementById('mobile_nav');
   const mobileNavButton = document.getElementById('mobile_nav_button');
+  const root = document.querySelector('html');
 
   // Toggle Mobile Nav Menu
   if (mobileNavButton) {
     mobileNavButton.addEventListener('click', (event) => {
       event.preventDefault();
+      root.classList.toggle('scroll-lock');
       mobileNav.classList.toggle('open');
       mobileNavButton.classList.toggle('open');
     });
@@ -70,6 +72,12 @@ const getLinkClasses = (path: string) => {
     max-width: var(--content-max-width);
     margin: 0 auto;
     user-select: none;
+    z-index: 99;
+  }
+
+  header > * {
+    display: flex;
+    align-items: center;
   }
 
   .navlinks {
@@ -92,12 +100,18 @@ const getLinkClasses = (path: string) => {
     font-size: var(--text-xl);
     font-weight: 700;
     color: var(--color-accent);
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    bottom: 4px;
   }
 
   #mobile_nav_button {
     position: relative;
     z-index: 2;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
   }
 
   #mobile_nav_button > * {
@@ -121,6 +135,10 @@ const getLinkClasses = (path: string) => {
     display: grid;
     opacity: 1;
     left: 0;
+  }
+
+  html.scroll-lock {
+    overflow: hidden;
   }
 
   #mobile_nav a {

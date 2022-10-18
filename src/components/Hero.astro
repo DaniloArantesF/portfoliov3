@@ -1,4 +1,6 @@
 ---
+import button from '../styles/button.module.scss';
+
 export interface Props {
   heading: string;
   text: string;
@@ -10,7 +12,7 @@ const { heading, text } = Astro.props;
 <div id="hero">
   <h1>{heading}</h1>
   <p>{text}</p>
-  <a class="button" href={'/contact'}> Contact Me</a>
+  <a class={`${button.button}`} href={'/contact'}> Contact Me</a>
 </div>
 
 <style>

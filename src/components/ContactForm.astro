@@ -1,4 +1,5 @@
 ---
+import button from '../styles/button.module.scss';
 import FormInput from './FormInput.astro';
 ---
 
@@ -13,7 +14,7 @@ import FormInput from './FormInput.astro';
       ></textarea>
     </div>
 
-    <button class="button"> Submit</button>
+    <button class={`${button.button}`}> Submit</button>
   </form>
 </section>
 
@@ -37,5 +38,9 @@ import FormInput from './FormInput.astro';
 
   textarea {
     resize: vertical;
+  }
+
+  button {
+    margin: 0 auto;
   }
 </style>

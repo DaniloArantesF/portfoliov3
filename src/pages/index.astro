@@ -17,7 +17,7 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
       text="this is my website. I like programming stuff. gibe me money plz"
     />
     <Skills />
-    <CardList name="Projects" viewAll="/projects">
+    <CardList name="Projects and Experiments" viewAll="/projects">
       {
         projects
           .filter((p) => p.frontmatter.featured)

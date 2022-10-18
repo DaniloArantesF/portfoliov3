@@ -25,14 +25,19 @@ if (tags) {
 
 <div class="card">
   <a href={href}>
-    <img src={`/assets/${picture}`} />
-    <span>{subtitle ?? ''}</span>
-    <div>
-      <h4>{title}</h4>
-      <span>{date}</span>
+    <div class="picture">
+      <img src={`/assets/${picture}`} />
+    </div>
+    <div class="card-body">
+      <div class="body-title">
+        <h4>{title}</h4>
+        <span>{date}</span>
+      </div>
+      <span>{subtitle ?? ''}</span>
+      {description && <p>{description}</p>}
     </div>
   </a>
-  {description && <p>{description}</p>}
+
   <div class="tags">
     {
       tagData &&
@@ -49,14 +54,16 @@ if (tags) {
 </div>
 
 <style lang="scss" define:vars={{ length: '10px' }}>
-  a > div {
+  .body-title {
     display: flex;
     justify-content: space-between;
-    margin: 0.5rem 0;
   }
 
   .card {
     width: 100%;
+    background: var(--color-surface-4);
+    display: flex;
+    flex-direction: column;
   }
 
   .card a {
@@ -64,18 +71,14 @@ if (tags) {
     color: inherit;
   }
 
-  .card h4 {
-    font-size: var(--text-md);
-    margin-bottom: 0.75rem;
+  .card-body {
+    padding: 1rem 1rem 0rem 1rem;
+    background: var(--color-surface-4);
   }
 
-  span {
-    display: inline-block;
-    font-size: var(--text-xs);
-    font-weight: 400;
-    /* color: var(--color-text-sub); */
-    letter-spacing: 2px;
-    margin-top: 0.75rem;
+  .picture {
+    max-height: 60%;
+    overflow: hidden;
   }
 
   img {
@@ -85,21 +88,48 @@ if (tags) {
     border-radius: var(--border-radius);
   }
 
+  .card h4 {
+    font-size: var(--text-md);
+  }
+
+  span {
+    display: inline-block;
+    font-size: var(--text-xs);
+    font-weight: 400;
+    color: var(--color-text-sub);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+  }
+
   p {
     font-weight: 400;
     font-size: var(--text-xs);
     opacity: 0.7;
+    padding-bottom: 0.75rem;
+    max-height: 100px;
+    overflow: overlay;
+  }
+
+  p::-webkit-scrollbar {
+    position: absolute;
+    opacity: 0;
+    width: 0em;
   }
 
   .tags {
     display: flex;
-    margin-top: 0.5rem;
+    flex-basis: 100%;
     gap: 0.5rem;
     flex-wrap: wrap;
+    border-top: 1px solid var(--color-text-sub);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    background: var(--color-surface-3);
+    padding: 1rem;
   }
 
   .tag {
     display: inline-block;
+    height: fit-content;
     font-size: var(--text-xs);
     background: var(--color-surface-2);
     padding: 0.25rem 0.75rem;
@@ -113,12 +143,12 @@ if (tags) {
   $n: 4;
   @for $i from 0 to $n {
     $hue: 239;
-    $saturation: 82;
-    $lightness: 65;
+    $saturation: 73;
+    $lightness: 57;
     $alpha: 1;
 
     .tags a:nth-child(#{$i + 1}) {
-      background: hsla($hue, $saturation, $lightness, $alpha);
+      background: hsla($hue, $saturation * 1%, $lightness * 1%, $alpha);
     }
   }
 </style>

@@ -27,4 +27,5 @@ export default {
   },
   aws: { title: 'AWS', href: 'https://github.com/pmndrs/zustand' },
   auth0: { title: 'Auth0', href: 'https://github.com/pmndrs/zustand' },
+  graphql: { title: 'GraphQL', href: 'https://github.com/pmndrs/zustand' },
 };

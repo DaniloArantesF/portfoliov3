@@ -1,4 +1,5 @@
 ---
+import button from '../styles/button.module.scss';
 export interface Props {
   text: string;
 }
@@ -8,7 +9,7 @@ const { text } = Astro.props;
 
 <section id="contact-prompt">
   <h3>{text}</h3>
-  <a href="/contact" class="button">Contact</a>
+  <a href="/contact" class={`${button.button}`}>Contact</a>
 </section>
 
 <style>
@@ -19,7 +20,7 @@ const { text } = Astro.props;
     align-items: center;
     gap: 2rem;
     padding: 4rem 2rem;
-    background: var(--color-surface-2);
+    background: var(--color-surface-3);
     border-radius: var(--border-radius);
   }
 
