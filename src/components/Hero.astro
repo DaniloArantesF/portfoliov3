@@ -1,5 +1,5 @@
 ---
-import button from '../styles/button.module.scss';
+import button from '../styles/button.module.css';
 
 export interface Props {
   heading: string;
@@ -17,11 +17,35 @@ const { heading, text } = Astro.props;
 
 <style>
   #hero {
+    position: relative;
     display: flex;
     align-items: center;
     flex-direction: column;
+    /* screen - header */
+    height: calc(100vh - 100px);
     padding: 5rem 0rem 3rem;
     gap: 1rem;
+  }
+
+  #hero:before {
+    content: 'background shader wow';
+    width: 50%;
+    position: absolute;
+    color: yellow;
+    left: 10%;
+    top: 0%;
+    transform: translate(0, 50%) scale(1.3);
+    rotate: 5deg;
+  }
+
+  #hero:after {
+    content: 'much impress';
+    position: absolute;
+    color: red;
+    right: 0;
+    top: 70%;
+    transform: translate(0, -50%) scale(1.3);
+    rotate: -35deg;
   }
 
   h1 {

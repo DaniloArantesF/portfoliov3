@@ -1,0 +1,102 @@
+@property --rotate {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: fit-content;
+  max-width: 300px;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 2px;
+  text-decoration: none;
+  color: white;
+  cursor: pointer;
+  border: none;
+  box-shadow: var(--box-shadow);
+  text-transform: uppercase;
+}
+
+.button.outlined {
+  background: transparent;
+  color: var(--color-accent-2);
+  background: var(--color-background);
+}
+
+.button.outlined:hover {
+  background: var(--color-background);
+}
+
+.button:hover {
+  animation: spin 3s linear infinite;
+  /* #330867 */
+  background-image: linear-gradient(var(--rotate), #2629e1 0%, #620fc7 100%);
+}
+
+.button:before {
+  --width-y: 4px;
+  --width-x: 4px;
+  content: '';
+  position: absolute;
+  top: calc(var(--width-y) / -2);
+  left: calc(var(--width-x) / -2);
+  width: calc(100% + var(--width-x));
+  height: calc(100% + var(--width-y));
+  z-index: -1;
+  border-radius: var(--border-radius);
+  transition: filter 100ms linear;
+}
+
+.button:before {
+  background: transparent;
+}
+
+.button:hover:before {
+  filter: blur(0.3rem);
+}
+
+.button.outlined:before {
+  filter: none;
+  background: var(--color-accent);
+}
+
+.button:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  /* margin: 0 auto; */
+  /* transform: scale(1); */
+  filter: blur(calc(75px / 6));
+  z-index: -1;
+  border-radius: var(--border-radius);
+}
+
+.button:hover:before,
+.button:hover:after {
+  animation: spin 3s linear infinite;
+  /* #330867 */
+  background-image: linear-gradient(var(--rotate), #2629e1 0%, #620fc7 100%);
+}
+
+@keyframes spin {
+  0% {
+    --rotate: 0deg;
+  }
+  100% {
+    --rotate: 360deg;
+  }
+}

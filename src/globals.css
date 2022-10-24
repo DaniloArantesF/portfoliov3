@@ -11,8 +11,10 @@
 
 :root {
   --color-accent: #4143e1;
-  --color-accent-1: #8c8eed;
+  --color-accent-1: #42d6ff;
   --color-accent-2: #697df7;
+  --color-accent-3: #620fc7;
+  --color-accent-4: #494963;
 
   --color-background: #090c1b;
   --color-surface-0: #000015;
@@ -21,8 +23,8 @@
   --color-surface-3: #151925;
   --color-surface-4: #191c29;
 
-  --color-text-main: #ffffff;
-  --color-text-sub: #c4c4c4;
+  --color-text-main: #dddddd;
+  --color-text-sub: #aaaaaa;
 
   --text-xs: 0.85rem;
   --text-sm: 1rem;
@@ -35,10 +37,13 @@
   --padding-x: 1rem;
   --main-margin-y: 4rem;
   --main-margin-x: 1rem;
-  --border-radius: 3px;
+  --border-radius: 4px;
   --content-max-width: 1600px;
 
-  color: white;
+  --box-shadow: 0 1px 42px 0px rgba(0, 0, 30, 0.5);
+  --box-shadow-low: 0 1px 21px 0px rgba(0, 0, 30, 0.5);
+
+  color: var(--color-text-main);
   font-family: ibm-plex-sans, sans-serif;
 }
 
@@ -46,6 +51,12 @@ html {
   /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: var(--color-surface-1) var(--color-surface-2);
+}
+
+@media only screen and (min-width: 1200px) {
+  html {
+    font-size: 18px;
+  }
 }
 
 html::-webkit-scrollbar {

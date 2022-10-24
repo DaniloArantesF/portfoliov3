@@ -34,11 +34,11 @@ import Icon from './Icon.astro';
     </ul>
   </div>
   <div>
-    <span>All rights reserved or something 2022</span>
+    <span class="copyright">All rights reserved or something 2022</span>
   </div>
 </footer>
 
-<style>
+<style lang="scss">
   footer {
     margin-top: var(--main-margin-y);
     padding: var(--padding-y) var(--padding-x);
@@ -55,6 +55,12 @@ import Icon from './Icon.astro';
     margin: 0 auto;
   }
 
+  h4,
+  .copyright {
+    pointer-events: none;
+    user-select: none;
+  }
+
   footer > div:first-child {
     display: grid;
     grid-template-areas:
@@ -66,7 +72,7 @@ import Icon from './Icon.astro';
   footer > div:last-child {
     margin-top: 2rem;
     padding-top: 1rem;
-    border-top: 1px solid white;
+    border-top: 1px solid var(--color-accent-4);
     text-align: center;
   }
 
@@ -79,7 +85,6 @@ import Icon from './Icon.astro';
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    /* margin: 1rem 2rem 0 0; */
     gap: 1rem;
   }
 
@@ -91,6 +96,12 @@ import Icon from './Icon.astro';
     height: 3rem;
     border-radius: 50%;
     background: var(--color-surface-2);
+    transition: all 50ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
+    &:hover {
+      background: var(--color-accent-2);
+      color: #000000;
+      border-radius: 25%;
+    }
   }
 
   #quick-links {

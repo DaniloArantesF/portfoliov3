@@ -28,7 +28,7 @@
   }
 
   // Bottom right corner
-  & .skill-list:before {
+  & > *:last-chid:before {
     bottom: 0;
     right: 0;
     border-width: 0 1px 1px 0;
@@ -36,7 +36,7 @@
   }
 
   // Bottom left corner
-  & .skill-list:after {
+  & > *:last-chid:after {
     bottom: 0;
     left: 0;
     border-width: 0 0 1px 1px;

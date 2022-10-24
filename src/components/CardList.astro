@@ -1,5 +1,5 @@
 ---
-import button from '../styles/button.module.scss';
+import button from '../styles/button.module.css';
 interface Props {
   viewAll?: string;
   name: string;
@@ -13,7 +13,10 @@ const { viewAll, name } = Astro.props;
     <h2>{name}</h2>
     {
       viewAll && (
-        <a class={`${button.button} ${button.outlined}`} href={viewAll}>
+        <a
+          class={`${button.button} ${button.outlined} ${button.border}`}
+          href={viewAll}
+        >
           View All
         </a>
       )
@@ -39,12 +42,13 @@ const { viewAll, name } = Astro.props;
 <style lang="scss">
   section h2 {
     font-size: var(--text-xl);
+    color: var(--color-accent-2);
   }
 
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-template-rows: repeat(auto-fit, 1fr);
+    grid-template-rows: repeat(auto-fit, fit-content);
     row-gap: 2rem;
     column-gap: 3rem;
     justify-content: center;

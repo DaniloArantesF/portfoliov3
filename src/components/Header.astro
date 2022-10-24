@@ -13,7 +13,9 @@ const getLinkClasses = (path: string) => {
 
 <div class="header-container">
   <header>
-    <a href="/"><h2>DA.</h2></a>
+    <a class="logo" href="/"
+      ><Icon icon="logo" color="rr0000" width={'3rem'} />
+    </a>
     <nav role="navigation">
       <div class="navlinks">
         <a href="/">Home</a>
@@ -73,6 +75,7 @@ const getLinkClasses = (path: string) => {
     margin: 0 auto;
     user-select: none;
     z-index: 99;
+    box-shadow: var(--box-shadow);
   }
 
   header > * {
@@ -96,7 +99,7 @@ const getLinkClasses = (path: string) => {
     color: var(--color-accent);
   }
 
-  h2 {
+  .logo {
     font-size: var(--text-xl);
     font-weight: 700;
     color: var(--color-accent);
