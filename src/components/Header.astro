@@ -18,7 +18,6 @@ const getLinkClasses = (path: string) => {
     </a>
     <nav role="navigation">
       <div class="navlinks">
-        <a href="/">Home</a>
         <a href="/projects">Portfolio</a>
         <a href="/blog">Blog</a>
         <a href="/contact">Contact</a>
@@ -27,7 +26,6 @@ const getLinkClasses = (path: string) => {
         ><Icon icon="menu" color="#5D5FEF" width="2rem" />
       </a>
       <div id="mobile_nav">
-        <a href="/" class={getLinkClasses('/')}>Home</a>
         <a href="/projects" class={getLinkClasses('/projects')}>Projects</a>
         <a href="/blog" class={getLinkClasses('/blog')}>Blog</a>
         <a href="/contact" class={getLinkClasses('/contact')}>Contact</a>
@@ -66,6 +64,7 @@ const getLinkClasses = (path: string) => {
 
   header {
     display: flex;
+    height: var(--header-height);
     position: relative;
     padding: var(--padding-y) var(--padding-x);
     justify-content: space-between;
@@ -128,7 +127,7 @@ const getLinkClasses = (path: string) => {
     top: 100%;
     left: -100vw;
     width: 100vw;
-    height: calc(100vh - 100%);
+    height: calc(100vh);
     opacity: 0;
     background: var(--color-surface-1);
     transition: opacity calc(var(--animation-duration) * 0.8) ease-out;

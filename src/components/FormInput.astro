@@ -5,16 +5,24 @@ export interface Props {
   id: string;
   placeholder?: string;
   required?: boolean;
+  type: astroHTML.JSX.HTMLInputTypeAttribute;
 }
 
-const { label, name, id, placeholder = '', required = false } = Astro.props;
+const {
+  label,
+  name,
+  id,
+  placeholder = '',
+  required = false,
+  type = 'text',
+} = Astro.props;
 ---
 
 <div class="form-field">
   <label for={id}
     >{label}{required ? <span class="required">&nbsp*</span> : ''}
   </label>
-  <input id={id} name={name} placeholder={placeholder} required={required} />
+  <input {...Astro.props} />
 </div>
 
 <style is:global>
@@ -22,6 +30,7 @@ const { label, name, id, placeholder = '', required = false } = Astro.props;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    font-size: inherit;
   }
 
   .form-field input,

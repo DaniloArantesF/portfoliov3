@@ -5,9 +5,15 @@ import FormInput from './FormInput.astro';
 
 <section>
   <h1>Contact Me</h1>
-  <form>
-    <FormInput id="name" label="Name" name="payload[name]" />
-    <FormInput id="email" label="Email" name="payload[email]" required={true} />
+  <form id="contact-form">
+    <FormInput id="name" label="Name" type="text" name="payload[name]" />
+    <FormInput
+      id="email"
+      label="Email"
+      type="email"
+      name="payload[email]"
+      required={true}
+    />
     <div class="form-field">
       <label for="message">Message</label>
       <textarea id="message" name="payload[message]" rows="10" required
@@ -18,10 +24,57 @@ import FormInput from './FormInput.astro';
   </form>
 </section>
 
+<script defer>
+  const form = document.getElementById('contact-form');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const { email: emailEl, name: nameEl, message: msgEl } = form.elements;
+    // TODO: perform data validation and show custom messages;
+
+    try {
+      // TODO: set loading animation
+      const res = await fetch('https://submit-form.com/wKYOt38L', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          Name: nameEl.value,
+          Email: emailEl.value,
+          Message: msgEl.value,
+        }),
+      });
+
+      console.log(res);
+      nameEl.value = '';
+      emailEl.value = '';
+      message.value = '';
+      // TODO: set success message
+    } catch (error) {
+      console.log('Error submiting form');
+      // TODO: display error message
+    }
+  });
+</script>
+
 <style>
+  * {
+    font-family: inherit;
+  }
   section {
     width: 100%;
+    min-height: calc(100vh - var(--header-height));
     max-width: calc(0.5 * var(--content-max-width));
+  }
+
+  #contact-form,
+  input,
+  textarea {
+    font-size: var(--text-default);
+    font-family: inherit;
   }
 
   h1 {
@@ -41,6 +94,6 @@ import FormInput from './FormInput.astro';
   }
 
   button {
-    margin: 0 auto;
+    margin: 1.5rem auto 0;
   }
 </style>
