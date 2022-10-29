@@ -1,5 +1,4 @@
 ---
-import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import '../globals.css';
 export interface Props {
@@ -19,17 +18,16 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <Header />
+    <!-- <Header /> -->
     <slot />
-    <Footer />
     <style>
       :root {
       }
 
       body {
+        position: relative;
         min-height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
+        width: 100vw;
         background: var(--color-background);
       }
     </style>
