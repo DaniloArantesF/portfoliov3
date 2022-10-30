@@ -14,7 +14,7 @@ const { title } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/favicon.svg" /> -->
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
@@ -23,14 +23,31 @@ const { title } = Astro.props;
     <slot />
     <Footer />
     <style>
-      :root {
+      *,
+      *::before,
+      *::after {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
+      html {
+        width: 100vw;
       }
 
       body {
+        width: 100%;
         min-height: 100vh;
         display: grid;
         grid-template-rows: auto 1fr auto;
         background: var(--color-background);
+        overflow-y: visible;
+        overflow-x: hidden;
       }
     </style>
   </body>

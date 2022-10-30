@@ -40,13 +40,18 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
   </main>
 </Layout>
 
-<style>
+<style is:global>
   main {
     display: flex;
     flex-direction: column;
     gap: 5rem;
-    max-width: var(--content-max-width);
-    padding: 0 1.5rem;
+    width: 100%;
+    max-width: min(100%, var(--content-max-width));
     margin: 0 auto;
+    overflow-x: hidden;
+  }
+
+  main > section {
+    margin: 0 var(--main-margin-x);
   }
 </style>

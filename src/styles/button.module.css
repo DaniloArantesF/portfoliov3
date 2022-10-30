@@ -5,6 +5,7 @@
 }
 
 .button {
+  --rotate: 0deg;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -13,11 +14,12 @@
   height: fit-content;
   max-width: 300px;
   padding: 0.75rem 1.5rem;
+  gap: 0.5rem;
   background: var(--color-accent);
   border-radius: var(--border-radius);
   text-align: center;
   font-size: var(--text-sm);
-  font-weight: 600;
+  font-weight: 500;
   font-family: inherit;
   letter-spacing: 2px;
   text-decoration: none;
@@ -26,6 +28,10 @@
   border: none;
   box-shadow: var(--box-shadow);
   text-transform: uppercase;
+}
+
+.button > * {
+  user-select: none;
 }
 
 .button.outlined {
@@ -98,5 +104,58 @@
   }
   100% {
     --rotate: 360deg;
+  }
+}
+
+.button > .spinner {
+  display: none;
+}
+
+.button.loading > .spinner {
+  display: inline-block;
+}
+
+/* Loading Animation */
+.spinner {
+  --spinner-height: 24px;
+  --spinner-width: 24px;
+  position: relative;
+  width: var(--spinner-width);
+  height: var(--spinner-height);
+}
+
+.spinner div {
+  display: inline-block;
+  position: absolute;
+  left: calc(var(--spinner-width) / 10);
+  width: calc(var(--spinner-width) / 5);
+  background: #fff;
+  animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+
+.spinner div:nth-child(1) {
+  left: calc(var(--spinner-width) / 10);
+  animation-delay: -0.24s;
+}
+
+.spinner div:nth-child(2) {
+  left: calc(4 * var(--spinner-width) / 10);
+  animation-delay: -0.12s;
+}
+
+.spinner div:nth-child(3) {
+  left: calc(7 * var(--spinner-width) / 10);
+  animation-delay: 0;
+}
+
+@keyframes lds-facebook {
+  0% {
+    top: calc(var(--spinner-width) / 10);
+    height: calc(8 * var(--spinner-height) / 10);
+  }
+  50%,
+  100% {
+    top: calc(3 * var(--spinner-width) / 10);
+    height: calc(4 * var(--spinner-height) / 10);
   }
 }
