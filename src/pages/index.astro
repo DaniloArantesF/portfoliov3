@@ -7,7 +7,9 @@ import Skills from '../components/Skills.astro';
 import Layout from '../layouts/Layout.astro';
 import type { ProjectProps } from './projects/[slug].astro';
 
-const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
+const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
+  ({ frontmatter }) => frontmatter.visibility !== 'hidden',
+);
 ---
 
 <Layout title="DaniloArantesF">
@@ -26,17 +28,11 @@ const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
               project.file.lastIndexOf('/') + 1,
               project.file.length - 3,
             );
-            return (
-              <Card
-                href={`/projects/${slug}`}
-                {...project.frontmatter}
-                description={''}
-              />
-            );
+            return <Card href={`/projects/${slug}`} {...project.frontmatter} />;
           })
       }
     </CardList>
-    <ContactPrompt text="give job pls" />
+    <ContactPrompt text="Let's get in touch!" />
   </main>
 </Layout>
 

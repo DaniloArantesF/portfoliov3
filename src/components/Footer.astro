@@ -29,12 +29,12 @@ import Icon from './Icon.astro';
       <h4>Quick Links</h4>
       <li><a role="link" href="/">Home</a></li>
       <li><a role="link" href="/projects">Projects</a></li>
-      <li><a role="link" href="/blog">Blog</a></li>
+      <!-- <li><a role="link" href="/blog">Blog</a></li> -->
       <li><a role="link" href="/contact">Contact</a></li>
     </ul>
   </div>
   <div>
-    <span class="copyright">All rights reserved or something 2022</span>
+    <span class="copyright"></span>
   </div>
 </footer>
 
@@ -59,6 +59,10 @@ import Icon from './Icon.astro';
   .copyright {
     pointer-events: none;
     user-select: none;
+  }
+
+  .copyright {
+    color: var(--color-text-sub);
   }
 
   footer > div:first-child {
@@ -86,6 +90,8 @@ import Icon from './Icon.astro';
     align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
+    padding-top: 1rem;
+    padding-right: 1rem;
   }
 
   #social-links a {

@@ -11,13 +11,14 @@ export interface PostProps {
 
 export async function getStaticPaths() {
   try {
-    const posts = await Astro.glob<PostProps>('/src/posts/*.md');
-    return posts.map((post) => {
-      return {
-        params: { slug: post.frontmatter.slug },
-        props: { post },
-      };
-    });
+    return [];
+    // const posts = await Astro.glob<PostProps>('/src/posts/*.md');
+    // return posts.map((post) => {
+    //   return {
+    //     params: { slug: post.frontmatter.slug },
+    //     props: { post },
+    //   };
+    // });
   } catch (error) {
     return [];
   }

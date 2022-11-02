@@ -41,14 +41,14 @@
 
   --padding-y: 1.5rem;
   --padding-x: 1rem;
-  --main-margin-y: 4rem;
+  --main-margin-y: 2rem;
   --main-margin-x: 1rem;
   --border-radius: 4px;
   --content-max-width: 1600px;
   --header-height: 5.5rem;
 
-  --box-shadow: 0 1px 42px 0px rgba(0, 0, 30, 0.5);
-  --box-shadow-low: 0 1px 21px 0px rgba(0, 0, 30, 0.5);
+  --box-shadow: 0 3px 20px 1px rgba(0, 0, 0, 0.2);
+  --box-shadow-low: 0 1px 20px 0px rgba(0, 0, 30, 0.5);
 
   color: var(--color-text-main);
   font-family: ibm-plex-sans, sans-serif;
@@ -68,6 +68,7 @@ html {
 @media only screen and (min-width: 900px) {
   :root {
     --main-margin-x: 2rem;
+    --main-margin-y: 3rem;
   }
 }
 

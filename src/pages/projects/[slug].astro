@@ -9,11 +9,14 @@ export interface ProjectProps {
   lastUpdated: string;
   featured: boolean;
   tags: string[];
+  visibility?: 'visible' | 'hidden';
 }
 
 export async function getStaticPaths() {
   try {
-    const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
+    const projects = (
+      await Astro.glob<ProjectProps>('/src/projects/*.md')
+    ).filter(({ frontmatter }) => frontmatter.visibility !== 'hidden');
     return projects.map((project) => {
       return {
         params: {

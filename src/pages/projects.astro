@@ -4,7 +4,9 @@ import CardList from '../components/CardList.astro';
 import Layout from '../layouts/Layout.astro';
 import type { ProjectProps } from './projects/[slug].astro';
 
-const projects = await Astro.glob<ProjectProps>('/src/projects/*.md');
+const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
+  ({ frontmatter }) => frontmatter.visibility !== 'hidden',
+);
 ---
 
 <Layout title="Portfolio">

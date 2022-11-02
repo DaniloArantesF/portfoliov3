@@ -13,11 +13,12 @@ const { heading, text } = Astro.props;
   <div class="hero-body">
     <h1><span>Hello</span><span>There</span></h1>
     <p>
-      Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut
-      fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem
-      sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit
-      amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora
-      incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+      My name is Danilo, I am a software engineer with experience in making the
+      web simple and beaultiful. I graduated from <b>Purdue University</b> with a
+      degree in Computer Science and have been working with frontend technologies
+      since 2019. My stack is always evolving but most of my experience is using
+      <b>Vanilla Javascript or React.js</b>. Currently looking for a new
+      challange!
     </p>
     <div class="buttons">
       <a class={`${button.button}`} href={'/contact'}> Contact Me</a>
@@ -40,38 +41,102 @@ const { heading, text } = Astro.props;
 
 <style lang="scss">
   #hero {
+    --hero-padding-bottom: 2rem;
     display: flex;
     align-items: center;
     flex-direction: column;
-    min-height: calc(100vh - var(--header-height));
-    padding: 0rem 0rem 3rem;
-
+    min-height: calc(100vh - var(--header-height) - var(--main-margin-y));
+    padding: 0.5rem 0rem var(--hero-padding-bottom);
     overflow: hidden;
+  }
+
+  #hero:after {
+    content: '';
+    display: inline-block;
+    width: 100vw;
+    height: 150px;
+    bottom: calc(-1 * var(--main-margin-y) - var(--hero-padding-bottom));
+    position: absolute;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--color-background) 70%
+    );
+    z-index: 150;
   }
 
   .hero-body {
     max-width: min(calc(100% - 2rem), 1200px);
-    margin: 0 1rem;
+    margin: 0rem 1rem;
     background: var(--color-surface-2);
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    padding: 2rem 0.5rem 3rem;
+    padding: 2rem 0.5rem 2rem;
     border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    // box-shadow: 0px 3px 15px 3px rgba(0, 0, 0, .1);
+    position: relative;
+    z-index: 155;
   }
 
   h1 {
-    display: inline-flex;
-    font-size: clamp(32px, 48px, 64px);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    overflow: hidden;
+    font-size: clamp(32px, 56px, 64px);
     text-align: center;
     margin: 0 auto;
-    gap: 1rem;
 
-    & span:nth-child(1) {
+    & span:first-child {
+      background: linear-gradient(45deg, #4143e1 40%, #42d6ff);
+      position: relative;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      opacity: 0;
+      animation: fade-down 500ms cubic-bezier(0.17, 0.67, 0.66, 0.97) forwards;
     }
 
-    & span:nth-child(2) {
+    & span:last-child {
+      background: linear-gradient(-45deg, #4143e1 40%, #42d6ff);
+      position: relative;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      opacity: 0;
+      animation: fade-left 500ms cubic-bezier(0.17, 0.67, 0.66, 0.97) forwards;
+      animation-delay: 100ms;
+    }
+  }
+
+  @keyframes fade-down {
+    0% {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    50% {
+      // opacity: 0;
+    }
+    100% {
+      transform: translateY(0%);
+      opacity: 1;
+    }
+  }
+  @keyframes fade-left {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    50% {
+      // opacity: 0;
+    }
+    100% {
+      transform: translatex(0%);
+      opacity: 1;
     }
   }
 
@@ -81,7 +146,7 @@ const { heading, text } = Astro.props;
   }
 
   .buttons {
-    margin-top: 3rem;
+    margin-top: 2rem;
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
@@ -92,7 +157,8 @@ const { heading, text } = Astro.props;
 
   @media only screen and (min-height: 1000px) {
     #hero {
-      padding: 5rem 0rem 3rem;
+      --hero-padding-bottom: 3rem;
+      // padding: 5rem 0rem var(--hero-padding-bottom);
     }
   }
   @media only screen and (min-width: 600px) {
@@ -208,7 +274,7 @@ const { heading, text } = Astro.props;
     mask-size: 100px 80px;
     -webkit-mask-size: 100px 80px;
 
-    animation: background-down 15s linear infinite;
+    animation: background-down 45s linear infinite;
   }
 
   .background-lines > div {

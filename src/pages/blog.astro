@@ -3,11 +3,11 @@ import Layout from '../layouts/Layout.astro';
 import type { PostProps } from './posts/[slug].astro';
 import Card from '../components/Card.astro';
 
-const posts = await Astro.glob<PostProps>('/src/posts/*.md');
+// const posts = await Astro.glob<PostProps>('/src/posts/*.md');
 ---
 
 <Layout title="Blog">
-  <main>
+  <!-- <main>
     <h1>All Posts</h1>
     <div class="posts-grid">
       {
@@ -20,7 +20,7 @@ const posts = await Astro.glob<PostProps>('/src/posts/*.md');
         ))
       }
     </div>
-  </main>
+  </main> -->
 </Layout>
 
 <style>

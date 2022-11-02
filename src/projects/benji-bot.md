@@ -1,8 +1,8 @@
 ---
 title: Benji Bot
 subtitle: Full Stack
-description: Felis eget nunc lobortis mattis aliquam faucibus. Morbi tempus iaculis urna id volutpat lacus laoreet. Quam lacus suspendisse faucibus interdum. Aliquam id diam maecenas ultricies mi eget mauris pharetra et.
-picture: project-desktop-sample.webp
+description: A Discord music bot that supports Youtube, Spotify and a Web Dashboard. All of the UI was built from scratch using React.js and CSS modules. The backend API uses Express.js and web sockets to communicate with clients. Client state management is done using Redux Toolkit. Also features Discord slash commands, server management functions and little games.
+picture: projects/benji-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
 tags: ['reactjs', 'expressjs', 'socketio', 'redux']
