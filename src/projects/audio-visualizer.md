@@ -6,4 +6,7 @@ picture: projects/3d-audio-visualizer-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
 tags: ['threejs', 'typescript']
+live: https://3d-audio-visualizer.vercel.app/
+github: https://github.com/DaniloArantesF/3d-audio-visualizer
+sandbox: https://codesandbox.io/s/github/DaniloArantesF/3d-audio-visualizer
 ---

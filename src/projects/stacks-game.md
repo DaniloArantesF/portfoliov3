@@ -1,9 +1,12 @@
 ---
 title: Stacks Game
 subtitle: Game Dev
-description: Auctor elit sed vulputate mi sit amet. Lorem dolor sed viverra ipsum nunc aliquet bibendum. Netus et malesuada fames ac. Ut sem nulla pharetra diam sit amet nisl suscipit adipiscing.
+description: An experiment with game development using React Three Fiber. It's inpired by the Stack mobile game and I still plan to add more features and improvements in the future.
 picture: projects/stacks-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
 tags: ['reactjs', 'r3f', 'zustand']
+live: https://stacks-two.vercel.app/
+github: https://github.com/DaniloArantesF/Stacks
+sandbox: https://codesandbox.io/s/github/DaniloArantesF/Stacks
 ---

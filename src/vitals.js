@@ -8,7 +8,7 @@ function getConnectionSpeed() {
     : '';
 }
 
-export function sendToVercelAnalytics(metric) {
+function sendToVercelAnalytics(metric) {
   const analyticsId = process.env.VERCEL_ANALYTICS_ID;
   if (!analyticsId) {
     return;
@@ -38,3 +38,15 @@ export function sendToVercelAnalytics(metric) {
       keepalive: true,
     });
 }
+
+const reportWebVitals = (onPerfEntry) => {
+  if (onPerfEntry && onPerfEntry instanceof Function) {
+    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+      getCLS(onPerfEntry);
+      getFID(onPerfEntry);
+      getFCP(onPerfEntry);
+      getLCP(onPerfEntry);
+      getTTFB(onPerfEntry);
+    });
+  }
+};

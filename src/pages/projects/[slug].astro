@@ -10,6 +10,9 @@ export interface ProjectProps {
   featured: boolean;
   tags: string[];
   visibility?: 'visible' | 'hidden';
+  live?: string;
+  github?: string;
+  sandbox?: string;
 }
 
 export async function getStaticPaths() {
