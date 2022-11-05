@@ -13,22 +13,33 @@ const getLinkClasses = (path: string) => {
 
 <div class="header-container">
   <header>
-    <a class="logo" href="/"
-      ><Icon icon="logo" color="rr0000" width={'3rem'} />
+    <a role="navigation" aria-label="Home" class="logo" href="/"
+      ><Icon icon="logo" color="ff0000" width={'3rem'} />
     </a>
     <nav role="navigation">
       <div class="navlinks">
-        <a href="/projects">Portfolio</a>
+        <a aria-label="Projects" role="navigation" href="/projects">Portfolio</a
+        >
         <!-- <a href="/blog">Blog</a> -->
-        <a href="/contact">Contact</a>
+        <a aria-label="Contact" role="navigation" href="/contact">Contact</a>
       </div>
-      <button id="mobile_nav_button"
+      <button aria-label="mobile-navigation" id="mobile_nav_button"
         ><Icon icon="menu" color="#5D5FEF" width="2rem" />
       </button>
       <div id="mobile_nav">
-        <a href="/projects" class={getLinkClasses('/projects')}>Projects</a>
+        <a
+          aria-label="Projects"
+          role="navigation"
+          href="/projects"
+          class={getLinkClasses('/projects')}>Projects</a
+        >
         <!-- <a href="/blog" class={getLinkClasses('/blog')}>Blog</a> -->
-        <a href="/contact" class={getLinkClasses('/contact')}>Contact</a>
+        <a
+          aria-label="Contact"
+          role="navigation"
+          href="/contact"
+          class={getLinkClasses('/contact')}>Contact</a
+        >
       </div>
     </nav>
   </header>

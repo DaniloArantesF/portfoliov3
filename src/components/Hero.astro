@@ -11,7 +11,7 @@ const { heading, text } = Astro.props;
 
 <div id="hero">
   <div class="hero-body">
-    <h1><span>Hello</span><span>There</span></h1>
+    <h2><span>Hello</span><span>There</span></h2>
     <p>
       My name is Danilo. I am a software engineer focused on front-end
       development. I graduated from <b>Purdue University</b> with a degree in Computer
@@ -19,10 +19,17 @@ const { heading, text } = Astro.props;
       always evolving, but most of my experience is using
       <b>Vanilla Javascript or React.js</b>. I am also familiar with <b
         >Node.js and Python</b
-      > when dabbling in the backend. Currently looking for a new challenge!
+      > when dabbling in the backend.
     </p>
     <div class="buttons">
-      <a class={`${button.button}`} href={'/contact'}> Contact Me</a>
+      <a
+        aria-label="Contact"
+        role="navigation"
+        class={`${button.button}`}
+        href={'/contact'}
+      >
+        Contact Me</a
+      >
     </div>
   </div>
   <div id="bg">
@@ -77,12 +84,11 @@ const { heading, text } = Astro.props;
     padding: 2rem 0.5rem 2rem;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    // box-shadow: 0px 3px 15px 3px rgba(0, 0, 0, .1);
     position: relative;
     z-index: 155;
   }
 
-  h1 {
+  h2 {
     position: relative;
     display: flex;
     justify-content: center;
@@ -91,6 +97,8 @@ const { heading, text } = Astro.props;
     font-size: clamp(32px, 56px, 64px);
     text-align: center;
     margin: 0 auto;
+    pointer-events: none;
+    user-select: none;
 
     & span:first-child {
       background: linear-gradient(45deg, #4143e1 40%, #42d6ff);

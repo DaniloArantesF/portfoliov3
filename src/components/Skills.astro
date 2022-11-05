@@ -19,13 +19,13 @@
 
     <div class="skill-list">
       <ul>
-        <h4>Frontend</h4>
+        <li>Frontend</li>
         <li>React.js</li>
         <li>Next.js</li>
         <li>CSS3 & SASS</li>
       </ul>
       <ul>
-        <h4>Backend</h4>
+        <li>Backend</li>
         <li>Express.js</li>
         <li>Python</li>
         <li>Shopify Liquid</li>
@@ -49,13 +49,13 @@
 
     <div class="skill-list">
       <ul>
-        <h4>Design</h4>
+        <li>Design</li>
         <li>Figma</li>
         <li>Photoshop</li>
         <li>Rive</li>
       </ul>
       <ul>
-        <h4>3D Tools</h4>
+        <li>3D Tools</li>
         <li>Blender</li>
         <li>Three.js</li>
       </ul>
@@ -121,12 +121,15 @@
     }
   }
 
-  ul h4 {
-    display: inline-block;
+  ul li:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5rem 1rem;
     background: white;
     margin-bottom: 0.5rem;
     color: #000000;
+    font-weight: 700;
     border-radius: var(--border-radius);
   }
 

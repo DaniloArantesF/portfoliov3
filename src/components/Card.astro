@@ -38,13 +38,34 @@ if (tags) {
 ---
 
 <div class="card">
-  <a href={href} target="_blank">
+  <a
+    role="link"
+    href={href}
+    target="_blank"
+    aria-label={`${title}`}
+    rel="noopener"
+  >
     <div class="picture">
-      <img src={`/assets/${picture}`} />
+      <picture>
+        <source
+          height="1200"
+          width="1600"
+          srcset={`/assets/${picture} `}
+          media="(min-width: 800px)"
+        />
+        <img
+          height="450"
+          width="600"
+          alt={`${title} demo`}
+          src={`/assets/${
+            picture.split('.')[0] + '-sm.' + picture.split('.')[1]
+          }`}
+        />
+      </picture>
     </div>
     <div class={`card-body ${description ? 'with-description' : ''}`}>
       <div class="body-title">
-        <h4>{title}</h4>
+        <h3>{title}</h3>
         <span>{date}</span>
       </div>
       <span>{subtitle ?? ''}</span>
@@ -58,7 +79,14 @@ if (tags) {
           tagData.map(
             ({ title, href }) =>
               title && (
-                <a target="_blank" href={href} class="tag">
+                <a
+                  target="_blank"
+                  role="link"
+                  href={href}
+                  aria-label={`${title}`}
+                  rel="noopener"
+                  class="tag"
+                >
                   {title}
                 </a>
               ),
@@ -68,21 +96,36 @@ if (tags) {
     <div class="links">
       {
         live && (
-          <a target="_blank" href={live}>
+          <a
+            target="_blank"
+            href={live}
+            aria-label={`Live version link`}
+            rel="noopener"
+          >
             Live
           </a>
         )
       }
       {
         github && (
-          <a target="_blank" href={github}>
+          <a
+            target="_blank"
+            href={github}
+            aria-label={`Github link`}
+            rel="noopener"
+          >
             Github
           </a>
         )
       }
       {
         sandbox && (
-          <a target="_blank" href={sandbox}>
+          <a
+            target="_blank"
+            href={sandbox}
+            aria-label={`Sandbox link`}
+            rel="noopener"
+          >
             Sandbox
           </a>
         )
@@ -141,13 +184,14 @@ if (tags) {
     overflow: hidden;
   }
 
-  img {
+  img,
+  picture {
     width: auto;
     height: 100%;
     object-fit: cover;
   }
 
-  .card h4 {
+  .card h3 {
     font-size: var(--text-md);
   }
 

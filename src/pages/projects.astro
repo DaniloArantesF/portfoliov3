@@ -18,7 +18,17 @@ const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
             project.file.lastIndexOf('/') + 1,
             project.file.length - 3,
           );
-          return <Card href={`/projects/${slug}`} {...project.frontmatter} />;
+          const projectLink = project.frontmatter.live
+            ? project.frontmatter.live
+            : project.frontmatter.sandbox
+            ? project.frontmatter.sandbox
+            : project.frontmatter.github;
+          return (
+            <Card
+              href={projectLink ?? `/projects/${slug}`}
+              {...project.frontmatter}
+            />
+          );
         })
       }
     </CardList>

@@ -16,6 +16,7 @@ const { viewAll, name } = Astro.props;
         <a
           class={`${button.button} ${button.outlined} ${button.border}`}
           href={viewAll}
+          aria-label={`View all projects`}
         >
           View All
         </a>
@@ -43,6 +44,8 @@ const { viewAll, name } = Astro.props;
   section h2 {
     font-size: var(--text-xl);
     color: var(--color-accent-2);
+    pointer-events: none;
+    user-select: none;
   }
 
   .cards-container {

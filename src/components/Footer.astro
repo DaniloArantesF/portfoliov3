@@ -6,31 +6,49 @@ import Icon from './Icon.astro';
   <div>
     <h4>DaniloArantesF</h4>
     <div id="social-links">
-      <a role="link" title="github" href="https://github.com/DaniloArantesF"
+      <a
+        role="link"
+        title="github"
+        href="https://github.com/DaniloArantesF"
+        aria-label="Github"
+        rel="noopener"
         ><Icon color="#ffffff" icon="github" />
       </a>
       <a
         role="link"
         title="codesandbox"
+        aria-label="Codesandbox"
         href="https://codesandbox.io/u/DaniloArantesF"
+        rel="noopener"
         ><Icon color="#ffffff" icon="codesandbox" />
       </a>
-      <a role="link" title="codepen" href="https://codepen.io/daniloarantesf"
+      <a
+        role="link"
+        title="codepen"
+        href="https://codepen.io/daniloarantesf"
+        aria-label="Codepen"
+        rel="noopener"
         ><Icon color="#ffffff" icon="codepen" />
       </a>
       <a
         title="linkedin"
         role="link"
         href="https://www.linkedin.com/in/danilo-arantes-filho-6579ab177/"
+        aria-label="Linkedin"
+        rel="noopener"
         ><Icon color="#ffffff" icon="linkedin" />
       </a>
     </div>
     <ul id="quick-links">
-      <h4>Quick Links</h4>
-      <li><a role="link" href="/">Home</a></li>
-      <li><a role="link" href="/projects">Projects</a></li>
+      <li>Quick Links</li>
+      <li><a aria-label="Home" role="navigation" href="/">Home</a></li>
+      <li>
+        <a aria-label="Projects" role="navigation" href="/projects">Projects</a>
+      </li>
       <!-- <li><a role="link" href="/blog">Blog</a></li> -->
-      <li><a role="link" href="/contact">Contact</a></li>
+      <li>
+        <a aria-label="Contact" role="navigation" href="/contact">Contact</a>
+      </li>
     </ul>
   </div>
   <div>
@@ -50,12 +68,17 @@ import Icon from './Icon.astro';
     color: inherit;
   }
 
+  h4 {
+    pointer-events: none;
+    user-select: none;
+  }
+
   footer > * {
     max-width: var(--content-max-width);
     margin: 0 auto;
   }
 
-  h4,
+  li:first-child,
   .copyright {
     pointer-events: none;
     user-select: none;
@@ -80,8 +103,12 @@ import Icon from './Icon.astro';
     text-align: center;
   }
 
-  footer > div h4 {
+  li:first-child {
     grid-area: title;
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
+    padding-bottom: 1.5rem;
   }
 
   #social-links {
@@ -113,16 +140,17 @@ import Icon from './Icon.astro';
   #quick-links {
     grid-area: links1;
     list-style: none;
-  }
-
-  #quick-links h4 {
-    margin-bottom: 0.75rem;
+    heigth: 100%;
   }
 
   #quick-links li {
     width: fit-content;
     transition: left 100ms cubic-bezier(0.17, 0.67, 0.66, 0.97);
-    margin: 0.5rem 0;
+
+    & a {
+      display: inline-block;
+      height: 48px;
+    }
   }
 
   #quick-links li:hover {

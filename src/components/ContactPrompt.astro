@@ -9,7 +9,13 @@ const { text } = Astro.props;
 
 <section id="contact-prompt">
   <h3>{text}</h3>
-  <a href="/contact" class={`${button.button}`}>Contact</a>
+  <a
+    href="/contact"
+    role="navigation"
+    class={`${button.button}`}
+    aria-label="Contact me"
+    role="navigation">Contact</a
+  >
 </section>
 
 <style>
@@ -25,6 +31,10 @@ const { text } = Astro.props;
     box-shadow: var(--box-shadow);
   }
 
+  h3 {
+    pointer-events: none;
+    user-select: none;
+  }
   a.button {
     max-width: 200px;
   }
