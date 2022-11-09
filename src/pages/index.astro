@@ -1,5 +1,5 @@
 ---
-import Card from '../components/Card.astro';
+import Card from '../components/Card';
 import CardList from '../components/CardList.astro';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
@@ -14,10 +14,7 @@ const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
 
 <Layout title="DaniloArantesF">
   <main>
-    <Hero
-      heading="Hello There"
-      text="this is my website. I like programming stuff. gibe me money plz"
-    />
+    <Hero heading="Hello There" text="" />
     <Skills />
     <CardList name="Projects and Experiments" viewAll="/projects">
       {
@@ -36,6 +33,7 @@ const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
               : project.frontmatter.github;
             return (
               <Card
+                client:only="react"
                 href={projectLink ?? `/projects/${slug}`}
                 {...project.frontmatter}
               />

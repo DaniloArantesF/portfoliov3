@@ -18,6 +18,7 @@ const getLinkClasses = (path: string) => {
     </a>
     <nav role="navigation">
       <div class="navlinks">
+        <a aria-label="Home" role="navigation" href="/">Home</a>
         <a aria-label="Projects" role="navigation" href="/projects">Portfolio</a
         >
         <!-- <a href="/blog">Blog</a> -->
@@ -27,6 +28,12 @@ const getLinkClasses = (path: string) => {
         ><Icon icon="menu" color="#5D5FEF" width="2rem" />
       </button>
       <div id="mobile_nav">
+        <a
+          aria-label="Home"
+          role="navigation"
+          href="/"
+          class={getLinkClasses('/')}>Home</a
+        >
         <a
           aria-label="Projects"
           role="navigation"
@@ -45,20 +52,95 @@ const getLinkClasses = (path: string) => {
   </header>
 </div>
 
-<script defer>
+<script>
+  import gsap from 'gsap';
+
   // Mobile Menu Button
-  const mobileNav = document.getElementById('mobile_nav');
+  const mobileNav = document.getElementById('mobile_nav')!;
   const mobileNavButton = document.getElementById('mobile_nav_button');
-  const root = document.querySelector('html');
+  const root = document.querySelector('html')!;
+  const { width: iconWidth, height: iconHeight } = document
+    .querySelector('#mobile_nav_button')!
+    .getBoundingClientRect();
+  const animationDuration = 0.1;
+  gsap.defaults({ ease: 'power2.out', duration: 0.25 });
+  let isOpen = false;
 
   // Toggle Mobile Nav Menu
   if (mobileNavButton) {
     mobileNavButton.addEventListener('click', (event) => {
       event.preventDefault();
-      root.classList.toggle('scroll-lock');
-      mobileNav.classList.toggle('open');
-      mobileNavButton.classList.toggle('open');
+      if (isOpen) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
     });
+  }
+
+  function openMenu() {
+    root.classList.toggle('scroll-lock');
+    gsap.to('#mobile_nav', {
+      display: 'grid',
+      opacity: 1,
+      x: 0,
+    });
+    gsap.to('#mobile_nav a', {
+      opacity: 1,
+      x: 0,
+    });
+
+    gsap.to('#menu-icon-top', {
+      x: '-6px',
+      y: '0px',
+      rotation: '45deg',
+      transformOrigin: `${iconWidth / 2}% ${iconHeight / 2}`,
+    });
+    gsap.to('#menu-icon-mid', {
+      display: 'none',
+      duration: 0,
+    });
+    gsap.to('#menu-icon-bottom', {
+      x: '11px',
+      y: '-8px',
+      transformOrigin: `${iconWidth / 2}% ${iconHeight / 2}`,
+      rotation: '-45deg',
+    });
+
+    isOpen = true;
+  }
+
+  function closeMenu() {
+    root.classList.toggle('scroll-lock');
+    gsap.to('#mobile_nav', {
+      opacity: 0,
+      x: '-100vw',
+    });
+
+    gsap.to('#mobile_nav a', {
+      opacity: 0,
+      x: '-100vw',
+    });
+
+    gsap.to('#menu-icon-top', {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      transformOrigin: `${iconWidth / 2}% ${iconHeight / 2}`,
+    });
+
+    gsap.to('#menu-icon-mid', {
+      display: 'inline',
+      duration: 0,
+    });
+
+    gsap.to('#menu-icon-bottom', {
+      x: 0,
+      y: 0,
+      rotation: 0,
+      transformOrigin: `${iconWidth / 2}% ${iconHeight / 2}`,
+    });
+    isOpen = false;
   }
 </script>
 
@@ -138,19 +220,14 @@ const getLinkClasses = (path: string) => {
     grid-template-rows: repeat(4, minmax(auto, 85px));
     position: absolute;
     top: 100%;
-    left: -100vw;
+    left: 0;
+    transform: translateX(-100vw);
     width: 100vw;
     height: calc(100vh);
     opacity: 0;
     background: var(--color-surface-1);
     transition: opacity calc(var(--animation-duration) * 0.8) ease-out;
     z-index: 999;
-  }
-
-  #mobile_nav.open {
-    display: grid;
-    opacity: 1;
-    left: 0;
   }
 
   html.scroll-lock {
@@ -163,13 +240,6 @@ const getLinkClasses = (path: string) => {
     align-items: center;
     padding: 0 calc(1.5 * var(--padding-x));
     transition: none;
-    left: -100vw;
-  }
-
-  #mobile_nav.open a {
-    transition: left var(--animation-duration)
-      cubic-bezier(0.17, 0.67, 0.66, 0.97);
-    left: 0;
   }
 
   #mobile_nav a.active {
@@ -187,7 +257,7 @@ const getLinkClasses = (path: string) => {
     position: absolute;
   }
 
-  #mobile_nav a:nth-child(1) {
+  /* #mobile_nav a:nth-child(1) {
     transition-delay: 0ms;
   }
   #mobile_nav a:nth-child(2) {
@@ -198,7 +268,7 @@ const getLinkClasses = (path: string) => {
   }
   #mobile_nav a:nth-child(4) {
     transition-delay: calc((var(--animation-duration) * 0.25) * 3);
-  }
+  } */
 
   @media only screen and (min-width: 600px) {
     .navlinks {

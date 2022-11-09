@@ -1,5 +1,5 @@
 ---
-import Card from '../components/Card.astro';
+import Card from '../components/Card.tsx';
 import CardList from '../components/CardList.astro';
 import Layout from '../layouts/Layout.astro';
 import type { ProjectProps } from './projects/[slug].astro';
@@ -25,6 +25,7 @@ const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
             : project.frontmatter.github;
           return (
             <Card
+              client:only="react"
               href={projectLink ?? `/projects/${slug}`}
               {...project.frontmatter}
             />

@@ -29,19 +29,6 @@ const { default: icon } = await import(`../svg/${filename}.svg?raw`);
   }
 
   #mobile_nav_button path {
-    transition: transform 100ms ease-out;
     transform-origin: 50% 50%;
-  }
-
-  #mobile_nav_button.open #menu-icon-top {
-    transform: translate(-8px, 7px) rotate(45deg);
-  }
-
-  #mobile_nav_button.open #menu-icon-mid {
-    display: none;
-  }
-
-  #mobile_nav_button.open #menu-icon-bottom {
-    transform: translate(-8px, -8px) rotate(-45deg);
   }
 </style>
