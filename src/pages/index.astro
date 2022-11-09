@@ -15,32 +15,34 @@ const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
 <Layout title="DaniloArantesF">
   <main>
     <Hero heading="Hello There" text="" />
-    <Skills />
-    <CardList name="Projects and Experiments" viewAll="/projects">
-      {
-        projects
-          .filter((p) => p.frontmatter.featured)
-          .map((project) => {
-            const slug = project.file.substring(
-              project.file.lastIndexOf('/') + 1,
-              project.file.length - 3,
-            );
+    <!-- <Skills /> -->
+    <section>
+      <CardList name="Projects and Experiments" viewAll="/projects">
+        {
+          projects
+            .filter((p) => p.frontmatter.featured)
+            .map((project) => {
+              const slug = project.file.substring(
+                project.file.lastIndexOf('/') + 1,
+                project.file.length - 3,
+              );
 
-            const projectLink = project.frontmatter.live
-              ? project.frontmatter.live
-              : project.frontmatter.sandbox
-              ? project.frontmatter.sandbox
-              : project.frontmatter.github;
-            return (
-              <Card
-                client:only="react"
-                href={projectLink ?? `/projects/${slug}`}
-                {...project.frontmatter}
-              />
-            );
-          })
-      }
-    </CardList>
+              const projectLink = project.frontmatter.live
+                ? project.frontmatter.live
+                : project.frontmatter.sandbox
+                ? project.frontmatter.sandbox
+                : project.frontmatter.github;
+              return (
+                <Card
+                  client:only="react"
+                  href={projectLink ?? `/projects/${slug}`}
+                  {...project.frontmatter}
+                />
+              );
+            })
+        }
+      </CardList>
+    </section>
     <ContactPrompt text="Let's get in touch!" />
   </main>
 </Layout>
