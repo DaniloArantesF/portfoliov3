@@ -1,16 +1,14 @@
 ---
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
 import { Analytics } from '@vercel/analytics/react';
 import { SEO } from 'astro-seo';
+import Header from '../components/Header.astro';
 import '../globals.css';
 
 export interface Props {
   title: string;
-  description?: string;
 }
 
-const { title, description } = Astro.props;
+const { title } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -22,15 +20,13 @@ const { title, description } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <SEO
       title={title}
-      description={description ??
-        'I am a software engineer focused on front-end development'}
+      description="I am a software engineer focused on front-end development"
     />
     <title>{title}</title>
   </head>
   <body>
-    <Header />
+    <Header stealth />
     <slot />
-    <Footer />
     <Analytics client:only="react" />
     <style>
       *,
@@ -48,16 +44,6 @@ const { title, description } = Astro.props;
 
       html {
         width: 100vw;
-      }
-
-      body {
-        width: 100%;
-        min-height: 100vh;
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        background: var(--color-background);
-        overflow-y: visible;
-        overflow-x: hidden;
       }
     </style>
   </body>

@@ -1,8 +1,12 @@
 ---
 import Icon from './Icon.astro';
-export interface Props {}
+export interface Props {
+  stealth?: boolean;
+}
 
 const page = Astro.url.pathname;
+const { stealth } = Astro.props;
+
 const getLinkClasses = (path: string) => {
   if (path === '/') {
     return page === path ? 'active' : '';
@@ -11,7 +15,7 @@ const getLinkClasses = (path: string) => {
 };
 ---
 
-<div class="header-container">
+<div class={`header-container ${stealth && 'stealth'}`}>
   <header>
     <a role="navigation" aria-label="Home" class="logo" href="/"
       ><Icon icon="logo" color="ff0000" width={'3rem'} />
@@ -21,7 +25,6 @@ const getLinkClasses = (path: string) => {
         <a aria-label="Home" role="navigation" href="/">Home</a>
         <a aria-label="Projects" role="navigation" href="/projects">Portfolio</a
         >
-        <!-- <a href="/blog">Blog</a> -->
         <a aria-label="Contact" role="navigation" href="/contact">Contact</a>
       </div>
       <button aria-label="mobile-navigation" id="mobile_nav_button"
@@ -40,7 +43,6 @@ const getLinkClasses = (path: string) => {
           href="/projects"
           class={getLinkClasses('/projects')}>Projects</a
         >
-        <!-- <a href="/blog" class={getLinkClasses('/blog')}>Blog</a> -->
         <a
           aria-label="Contact"
           role="navigation"
@@ -107,6 +109,11 @@ const getLinkClasses = (path: string) => {
       rotation: '-45deg',
     });
 
+    gsap.to('.header-container.stealth', {
+      background: 'var(--color-surface-0)',
+      duration: 0.1,
+    });
+
     isOpen = true;
   }
 
@@ -140,6 +147,11 @@ const getLinkClasses = (path: string) => {
       rotation: 0,
       transformOrigin: `${iconWidth / 2}% ${iconHeight / 2}`,
     });
+
+    gsap.to('.header-container.stealth', {
+      background: 'transparent ',
+      duration: 0.1,
+    });
     isOpen = false;
   }
 </script>
@@ -153,6 +165,14 @@ const getLinkClasses = (path: string) => {
     width: 100%;
     background: var(--color-surface-0);
     margin-bottom: var(--main-margin-y);
+  }
+
+  .header-container.stealth {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-bottom: 0;
+    background: transparent;
   }
 
   header {
