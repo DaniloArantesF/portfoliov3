@@ -236,7 +236,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       document.querySelector('#gui_container')!.appendChild(stats.dom);
       /* ---------- Geometry ---------- */
 
-      const skyGeometry = new THREE.SphereGeometry(1000, 500);
+      const skyGeometry = new THREE.SphereGeometry(2000, 500);
       const skyMaterial = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: skyVertexShader,
@@ -601,8 +601,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       ssrPass.opacity = 1;
 
       composer.addPass(renderScene);
-      // composer.addPass(ssrPass);
-      // composer.addPass(bloomPass);
+      composer.addPass(ssrPass);
+      composer.addPass(bloomPass);
 
       // composer.addPass( new ShaderPass( RGBShiftShader ) );
     }
