@@ -3,7 +3,7 @@ precision mediump float;
 #endif
 
 #define TAU 6.28318530718
-#define GRID_SCALE 50.
+#define GRID_SCALE 25.
 
 uniform vec2 uResolution;
 uniform float uTime;
@@ -57,7 +57,7 @@ vec3 Stars(vec2 uv) {
       float n = Hash21(id + offset);
       float size = fract(n*354.34);
 
-      float star = Star(gv-offset-vec2(n, fract(n*20.))+.5, smoothstep(.8, 1., size));
+      float star = Star(gv-offset-vec2(n, fract(n*90.))+.5, smoothstep(.9, 1., size));
 
       vec3 starColor = sin(vec3(0.2, .3, .8) * fract(n*1354.34));
       color += star*size*starColor;
@@ -76,11 +76,14 @@ void main(){
 
   float scale = 1.;
   for (float  i = 0.; i < 1.; i+= 1./NUM_LAYERS) {
-    float depth = fract(i+uTime/200.);
+    float depth = fract(i+uTime/50.);
     scale = mix(20., .5, depth);
 
-    float fade = depth *smoothstep(1.,.7,depth);
+    float fade = depth;
     color += Stars(uv*scale+i*50.)*depth;
   }
+
+  float d = length(vUV-.5);
+  color *= smoothstep(.1, .4, d);
   gl_FragColor = vec4(color, 1.);
 }

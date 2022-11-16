@@ -11,6 +11,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         <input type="file" id="fileIn" />
         <button id="load-default">Load Song</button>
       </div>
+
+      <button id="play_btn"></button>
     </div>
   </main>
 </StealthLayout>
@@ -39,7 +41,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   /* ---------------------------------------------- */
   /*                   Constants                    */
   /* ---------------------------------------------- */
-  const ORBIT_CONTROLS = false;
 
   const App = () => {
     /* ---------------------------------------------- */
@@ -78,11 +79,12 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     /*                    Settings                    */
     /* ---------------------------------------------- */
     let gui: dat.GUI;
+
     const settings = {
       texScale: 150,
       exposure: 1,
       enableSSR: true,
-      orbitControls: false,
+      orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
       autoRotate: false,
       groundReflector: true,
       bloomStrength: 0.46,
@@ -127,7 +129,9 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     }
 
     function initAudio() {
-      audioContext = new window.AudioContext();
+      let AudioContext =
+        window.AudioContext || (window as any).webkitAudioContext;
+      audioContext = new AudioContext();
       source = audioContext.createMediaElementSource(audio);
 
       // exposes audio time and frequency data
@@ -170,7 +174,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         initScene();
         postProcessing();
         initGUI();
-
+        loadDefaultSong();
         render();
       });
     }
@@ -222,7 +226,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       /* ---------- Utils ---------- */
       controls = new OrbitControls(camera, renderer.domElement);
-      controls.enabled = false;
+      controls.enabled = settings.orbitControls;
       controls.autoRotateSpeed = 0.5;
       gridHelper = new THREE.GridHelper(200, 10);
       // scene.add(gridHelper);
@@ -232,7 +236,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       document.querySelector('#gui_container')!.appendChild(stats.dom);
       /* ---------- Geometry ---------- */
 
-      const skyGeometry = new THREE.PlaneGeometry(1000, 1000);
+      const skyGeometry = new THREE.SphereGeometry(1000, 500);
       const skyMaterial = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: skyVertexShader,
@@ -245,6 +249,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       const sky = new THREE.Mesh(skyGeometry, skyMaterial);
       sky.position.set(0, 0, -75);
+      sky.rotation.y += Math.PI / 2;
       scene.add(sky);
       selects.push(sky);
 
@@ -377,6 +382,17 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       scene.add(groundReflector);
 
       /* ---------- Events ---------- */
+      document.getElementById('play_btn')!.addEventListener('click', () => {
+        if (audio.paused) {
+          if (!audioContext) {
+            initAudio();
+          }
+          audio.play();
+        } else {
+          audio.pause();
+        }
+      });
+
       canvas.addEventListener('mousemove', (event) => {
         uniforms.uMouse.value.x =
           (event.clientX - window.innerWidth / 2) * 0.05;
@@ -412,9 +428,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       });
 
       // Setup audio context when file is loaded
-      audio.onloadeddata = () => {
-        initAudio();
-      };
+      audio.onloadeddata = () => {};
 
       audio.addEventListener('play', () => {
         // controls.autoRotate = true;
@@ -587,8 +601,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       ssrPass.opacity = 1;
 
       composer.addPass(renderScene);
-      composer.addPass(ssrPass);
-      composer.addPass(bloomPass);
+      // composer.addPass(ssrPass);
+      // composer.addPass(bloomPass);
 
       // composer.addPass( new ShaderPass( RGBShiftShader ) );
     }
@@ -664,7 +678,22 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     row-gap: 1rem;
   }
 
+  #play_btn {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    bottom: 3px;
+    left: calc(50% - 125px);
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    z-index: 99;
+    cursor: pointer;
+  }
+
   .controls {
+    position: relative;
+    z-index: 99;
     display: flex;
     flex-direction: column;
     row-gap: 2rem;
