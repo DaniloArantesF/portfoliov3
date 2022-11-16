@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import { getProjects } from '../projects.astro';
 
 export interface ProjectProps {
   title: string;
@@ -17,9 +18,7 @@ export interface ProjectProps {
 
 export async function getStaticPaths() {
   try {
-    const projects = (
-      await Astro.glob<ProjectProps>('/src/projects/*.md')
-    ).filter(({ frontmatter }) => frontmatter.visibility !== 'hidden');
+    const { projects } = await getProjects();
     return projects.map((project) => {
       return {
         params: {

@@ -4,14 +4,49 @@ import CardList from '../components/CardList.astro';
 import Layout from '../layouts/Layout.astro';
 import type { ProjectProps } from './projects/[slug].astro';
 
-const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
-  ({ frontmatter }) => frontmatter.visibility !== 'hidden',
-);
+export async function getProjects() {
+  // Offsite projects are included from src/projects
+  const projects = (
+    await Astro.glob<ProjectProps>('/src/projects/*.md')
+  ).filter(
+    ({ frontmatter }) =>
+      import.meta.env.DEV || frontmatter.visibility !== 'hidden',
+  );
+
+  // Demos are included here
+  // Note: If a demo does not contain a readme it will not be listed
+  const demos = (
+    await Astro.glob<ProjectProps>('/src/pages/projects/**/*.md')
+  ).filter(
+    ({ frontmatter }) =>
+      import.meta.env.DEV ||
+      (frontmatter.visibility && frontmatter.visibility !== 'hidden'),
+  );
+
+  return { projects, demos };
+}
+
+const { projects, demos } = await getProjects();
 ---
 
 <Layout title="Portfolio">
   <main>
     <CardList name="Projects">
+      {
+        demos.map((project) => {
+          const projectLink = project.url!.substring(
+            0,
+            project.url!.lastIndexOf('/'),
+          );
+          return (
+            <Card
+              client:only="react"
+              href={projectLink}
+              {...project.frontmatter}
+            />
+          );
+        })
+      }
       {
         projects.map((project) => {
           const slug = project.file.substring(

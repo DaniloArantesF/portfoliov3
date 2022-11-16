@@ -3,21 +3,34 @@ import Card from '../components/Card';
 import CardList from '../components/CardList.astro';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
-import Skills from '../components/Skills.astro';
 import Layout from '../layouts/Layout.astro';
-import type { ProjectProps } from './projects/[slug].astro';
+import { getProjects } from './projects.astro';
 
-const projects = (await Astro.glob<ProjectProps>('/src/projects/*.md')).filter(
-  ({ frontmatter }) => frontmatter.visibility !== 'hidden',
-);
+const { projects, demos } = await getProjects();
 ---
 
 <Layout title="DaniloArantesF">
   <main>
     <Hero heading="Hello There" text="" />
-    <!-- <Skills /> -->
     <section>
       <CardList name="Projects and Experiments" viewAll="/projects">
+        {
+          demos
+            .filter((i) => i.frontmatter.featured)
+            .map((project) => {
+              const projectLink = project.url!.substring(
+                0,
+                project.url!.lastIndexOf('/'),
+              );
+              return (
+                <Card
+                  client:only="react"
+                  href={projectLink}
+                  {...project.frontmatter}
+                />
+              );
+            })
+        }
         {
           projects
             .filter((p) => p.frontmatter.featured)
