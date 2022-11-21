@@ -1,4 +1,5 @@
 ---
+import Redirect from '../../components/Redirect.astro';
 import Layout from '../../layouts/Layout.astro';
 import { getProjects } from '../projects.astro';
 
@@ -18,18 +19,33 @@ export interface ProjectProps {
 
 export async function getStaticPaths() {
   try {
-    const { projects } = await getProjects();
-    return projects.map((project) => {
-      return {
-        params: {
-          slug: project.file.substring(
-            project.file.lastIndexOf('/') + 1,
-            project.file.length - 3,
-          ),
-        },
-        props: { project },
-      };
-    });
+    const { projects, demos } = await getProjects();
+    return [
+      demos.map((demo) => {
+        let url = demo.url?.replace('/projects/', '') ?? '';
+        url = url.substring(0, url.lastIndexOf('/'));
+        return {
+          params: {
+            slug: url.toLowerCase(),
+          },
+          props: {
+            project: demo,
+            redirect: url,
+          },
+        };
+      }),
+      // projects.map((project) => {
+      //   return {
+      //     params: {
+      //       slug: project.file.substring(
+      //         project.file.lastIndexOf('/') + 1,
+      //         project.file.length - 3,
+      //       ),
+      //     },
+      //     props: { project },
+      //   };
+      // }),
+    ];
   } catch (error) {
     return [];
   }
@@ -37,16 +53,14 @@ export async function getStaticPaths() {
 
 const { slug } = Astro.params;
 const { project } = Astro.props;
+const redirect = Astro.props.redirect;
 const { Content, frontmatter, url } = project;
 const { title } = frontmatter;
 ---
 
-<Layout title={title}>
-  <main>
-    <h1>{title}</h1>
-    <Content />
-  </main>
-</Layout>
+<Fragment>
+  {redirect ? <Redirect url={redirect} /> : <Layout title={title} />}
+</Fragment>
 
 <style>
   main {
