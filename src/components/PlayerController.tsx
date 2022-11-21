@@ -17,23 +17,41 @@ export function PlayerController() {
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef(player.getInstance());
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
-    // audioEl.controls = true;
-    audioEl.addEventListener('durationchange', function (e) {
-      setProgress(0);
-      setDuration(audioEl.duration);
-      clearInterval(progressInterval.current!);
+
+    audioEl.addEventListener('play', function () {
+      setPlaying(true);
+      progressInterval.current = setInterval(
+        () => setProgress((p) => p + POOLING_RATE),
+        POOLING_RATE,
+      );
+    });
+
+    audioEl.addEventListener('loadeddata', function () {
+      setLoaded(true);
+    });
+
+    audioEl.addEventListener('pause', function () {
       setPlaying(false);
+      clearInterval(progressInterval.current!);
     });
 
     audioEl.addEventListener('ended', function () {
       clearInterval(progressInterval.current!);
       setProgress(0);
       audioEl.currentTime = 0;
+      setPlaying(false);
+    });
+
+    audioEl.addEventListener('durationchange', function (e) {
+      setProgress(0);
+      setDuration(audioEl.duration);
+      clearInterval(progressInterval.current!);
       setPlaying(false);
     });
 
@@ -58,22 +76,17 @@ export function PlayerController() {
   }, [progress]);
 
   function handlePlay() {
+    if (!loaded) return;
     if (!playerRef.current.audioContext) {
       player.initContext();
     }
 
     audioRef.current?.play();
-    setPlaying(true);
-    progressInterval.current = setInterval(
-      () => setProgress((p) => p + POOLING_RATE),
-      POOLING_RATE,
-    );
   }
 
   function handlePause() {
+    if (!loaded) return;
     audioRef.current?.pause();
-    setPlaying(false);
-    clearInterval(progressInterval.current!);
   }
 
   // TODO: handle seek when mouse leaves container

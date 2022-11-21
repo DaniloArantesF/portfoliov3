@@ -18,7 +18,7 @@ const getLinkClasses = (path: string) => {
 <div class={`header-container ${stealth && 'stealth'}`}>
   <header>
     <a role="navigation" aria-label="Home" class="logo" href="/"
-      ><Icon icon="logo" color="ff0000" width={'3rem'} />
+      ><Icon icon="logo" color="ff0000" width={'2.75rem'} />
     </a>
     <nav role="navigation">
       <div class="navlinks">
@@ -197,6 +197,8 @@ const getLinkClasses = (path: string) => {
 
   .stealth header {
     box-shadow: none;
+    height: 50px;
+    padding: 1rem var(--padding-x);
   }
 
   .navlinks {
@@ -216,13 +218,14 @@ const getLinkClasses = (path: string) => {
   }
 
   .logo {
+    height: 100%;
     font-size: var(--text-xl);
     font-weight: 700;
     color: var(--color-accent);
     display: inline-flex;
     align-items: center;
     position: relative;
-    bottom: 4px;
+    /* bottom: 4px; */
   }
 
   #mobile_nav_button {
@@ -300,6 +303,10 @@ const getLinkClasses = (path: string) => {
       gap: 1em;
       margin-left: 2rem;
       align-items: center;
+    }
+
+    .stealth header {
+      padding: 1rem 0;
     }
 
     #mobile_nav_button,
