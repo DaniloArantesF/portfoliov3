@@ -5,6 +5,8 @@ varying vec3 vPosition;
 varying float intensity;
 uniform float[128] uData;
 varying float vAmplitude;
+varying float vTime;
+
 #define BIN_COUNT 128.
 varying vec3 normalizedPosition;
 
@@ -14,6 +16,7 @@ void main() {
   vPosition = position;
   vNormal = normalize(normalMatrix * normal);
   vAmplitude = 2.;
+  vTime = uTime;
   float freq = 120. *smoothstep(0., 1., vUV.y);
   intensity = sin(uData[int(round(freq))] / 1.) * vAmplitude;
 

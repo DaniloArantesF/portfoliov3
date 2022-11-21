@@ -6,7 +6,7 @@ precision mediump float;
 #define GRID_SCALE 25.
 
 uniform vec2 uResolution;
-uniform float uTime;
+varying float vTime;
 varying vec2 vUV;
 varying vec3 vNormal;
 uniform float uTest;
@@ -76,7 +76,7 @@ void main(){
 
   float scale = 1.;
   for (float  i = 0.; i < 1.; i+= 1./NUM_LAYERS) {
-    float depth = fract(i+uTime/50.);
+    float depth = fract(i+vTime/50.);
     scale = mix(20., .5, depth);
 
     float fade = depth;

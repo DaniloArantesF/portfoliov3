@@ -7,7 +7,6 @@ precision mediump float;
 #define SCALE 64.
 
 uniform vec2 uResolution;
-uniform float uTime;
 varying vec2 vUV;
 varying vec3 vNormal;
 varying vec3 vPosition;

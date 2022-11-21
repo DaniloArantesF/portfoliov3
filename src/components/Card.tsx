@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import tagsMap, { Tag } from '../projects/tags';
+import tagsMap, { Tag } from '../util/tags';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import '../styles/card.scss';

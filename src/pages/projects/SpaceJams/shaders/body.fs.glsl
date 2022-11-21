@@ -5,7 +5,6 @@ precision mediump float;
 #define TAU 6.28318530718
 
 uniform vec2 uResolution;
-uniform float uTime;
 uniform float uScale;
 varying vec2 vUV;
 varying vec3 vNormal;
@@ -13,6 +12,7 @@ uniform float uTest;
 varying vec3 vPosition;
 varying float intensity;
 varying float vAmplitude;
+varying float vTime;
 
 
 // Noise
@@ -60,7 +60,7 @@ void main(){
   vec2 gridUV = fract(st*resolution);
 
   float intensityNormalized = intensity;
-  vec3 n = vec3(noise(vPosition*10. + uTime/2.));
+  vec3 n = vec3(noise(vPosition*10. + vTime/2.));
 
   vec3 color1 = vec3(41./255., 53./255., 131./255.);
   vec3 color2 = vec3(98./255., 37./255., 116./255.);

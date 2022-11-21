@@ -3,7 +3,6 @@ export interface Tag {
   href: string;
 }
 
-// TODO: fix these links
 export default {
   r3f: { title: 'R3F', href: 'https://github.com/pmndrs/react-three-fiber' },
   reactjs: { title: 'React.js', href: 'https://reactjs.org/' },
@@ -15,17 +14,17 @@ export default {
   liquid: { title: 'Liquid', href: 'https://shopify.github.io/liquid/' },
   qt: { title: 'Qt', href: 'https://www.qt.io/' },
   blender: { title: 'Blender', href: 'https://www.blender.org/' },
-  expressjs: { title: 'Express.js', href: 'https://www.blender.org/' },
-  socketio: { title: 'Socket.io', href: 'https://www.blender.org/' },
-  redux: { title: 'Redux', href: 'https://www.blender.org/' },
-  astrojs: { title: 'Astro.js', href: 'https://www.blender.org/' },
-  sass: { title: 'Sass', href: 'https://www.blender.org/' },
+  expressjs: { title: 'Express.js', href: 'https://expressjs.com/' },
+  socketio: { title: 'Socket.io', href: 'https://socket.io/' },
+  redux: { title: 'Redux', href: 'https://redux.js.org/' },
+  astrojs: { title: 'Astro.js', href: 'https://astro.build/' },
+  sass: { title: 'Sass', href: 'https://sass-lang.com/' },
   zustand: { title: 'Zustand', href: 'https://github.com/pmndrs/zustand' },
   serverless: {
     title: 'Serverless',
-    href: 'https://github.com/pmndrs/zustand',
+    href: 'https://www.serverless.com/',
   },
-  aws: { title: 'AWS', href: 'https://github.com/pmndrs/zustand' },
-  auth0: { title: 'Auth0', href: 'https://github.com/pmndrs/zustand' },
-  graphql: { title: 'GraphQL', href: 'https://github.com/pmndrs/zustand' },
+  aws: { title: 'AWS', href: 'https://aws.amazon.com/' },
+  auth0: { title: 'Auth0', href: 'https://auth0.com/' },
+  graphql: { title: 'GraphQL', href: 'https://graphql.org/' },
 };
