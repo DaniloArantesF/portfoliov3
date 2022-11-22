@@ -3,7 +3,7 @@ precision mediump float;
 #endif
 
 #define TAU 6.28318530718
-#define GRID_SCALE 25.
+#define GRID_SCALE 10.
 
 uniform vec2 uResolution;
 varying float vTime;
@@ -20,7 +20,7 @@ mat2 Rot(float a) {
 
 float Star(vec2 uv, float flare) {
   float d = length(uv);
-  float star = .02/d;
+  float star = .01/d;
 
   uv *= 3.;
   float rays =  max(0., 1. - abs(uv.x * uv.y * 700.));
@@ -55,7 +55,7 @@ vec3 Stars(vec2 uv) {
     for (int x = -1; x <= 1; x++) {
       vec2 offset = vec2(x,y);
       float n = Hash21(id + offset);
-      float size = fract(n*354.34);
+      float size = fract(n*753.34);
 
       float star = Star(gv-offset-vec2(n, fract(n*90.))+.5, smoothstep(.9, 1., size));
 
@@ -72,18 +72,18 @@ void main(){
 
   vec2 uv = (vUV -.5);
   vec3 color = vec3(0.);
-  float NUM_LAYERS = 3.;
+  float NUM_LAYERS = 2.;
 
   float scale = 1.;
   for (float  i = 0.; i < 1.; i+= 1./NUM_LAYERS) {
-    float depth = fract(i+vTime/50.);
-    scale = mix(20., .5, depth);
+    float depth = fract(i+vTime/15.);
+    scale = mix(5., .5, depth);
 
     float fade = depth;
     color += Stars(uv*scale+i*50.)*depth;
   }
 
   float d = length(vUV-.5);
-  color *= smoothstep(.1, .4, d);
+  color *= smoothstep(.01, .1, d);
   gl_FragColor = vec4(color, 1.);
 }

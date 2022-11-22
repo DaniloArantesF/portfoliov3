@@ -49,23 +49,48 @@ float grid(vec2 uv, float res){
     return 1.-(step(res,grid.x) * step(res,grid.y));
 }
 
+float Hash21(vec2 p) {
+  p = fract(p*vec2(124.34, 456.21));
+  p += dot(p, p+45.32);
+  return fract(p.x*p.y);
+}
 
 void main(){
-  vec2 st = vUV;
+  vec2 uv = vUV;
   float aspect = uResolution.x / uResolution.y;
   vec3 color = vec3(0.0);
 
   // Grid
   float resolution = uScale;
-  vec2 gridUV = fract(st*resolution);
+  vec2 id = floor(uv*resolution);
+  vec2 gridUV = fract(uv*resolution);
 
-  float intensityNormalized = intensity;
-  vec3 n = vec3(noise(vPosition*10. + vTime/2.));
+  float intensityNormalized = intensity / vAmplitude;
 
   vec3 color1 = vec3(41./255., 53./255., 131./255.);
   vec3 color2 = vec3(98./255., 37./255., 116./255.);
   vec3 color3 = vec3(25./255., 84./255., 236./255.);
 
-  gl_FragColor = vec4(mix(color2, color3, step(.65, n)),1.);
+
+
+  // float n = step(1. - log(intensityNormalized), Hash21(id*resolution + resolution*sin(vTime/500.)));
+  // color = mix(color2, color3, step(.5, n));
+  // color = mix(color2, color3, step(.85-step(.8, intensityNormalized)/12., n));
+
+
+  // float n = noise((vec3(id.x-vTime/2., id.y-vTime,1.))/1.5);
+  // color = mix(color2, color3, step(.65+(.3 - log(intensityNormalized)), n));
+
+  float n = noise((vec3(id.x-vTime, id.y-vTime*2.,1.))/1.5);
+
+  // float intensityScale = log(intensityNormalized + 1.);
+  float intensityScale = exp(intensityNormalized)-1.;
+  color = mix(color2, color3, step(.60 - .05 * step(.4, intensityScale), n));
+
+  // Cut off corners
+  color -= step(.49, uv.y);
+  color -= 1. - step(.01, uv.y);
+
+  gl_FragColor = vec4(color,1.);
 }
 
