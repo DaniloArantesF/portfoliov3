@@ -37,13 +37,11 @@ float Star(vec2 uv, float flare) {
 }
 
 
-
 float Hash21(vec2 p) {
   p = fract(p*vec2(124.34, 456.21));
   p += dot(p, p+45.32);
   return fract(p.x*p.y);
 }
-
 
 vec3 Stars(vec2 uv) {
   // Get cell grid id and offset star
@@ -79,11 +77,12 @@ void main(){
     float depth = fract(i+vTime/15.);
     scale = mix(5., .5, depth);
 
-    float fade = depth;
-    color += Stars(uv*scale+i*50.)*depth;
+    float fade = sin(depth * TAU / 2.);
+    color += Stars(uv*scale+i)*fade;
   }
 
-  float d = length(vUV-.5);
+  float d = length(uv);
   color *= smoothstep(.01, .1, d);
+
   gl_FragColor = vec4(color, 1.);
 }
