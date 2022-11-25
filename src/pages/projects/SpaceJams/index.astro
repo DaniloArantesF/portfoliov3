@@ -115,6 +115,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
       composer = new EffectComposer(renderer);
       clock = new THREE.Clock();
@@ -157,22 +158,21 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       /* --------- Camera --------- */
       camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
       camera.position.set(0, 0.5, 1);
-      // camera.position.set(0, 10, 20);
 
       cameraPole = new THREE.Object3D();
       scene.add(cameraPole);
       cameraPole.add(camera);
 
       /* ---------- Lights ---------- */
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
 
-      const spotLight = new THREE.SpotLight(0xffffff, 0.5);
-      spotLight.angle = Math.PI / 16;
-      spotLight.penumbra = 1;
+      const spotLight = new THREE.SpotLight(0xffffff, 0.8);
+      spotLight.angle = Math.PI / 8;
+      spotLight.penumbra = 0.1;
 
       spotLight.castShadow = true;
-      spotLight.position.set(-75, 150, 75);
+      spotLight.position.set(-150, 75, 150);
       scene.add(spotLight);
 
       const spotLight2 = new THREE.SpotLight(0xaaaaaa, 0.8);
@@ -182,16 +182,16 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       spotLight2.shadow.mapSize.height = 1024;
       scene.add(spotLight2);
 
-      const spotLightHelper = new THREE.PointLightHelper(spotLight, 0.5);
-      const spotLightHelper2 = new THREE.PointLightHelper(spotLight, 0.5);
-      scene.add(spotLightHelper);
-      scene.add(spotLightHelper2);
+      // const spotLightHelper = new THREE.PointLightHelper(spotLight, 0.5);
+      // const spotLightHelper2 = new THREE.PointLightHelper(spotLight, 0.5);
+      // scene.add(spotLightHelper);
+      // scene.add(spotLightHelper2);
 
       /* ---------- Utils ---------- */
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enabled = settings.orbitControls;
       controls.autoRotateSpeed = 0.5;
-      gridHelper = new THREE.GridHelper(200, 10);
+      // gridHelper = new THREE.GridHelper(200, 10);
       // scene.add(gridHelper);
 
       stats = Stats();
@@ -309,8 +309,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       ].forEach((t) => {
         t.wrapS = THREE.RepeatWrapping;
         t.wrapT = THREE.RepeatWrapping;
-        t.repeat.set(5, 5);
-        t.encoding = THREE.LinearEncoding;
+        t.repeat.set(10, 10);
+        t.encoding = THREE.sRGBEncoding;
       });
 
       rock.material = new THREE.MeshStandardMaterial({
@@ -320,11 +320,13 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         normalMap: rockNormalMap,
         roughnessMap: rockRoughnessMap,
         aoMap: rockAoMap,
-        side: THREE.DoubleSide,
+        // side: THREE.DoubleSide,
       });
 
+      rock.position.y += 0.125;
+
       // Add ground reflections
-      let geometry = new THREE.PlaneGeometry(50, 100);
+      let geometry = new THREE.PlaneGeometry(5, 5);
       groundReflector = new ReflectorForSSRPass(geometry, {
         clipBias: 0.0003,
         textureWidth: window.innerWidth,
@@ -335,8 +337,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       groundReflector.material.depthWrite = false;
       groundReflector.rotation.x = -Math.PI / 2;
-      groundReflector.visible = false;
-      scene.add(groundReflector);
+      // groundReflector.visible = false;
+      // scene.add(groundReflector);
 
       /* ---------- Events ---------- */
       canvas.addEventListener('mousemove', (event) => {
@@ -459,7 +461,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
           groundReflector.opacity = ssrPass.opacity;
         });
       folder.add(ssrPass, 'blur');
-      // gui.close();
+      gui.close();
     }
 
     function render() {
@@ -480,7 +482,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         controls.update();
       } else {
         camera.position.x +=
-          (uniforms.uMouse.value.x / 10 - camera.position.x) * 0.1;
+          (uniforms.uMouse.value.x / 10 - camera.position.x) * 0.03;
         camera.position.y +=
           (-uniforms.uMouse.value.y / 20 - camera.position.y + 0.5) * 0.1;
         camera.lookAt(scene.position);

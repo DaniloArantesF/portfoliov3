@@ -29,7 +29,7 @@ void main(){
   float linePatterns = lines(normalizedPosition.xy, .01);
   float alpha = circle(gl_PointCoord, .3, .33);
 
-  vec3 color1 = vec3(41./255., 53./255., 131./255.);
+  vec3 color1 = vec3(2./255., 189./255., 225./255.);
   vec3 color2 = vec3(98./255., 37./255., 116./255.);
   vec3 color3 = vec3(25./255., 84./255., 236./255.);
 
@@ -38,10 +38,9 @@ void main(){
 
   float freq = 128. - (128. * normalizedPosition.y);
 
-
-  gl_FragColor = vec4(cutoff*color1*intensityNormalized,alpha);
+  gl_FragColor = vec4(cutoff*color2*intensityNormalized,alpha);
   if (freq < 2.*128. / 3.) {
-    gl_FragColor = vec4(cutoff*color2*intensityNormalized,alpha);
+    gl_FragColor = vec4(cutoff*color1 / 2. *intensityNormalized,alpha);
   }
   if (freq < 128. / 3.) {
     gl_FragColor = vec4(cutoff*color3*intensityNormalized,alpha);

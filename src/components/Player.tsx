@@ -18,6 +18,7 @@ class Player {
 
   public static initContext = () => {
     const player = Player.getInstance();
+
     let AudioContext =
       window.AudioContext || (window as any).webkitAudioContext;
     player.audioContext = new AudioContext();
