@@ -17,7 +17,9 @@ void main() {
   vNormal = normalize(normalMatrix * normal);
   vAmplitude = 2.;
   vTime = uTime;
-  float freq = 120. *smoothstep(0., 1., vUV.y);
+
+  float freq = 120. *smoothstep(0.2, 0.5, vUV.y);
+
   intensity = sin(uData[int(round(freq))] / 1.) * vAmplitude;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );

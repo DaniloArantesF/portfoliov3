@@ -46,7 +46,7 @@ class Player {
     return Player.player;
   };
 
-  private loadDefaultSong() {
+  public loadDefaultSong() {
     this.audio.src = '/assets/songs/song1.mp3';
     this.audio.load();
   }

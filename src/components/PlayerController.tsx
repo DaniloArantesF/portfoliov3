@@ -23,6 +23,7 @@ export function PlayerController() {
     if (!audioRef.current) return;
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
+    playerRef.current?.loadDefaultSong();
 
     audioEl.addEventListener('play', function () {
       setPlaying(true);

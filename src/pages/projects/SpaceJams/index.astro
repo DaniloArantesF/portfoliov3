@@ -30,7 +30,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
   import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
-  import { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
+  import type { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
   // import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
   // import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
   // import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader';
@@ -78,6 +78,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       texScale: 123,
       exposure: 1,
       enableSSR: true,
+      skyMode: false,
       orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
       autoRotate: false,
       groundReflector: true,
@@ -91,7 +92,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     const fov = 75;
     const aspect = window.innerWidth / window.innerHeight;
     const near = 0.1;
-    const far = 10000;
+    const far = 5000;
     const uniforms = {
       uResolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -154,10 +155,18 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       scene.add(rock);
     }
 
+    function resetCamera() {
+      if (settings.skyMode) {
+        camera.position.set(0, 50, 10);
+      } else {
+        camera.position.set(0, 3, 1.5);
+      }
+    }
+
     function initScene() {
       /* --------- Camera --------- */
       camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      camera.position.set(0, 0.5, 1);
+      resetCamera();
 
       cameraPole = new THREE.Object3D();
       scene.add(cameraPole);
@@ -167,8 +176,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
       scene.add(ambientLight);
 
-      const spotLight = new THREE.SpotLight(0xffffff, 0.8);
-      spotLight.angle = Math.PI / 8;
+      const spotLight = new THREE.SpotLight(0xffffff, 0.5);
+      spotLight.angle = Math.PI / 4;
       spotLight.penumbra = 0.1;
 
       spotLight.castShadow = true;
@@ -182,24 +191,17 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       spotLight2.shadow.mapSize.height = 1024;
       scene.add(spotLight2);
 
-      // const spotLightHelper = new THREE.PointLightHelper(spotLight, 0.5);
-      // const spotLightHelper2 = new THREE.PointLightHelper(spotLight, 0.5);
-      // scene.add(spotLightHelper);
-      // scene.add(spotLightHelper2);
-
       /* ---------- Utils ---------- */
       controls = new OrbitControls(camera, renderer.domElement);
       controls.enabled = settings.orbitControls;
       controls.autoRotateSpeed = 0.5;
-      // gridHelper = new THREE.GridHelper(200, 10);
-      // scene.add(gridHelper);
 
       stats = Stats();
       stats.dom.style.display = 'inline-block';
       document.querySelector('#gui_container')!.appendChild(stats.dom);
 
       /* ---------- Geometry ---------- */
-      const skyGeometry = new THREE.SphereGeometry(5000, 300);
+      const skyGeometry = new THREE.IcosahedronGeometry(1000, 100);
       const skyMaterial = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: skyVertexShader,
@@ -210,9 +212,9 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         side: THREE.DoubleSide,
       });
 
-      const sky = new THREE.Mesh(skyGeometry, skyMaterial);
-      sky.position.set(0, 0, -75);
-      sky.rotation.y += Math.PI / 2;
+      sky = new THREE.Mesh(skyGeometry, skyMaterial);
+      sky.position.set(0, 0, -100);
+      sky.rotation.y -= Math.PI / 2;
       scene.add(sky);
       selects.push(sky);
 
@@ -326,17 +328,17 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       rock.position.y += 0.125;
 
       // Add ground reflections
-      let geometry = new THREE.PlaneGeometry(5, 5);
-      groundReflector = new ReflectorForSSRPass(geometry, {
-        clipBias: 0.0003,
-        textureWidth: window.innerWidth,
-        textureHeight: window.innerHeight,
-        color: 0x888888,
-        useDepthTexture: true,
-      });
+      // let geometry = new THREE.PlaneGeometry(5, 5);
+      // groundReflector = new ReflectorForSSRPass(geometry, {
+      //   clipBias: 0.0003,
+      //   textureWidth: window.innerWidth,
+      //   textureHeight: window.innerHeight,
+      //   color: 0x888888,
+      //   useDepthTexture: true,
+      // });
 
-      groundReflector.material.depthWrite = false;
-      groundReflector.rotation.x = -Math.PI / 2;
+      // groundReflector.material.depthWrite = false;
+      // groundReflector.rotation.x = -Math.PI / 2;
       // groundReflector.visible = false;
       // scene.add(groundReflector);
 
@@ -358,11 +360,11 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         composer.setSize(window.innerWidth, window.innerHeight);
-        groundReflector
-          .getRenderTarget()
-          .setSize(window.innerWidth, window.innerHeight);
+        // groundReflector
+        //   .getRenderTarget()
+        //   .setSize(window.innerWidth, window.innerHeight);
         // groundReflector.resolution.set( window.innerWidth, window.innerHeight );
-        // camera.position.set(0, 40, 40);
+        resetCamera();
       });
     }
 
@@ -374,36 +376,31 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       document.getElementById('gui_container')!.append(gui.domElement);
 
-      gui.add(settings, 'groundReflector').onChange(() => {
-        if (settings.groundReflector) {
-          ssrPass.groundReflector = groundReflector;
-          ssrPass.selects = selects;
-        } else {
-          ssrPass.groundReflector = null;
-          ssrPass.selects = null;
-        }
-      });
-
-      gui.add(settings, 'bloomThreshold', 0.0, 1.0).onChange((value) => {
-        bloomPass.threshold = Number(value);
-      });
-
-      gui.add(settings, 'bloomStrength', 0.0, 3.0).onChange((value) => {
-        bloomPass.strength = Number(value);
-      });
-
-      gui
-        .add(settings, 'bloomRadius', 0.0, 1.0)
-        .step(0.01)
-        .onChange((value) => {
-          bloomPass.radius = Number(value);
-        });
+      // gui.add(settings, 'groundReflector').onChange(() => {
+      //   if (settings.groundReflector) {
+      //     ssrPass.groundReflector = groundReflector;
+      //     ssrPass.selects = selects;
+      //   } else {
+      //     ssrPass.groundReflector = null;
+      //     ssrPass.selects = null;
+      //   }
+      // });
 
       gui.add(settings, 'orbitControls').onChange((value) => {
         controls.enabled = value;
         if (!value) {
-          camera.position.set(0, 50, 25);
+          settings.autoRotate = false;
+          gui.updateDisplay();
+          resetCamera();
         }
+      });
+
+      gui.add(settings, 'skyMode').onChange((value) => {
+        // Disable orbit controls
+        controls.enabled = false;
+        settings.orbitControls = false;
+        gui.updateDisplay();
+        resetCamera();
       });
 
       gui.add(settings, 'autoRotate').onChange((value) => {
@@ -414,6 +411,24 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         }
         controls.autoRotate = value;
       });
+
+      const bloomFolder = gui.addFolder('Bloom');
+      bloomFolder
+        .add(settings, 'bloomThreshold', 0.0, 1.0)
+        .onChange((value) => {
+          bloomPass.threshold = Number(value);
+        });
+
+      bloomFolder.add(settings, 'bloomStrength', 0.0, 3.0).onChange((value) => {
+        bloomPass.strength = Number(value);
+      });
+
+      bloomFolder
+        .add(settings, 'bloomRadius', 0.0, 1.0)
+        .step(0.01)
+        .onChange((value) => {
+          bloomPass.radius = Number(value);
+        });
 
       const folder = gui.addFolder('SSR');
       // folder.add(ssrPass, 'fresnel').onChange(() => {
@@ -427,15 +442,15 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       //   groundReflector.distanceAttenuation = ssrPass.distanceAttenuation;
       // });
 
-      groundReflector.maxDistance = ssrPass.maxDistance;
-      folder
-        .add(ssrPass, 'maxDistance')
-        .min(0)
-        .max(50)
-        .step(0.001)
-        .onChange(() => {
-          groundReflector.maxDistance = ssrPass.maxDistance;
-        });
+      // groundReflector.maxDistance = ssrPass.maxDistance;
+      // folder
+      //   .add(ssrPass, 'maxDistance')
+      //   .min(0)
+      //   .max(50)
+      //   .step(0.001)
+      //   .onChange(() => {
+      //     // groundReflector.maxDistance = ssrPass.maxDistance;
+      //   });
 
       folder.add(ssrPass, 'bouncing');
 
@@ -452,14 +467,14 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
           ssrPass.output = parseInt(value);
         });
 
-      groundReflector.opacity = ssrPass.opacity;
-      folder
-        .add(ssrPass, 'opacity')
-        .min(0)
-        .max(1)
-        .onChange(() => {
-          groundReflector.opacity = ssrPass.opacity;
-        });
+      // groundReflector.opacity = ssrPass.opacity;
+      // folder
+      //   .add(ssrPass, 'opacity')
+      //   .min(0)
+      //   .max(1)
+      //   .onChange(() => {
+      //     // groundReflector.opacity = ssrPass.opacity;
+      //   });
       folder.add(ssrPass, 'blur');
       gui.close();
     }
