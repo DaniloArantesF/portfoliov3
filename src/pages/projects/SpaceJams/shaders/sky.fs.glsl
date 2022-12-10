@@ -12,6 +12,7 @@ varying vec3 vNormal;
 uniform float uTest;
 varying float intensity;
 varying float vAmplitude;
+varying float vStarLayerCount;
 
 mat2 Rot(float a) {
   float s = sin(a);
@@ -72,7 +73,7 @@ vec3 Stars(vec2 uv) {
 void main(){
   vec2 uv = (vUV - .5);
   vec3 color = vec3(0.);
-  float NUM_LAYERS = 2.;
+  float NUM_LAYERS = vStarLayerCount;
   uv *= Rot(vTime/50.);
 
   float scale = 1.;

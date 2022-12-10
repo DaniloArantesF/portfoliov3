@@ -85,6 +85,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       bloomStrength: 0.55,
       bloomThreshold: 0.3,
       bloomRadius: 0.6,
+      starLayers: 3,
     };
     let controls: OrbitControls, clock: THREE.Clock, time: number;
     let cameraPole: THREE.Object3D, gridHelper: THREE.GridHelper;
@@ -106,6 +107,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       uTest: { value: 1 },
       uData: { type: `float[128]`, value: player.buffer },
       uScale: { type: 'f', value: settings.texScale },
+      uStarLayerCount: { type: 'f', value: settings.starLayers },
     };
 
     async function init() {
@@ -139,6 +141,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       speaker.rotateY(Math.PI / 2);
       rock.rotateY(-Math.PI / 2);
       rock.position.y += 0.01;
+      rock.scale.x *= 0.75;
+      rock.scale.z *= 0.75;
       selects.push(speaker);
       selects.push(rock);
 
@@ -149,6 +153,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         fragmentShader: bodyFragmentShader,
       });
 
+      body.scale.multiply(new THREE.Vector3(1.01, 1.01, 1.01));
       speaker.castShadow = true;
       speaker.receiveShadow = true;
       scene.add(speaker);
@@ -159,7 +164,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       if (settings.skyMode) {
         camera.position.set(0, 50, 10);
       } else {
-        camera.position.set(0, 3, 1.5);
+        camera.position.set(0, 2, 2.5);
       }
     }
 
@@ -213,7 +218,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       });
 
       sky = new THREE.Mesh(skyGeometry, skyMaterial);
-      sky.position.set(0, 0, -100);
+      sky.position.set(0, 0, -110);
       sky.rotation.y -= Math.PI / 2;
       scene.add(sky);
       selects.push(sky);
@@ -318,29 +323,11 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       rock.material = new THREE.MeshStandardMaterial({
         map: rockColorMap,
         displacementBias: -0.5,
-        displacementMap: rockDisplacementMap,
         normalMap: rockNormalMap,
         roughnessMap: rockRoughnessMap,
         aoMap: rockAoMap,
         // side: THREE.DoubleSide,
       });
-
-      rock.position.y += 0.125;
-
-      // Add ground reflections
-      // let geometry = new THREE.PlaneGeometry(5, 5);
-      // groundReflector = new ReflectorForSSRPass(geometry, {
-      //   clipBias: 0.0003,
-      //   textureWidth: window.innerWidth,
-      //   textureHeight: window.innerHeight,
-      //   color: 0x888888,
-      //   useDepthTexture: true,
-      // });
-
-      // groundReflector.material.depthWrite = false;
-      // groundReflector.rotation.x = -Math.PI / 2;
-      // groundReflector.visible = false;
-      // scene.add(groundReflector);
 
       /* ---------- Events ---------- */
       canvas.addEventListener('mousemove', (event) => {
@@ -376,17 +363,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       document.getElementById('gui_container')!.append(gui.domElement);
 
-      // gui.add(settings, 'groundReflector').onChange(() => {
-      //   if (settings.groundReflector) {
-      //     ssrPass.groundReflector = groundReflector;
-      //     ssrPass.selects = selects;
-      //   } else {
-      //     ssrPass.groundReflector = null;
-      //     ssrPass.selects = null;
-      //   }
-      // });
-
-      gui.add(settings, 'orbitControls').onChange((value) => {
+      const debugFolder = gui.addFolder('debug');
+      debugFolder.add(settings, 'orbitControls').onChange((value) => {
         controls.enabled = value;
         if (!value) {
           settings.autoRotate = false;
@@ -395,21 +373,25 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         }
       });
 
-      gui.add(settings, 'skyMode').onChange((value) => {
-        // Disable orbit controls
-        controls.enabled = false;
-        settings.orbitControls = false;
-        gui.updateDisplay();
-        resetCamera();
-      });
-
-      gui.add(settings, 'autoRotate').onChange((value) => {
+      debugFolder.add(settings, 'autoRotate').onChange((value) => {
         if (value) {
           controls.enabled = true;
           settings.orbitControls = true;
           gui.updateDisplay();
         }
         controls.autoRotate = value;
+      });
+
+      debugFolder.add(settings, 'starLayers').onChange((value) => {
+        uniforms.uStarLayerCount.value = parseInt(value) || 3;
+      });
+
+      gui.add(settings, 'skyMode').onChange((value) => {
+        // Disable orbit controls
+        controls.enabled = false;
+        settings.orbitControls = false;
+        gui.updateDisplay();
+        resetCamera();
       });
 
       const bloomFolder = gui.addFolder('Bloom');

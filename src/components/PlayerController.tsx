@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import '../styles/player.scss';
 import { clamp } from '../util/math';
 import { msToMinSec } from '../util/time';
@@ -18,6 +18,7 @@ export function PlayerController() {
   const thumbRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef(player.getInstance());
   const [loaded, setLoaded] = useState(false);
+  const [customTrack, setCustomTrack] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -56,17 +57,6 @@ export function PlayerController() {
       setPlaying(false);
     });
 
-    // Handle file upload
-    const fileInput = document.getElementById('fileIn');
-    fileInput?.addEventListener('change', function (event) {
-      const el = event.target as HTMLInputElement;
-      if (el && el.files) {
-        const file = el.files[0];
-        audioEl.src = URL.createObjectURL(file);
-        audioEl.load();
-      }
-    });
-
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
@@ -81,13 +71,21 @@ export function PlayerController() {
     if (!playerRef.current.audioContext) {
       player.initContext();
     }
-
     audioRef.current?.play();
   }
 
   function handlePause() {
     if (!loaded) return;
     audioRef.current?.pause();
+  }
+
+  function handleFile(event: ChangeEvent<HTMLInputElement>) {
+    if (event.target.files?.length) {
+      const file = event.target.files[0];
+      audioRef.current!.src = URL.createObjectURL(file);
+      audioRef.current!.load();
+      setCustomTrack(true);
+    }
   }
 
   // TODO: handle seek when mouse leaves container
@@ -97,6 +95,11 @@ export function PlayerController() {
     const mousePct = clamp((100 * mouseX) / width, 0, 100);
     audioRef.current!.currentTime = (duration * mousePct) / 100;
     setProgress(((duration * mousePct) / 100) * 1000);
+  }
+
+  function ejectFile() {
+    playerRef.current.loadDefaultSong();
+    setCustomTrack(false);
   }
 
   return (
@@ -122,12 +125,16 @@ export function PlayerController() {
             className="file_input"
             onClick={(e) => {
               e.preventDefault();
-              inputRef.current!.click();
+              if (customTrack) {
+                ejectFile();
+              } else {
+                inputRef.current!.click();
+              }
             }}
           >
-            Import
+            {customTrack ? 'Eject' : 'Import'}
           </label>
-          <input ref={inputRef} type="file" id="fileIn" />
+          <input ref={inputRef} onChange={handleFile} type="file" id="fileIn" />
         </div>
 
         {playing ? (

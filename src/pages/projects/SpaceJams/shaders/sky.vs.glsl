@@ -5,6 +5,8 @@ varying float vTime;
 varying float vAmplitude;
 varying float intensity;
 uniform float[128] uData;
+uniform float uStarLayerCount;
+varying float vStarLayerCount;
 
 void main() {
   // Pass uv data to fragment shader
@@ -12,9 +14,10 @@ void main() {
   vNormal = normalize(normalMatrix * normal);
   vAmplitude = 2.;
   vTime = uTime;
+  vStarLayerCount = uStarLayerCount;
+
   float freq = 120. * .6 - vUV.y;
   intensity = sin(uData[int(round(freq))] / 1.) * vAmplitude;
-
   // Update vertex position
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z+vUV.y, 1.0 );
 }
