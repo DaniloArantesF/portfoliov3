@@ -20,11 +20,9 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   import type { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
   import Stats from 'three/examples/jsm/libs/stats.module';
   import * as dat from 'dat.gui';
-  // import Image from './Image';
+  import { curve, range } from '@utils/math';
+  import Gallery from '../../../components/Gallery';
   import Minimap from '../../../components/Minimap';
-  import { curve } from '@utils/math';
-
-  import { damp } from 'three/src/math/MathUtils';
 
   /* ---------------------------------------------- */
   /*                   Constants                    */
@@ -52,6 +50,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     /*                      Scene                     */
     /* ---------------------------------------------- */
     let minimap: THREE.Group;
+    let gallery: THREE.Group;
 
     /* ---------------------------------------------- */
     /*                    Settings                    */
@@ -69,7 +68,14 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       bloomStrength: 0,
       bloomThreshold: 0.3,
       bloomRadius: 0.6,
+      scrollPosition: 0.1,
     };
+
+    // Gallery stuff, REMOVE later
+    let scrollPosition = settings.scrollPosition * 10;
+    let tileWidth = 0.3;
+    let tileGap = 0.05;
+
     let controls: OrbitControls,
       clock: THREE.Clock,
       time: number,
@@ -78,7 +84,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     const fov = 75;
     const aspect = window.innerWidth / window.innerHeight;
     const near = 0.1;
-    const far = 5000;
+    const far = 1000;
     const uniforms = {
       uResolution: {
         value: new THREE.Vector2(window.innerWidth, window.innerHeight),
@@ -89,7 +95,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         value: 0.0,
       },
       uMouse: { value: { x: 0, y: 0 } },
-      uTest: { value: 1 },
     };
 
     async function init() {
@@ -97,7 +102,9 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       renderer = new THREE.WebGLRenderer({
         canvas,
         antialias: true,
+        alpha: true,
       });
+      renderer.setClearAlpha(0);
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -105,7 +112,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       composer = new EffectComposer(renderer);
       clock = new THREE.Clock();
 
-      await loadModels();
       initScene();
       postProcessing();
       initGUI();
@@ -115,8 +121,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     function loadModel(url: string): Promise<GLTF> {
       return new Promise((resolve) => new GLTFLoader().load(url, resolve));
     }
-
-    async function loadModels() {}
 
     function resetCamera() {
       if (settings.skyMode) {
@@ -129,9 +133,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     function initScene() {
       /* --------- Camera --------- */
       camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      const width = 1;
-      const height = 1;
-      // camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
       resetCamera();
 
       /* ---------- Lights ---------- */
@@ -143,25 +144,34 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       controls.enabled = settings.orbitControls;
       controls.autoRotateSpeed = 0.5;
 
+      const gridHelper = new THREE.GridHelper(10, 10);
+      gridHelper.rotateX(Math.PI / 2);
+      scene.add(gridHelper);
+
       stats = Stats();
       stats.dom.style.display = 'inline-block';
       document.querySelector('#gui_container')!.appendChild(stats.dom);
 
       /* ---------- Geometry ---------- */
-      minimap = Minimap({ position: 0, count: 12 });
-      scene.add(minimap);
+      const pictures = [
+        { src: '/assets/projects/benji-demo-1.webp' },
+        { src: '/assets/projects/3d-audio-visualizer-demo-1.webp' },
+        { src: '/assets/projects/stacks-demo-1.webp' },
+        { src: '/assets/projects/benji-demo-1.webp' },
+        { src: '/assets/projects/stacks-demo-1.webp' },
+      ];
 
-      minimap.children.forEach((line, i) => {
-        const y = curve(
-          i / minimap.children.length - 1.5 / minimap.children.length,
-          4 / minimap.children.length,
-        );
-        line.scale.y = damp(line.scale.y, 0.1 + y / 6, 8, 0);
-        console.log({ y, damp: line.scale.y });
+      gallery = Gallery({
+        position: settings.scrollPosition,
+        pictures,
+        uniforms,
+        tileWidth,
+        gap: tileGap,
       });
+      scene.add(gallery);
 
-      // const image1 = Image({ uniforms });
-      // scene.add(image1);
+      minimap = Minimap({ count: pictures.length });
+      scene.add(minimap);
 
       /* ---------- Events ---------- */
       canvas.addEventListener('mousemove', (event) => {
@@ -177,7 +187,10 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
           window.innerWidth,
           window.innerHeight,
         );
-        // camera.aspect = window.innerWidth / window.innerHeight;
+
+        if (camera instanceof THREE.PerspectiveCamera) {
+          camera.aspect = window.innerWidth / window.innerHeight;
+        }
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
         composer.setSize(window.innerWidth, window.innerHeight);
@@ -223,6 +236,8 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         bloomPass.strength = Number(value);
       });
 
+      gui.add(settings, 'scrollPosition').min(0).max(1).step(0.01);
+
       bloomFolder
         .add(settings, 'bloomRadius', 0.0, 1.0)
         .step(0.01)
@@ -259,6 +274,29 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
       // Update uniforms
       uniforms.uTime.value = time;
+
+      // Update gallery
+      scrollPosition =
+        (gallery.children.length - 1) * range(0, 1, 0, settings.scrollPosition);
+
+      gallery.children.forEach((picture, i) => {
+        // assuming all cards have equal width
+        picture.position.x = (i - scrollPosition) * (tileWidth + tileGap);
+      });
+
+      // Update minimap
+      minimap.children.forEach((line, i) => {
+        // Value between 0 and 1
+        // Starting from current position
+        // ranging from 1/4 of total length
+        const y = curve(
+          i / minimap.children.length - 1.5 / minimap.children.length,
+          4 / minimap.children.length,
+          0,
+          settings.scrollPosition,
+        );
+        line.scale.y = Math.max(0.5, y);
+      });
 
       stats.begin();
       composer.render();

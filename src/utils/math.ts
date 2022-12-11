@@ -7,13 +7,22 @@ export function clamp(n: number, min: number, max: number) {
 export const damp = THREE.MathUtils.damp;
 
 // 0-1-0 for a range between from -> from + distance
-export const curve = (from: number, distance: number, margin: number = 0) => {
-  return Math.sin(range(from, distance, margin) * Math.PI);
+export const curve = (
+  from: number,
+  distance: number,
+  margin: number = 0,
+  offset: number,
+) => {
+  return Math.sin(range(from, distance, margin, offset) * Math.PI);
 };
 
 // 0-1 for a range between from -> from + distance
-export const range = (from: number, distance: number, margin: number = 0) => {
-  const offset = 0;
+export const range = (
+  from: number,
+  distance: number,
+  margin: number = 0,
+  offset = 0,
+) => {
   const start = from - margin;
   const end = start + distance + margin * 2;
   return offset < start
