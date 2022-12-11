@@ -1,4 +1,4 @@
-varying vec2 vUV;
+varying vec2 vUv;
 varying vec3 vNormal;
 uniform float uTime;
 varying vec3 vPosition;
@@ -12,13 +12,13 @@ varying vec3 normalizedPosition;
 
 void main() {
   // Pass uv data to fragment shader
-  vUV = uv;
+  vUv = uv;
   vPosition = position;
   vNormal = normalize(normalMatrix * normal);
   vAmplitude = 2.;
   vTime = uTime;
 
-  float freq = 120. *smoothstep(0.2, 0.5, vUV.y);
+  float freq = 120. *smoothstep(0.2, 0.5, vUv.y);
 
   intensity = sin(uData[int(round(freq))] / 1.) * vAmplitude;
 

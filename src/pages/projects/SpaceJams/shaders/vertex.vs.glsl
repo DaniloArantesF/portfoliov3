@@ -1,4 +1,4 @@
-varying vec2 vUV;
+varying vec2 vUv;
 varying vec3 vNormal;
 varying float vAmplitude;
 uniform float uTime;
@@ -15,7 +15,7 @@ uniform float[128] uData;
 
 void main() {
   // Pass uv data to fragment shader
-  vUV = uv;
+  vUv = uv;
   vPosition = position;
   vAmplitude = 15.;
   vNormal = normalize(normalMatrix * normal);

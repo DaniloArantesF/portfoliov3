@@ -7,7 +7,7 @@ precision mediump float;
 
 uniform vec2 uResolution;
 varying float vTime;
-varying vec2 vUV;
+varying vec2 vUv;
 varying vec3 vNormal;
 uniform float uTest;
 varying float intensity;
@@ -71,7 +71,7 @@ vec3 Stars(vec2 uv) {
 }
 
 void main(){
-  vec2 uv = (vUV - .5);
+  vec2 uv = (vUv - .5);
   vec3 color = vec3(0.);
   float NUM_LAYERS = vStarLayerCount;
   uv *= Rot(vTime/50.);

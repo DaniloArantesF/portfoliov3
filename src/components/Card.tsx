@@ -1,14 +1,12 @@
 import {
   BaseSyntheticEvent,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import tagsMap, { Tag } from '../util/tags';
+import tagsMap, { Tag } from '../utils/tags';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import '../styles/card.scss';
 
 export interface Props {
@@ -56,7 +54,6 @@ export default function Card({
   }, []);
 
   function onHover({ currentTarget }: BaseSyntheticEvent) {
-    // gsap.to(currentTarget.querySelectorAll('.tag'), { y: 50, })
     const footerHeight =
       currentTarget.querySelector('.card_footer').clientHeight;
     ctx.add(() => {

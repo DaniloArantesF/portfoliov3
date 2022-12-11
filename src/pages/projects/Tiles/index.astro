@@ -1,0 +1,378 @@
+---
+import StealthLayout from '../../../layouts/StealthLayout.astro';
+---
+
+<StealthLayout title="Tiles">
+  <main id="container">
+    <canvas id="app_view"></canvas>
+    <div id="gui_container"></div>
+  </main>
+</StealthLayout>
+
+<script>
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+  import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
+  import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+  import type { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
+  import Stats from 'three/examples/jsm/libs/stats.module';
+  import * as dat from 'dat.gui';
+  // import Image from './Image';
+  import Minimap from '../../../components/Minimap';
+  import { curve } from '@utils/math';
+
+  import { damp } from 'three/src/math/MathUtils';
+
+  /* ---------------------------------------------- */
+  /*                   Constants                    */
+  /* ---------------------------------------------- */
+
+  const App = () => {
+    /* ---------------------------------------------- */
+    /*                    Graphics                    */
+    /* ---------------------------------------------- */
+    const canvas = document.querySelector('#app_view') as HTMLCanvasElement;
+    let camera: THREE.OrthographicCamera | THREE.PerspectiveCamera,
+      scene: THREE.Scene,
+      renderer: THREE.WebGLRenderer,
+      composer: EffectComposer,
+      renderScene: RenderPass;
+    let bloomPass: UnrealBloomPass,
+      ssrPass: SSRPass,
+      groundReflector: ReflectorForSSRPass;
+
+    /* ---------------------------------------------- */
+    /*                      Audio                     */
+    /* ---------------------------------------------- */
+
+    /* ---------------------------------------------- */
+    /*                      Scene                     */
+    /* ---------------------------------------------- */
+    let minimap: THREE.Group;
+
+    /* ---------------------------------------------- */
+    /*                    Settings                    */
+    /* ---------------------------------------------- */
+    let gui: dat.GUI;
+
+    const settings = {
+      texScale: 123,
+      exposure: 1,
+      enableSSR: true,
+      skyMode: false,
+      orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
+      autoRotate: false,
+      groundReflector: true,
+      bloomStrength: 0,
+      bloomThreshold: 0.3,
+      bloomRadius: 0.6,
+    };
+    let controls: OrbitControls,
+      clock: THREE.Clock,
+      time: number,
+      delta: number;
+    let stats: Stats;
+    const fov = 75;
+    const aspect = window.innerWidth / window.innerHeight;
+    const near = 0.1;
+    const far = 5000;
+    const uniforms = {
+      uResolution: {
+        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+        type: 'v2',
+      },
+      uTime: {
+        type: 'f',
+        value: 0.0,
+      },
+      uMouse: { value: { x: 0, y: 0 } },
+      uTest: { value: 1 },
+    };
+
+    async function init() {
+      scene = new THREE.Scene();
+      renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+      composer = new EffectComposer(renderer);
+      clock = new THREE.Clock();
+
+      await loadModels();
+      initScene();
+      postProcessing();
+      initGUI();
+      render();
+    }
+
+    function loadModel(url: string): Promise<GLTF> {
+      return new Promise((resolve) => new GLTFLoader().load(url, resolve));
+    }
+
+    async function loadModels() {}
+
+    function resetCamera() {
+      if (settings.skyMode) {
+        camera.position.set(0, 50, 10);
+      } else {
+        camera.position.set(0, 0, 1);
+      }
+    }
+
+    function initScene() {
+      /* --------- Camera --------- */
+      camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+      const width = 1;
+      const height = 1;
+      // camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+      resetCamera();
+
+      /* ---------- Lights ---------- */
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(ambientLight);
+
+      /* ---------- Utils ---------- */
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enabled = settings.orbitControls;
+      controls.autoRotateSpeed = 0.5;
+
+      stats = Stats();
+      stats.dom.style.display = 'inline-block';
+      document.querySelector('#gui_container')!.appendChild(stats.dom);
+
+      /* ---------- Geometry ---------- */
+      minimap = Minimap({ position: 0, count: 12 });
+      scene.add(minimap);
+
+      minimap.children.forEach((line, i) => {
+        const y = curve(
+          i / minimap.children.length - 1.5 / minimap.children.length,
+          4 / minimap.children.length,
+        );
+        line.scale.y = damp(line.scale.y, 0.1 + y / 6, 8, 0);
+        console.log({ y, damp: line.scale.y });
+      });
+
+      // const image1 = Image({ uniforms });
+      // scene.add(image1);
+
+      /* ---------- Events ---------- */
+      canvas.addEventListener('mousemove', (event) => {
+        uniforms.uMouse.value.x =
+          (event.clientX - window.innerWidth / 2) * 0.01;
+        uniforms.uMouse.value.y =
+          (event.clientY - window.innerHeight / 2) * 0.01;
+      });
+
+      // TODO: debounce resize handler
+      window.addEventListener('resize', () => {
+        uniforms.uResolution.value = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+        // camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+        resetCamera();
+      });
+    }
+
+    function initGUI() {
+      gui = new dat.GUI({ autoPlace: false });
+      gui.width = 300;
+      gui.domElement.id = 'gui';
+      gui.domElement.style.display = 'inline-block';
+
+      document.getElementById('gui_container')!.append(gui.domElement);
+
+      const debugFolder = gui.addFolder('debug');
+      debugFolder.add(settings, 'orbitControls').onChange((value) => {
+        controls.enabled = value;
+        if (!value) {
+          settings.autoRotate = false;
+          gui.updateDisplay();
+          resetCamera();
+        }
+      });
+
+      debugFolder.add(settings, 'autoRotate').onChange((value) => {
+        if (value) {
+          controls.enabled = true;
+          settings.orbitControls = true;
+          gui.updateDisplay();
+        }
+        controls.autoRotate = value;
+      });
+
+      const bloomFolder = gui.addFolder('Bloom');
+      bloomFolder
+        .add(settings, 'bloomThreshold', 0.0, 1.0)
+        .onChange((value) => {
+          bloomPass.threshold = Number(value);
+        });
+
+      bloomFolder.add(settings, 'bloomStrength', 0.0, 3.0).onChange((value) => {
+        bloomPass.strength = Number(value);
+      });
+
+      bloomFolder
+        .add(settings, 'bloomRadius', 0.0, 1.0)
+        .step(0.01)
+        .onChange((value) => {
+          bloomPass.radius = Number(value);
+        });
+
+      const folder = gui.addFolder('SSR');
+
+      folder.add(ssrPass, 'thickness').min(0).max(0.1).step(0.0001);
+      folder.add(ssrPass, 'bouncing');
+
+      folder
+        .add(ssrPass, 'output', {
+          Default: SSRPass.OUTPUT.Default,
+          'SSR Only': SSRPass.OUTPUT.SSR,
+          Beauty: SSRPass.OUTPUT.Beauty,
+          Depth: SSRPass.OUTPUT.Depth,
+          Normal: SSRPass.OUTPUT.Normal,
+          Metalness: SSRPass.OUTPUT.Metalness,
+        })
+        .onChange(function (value) {
+          ssrPass.output = parseInt(value);
+        });
+
+      folder.add(ssrPass, 'blur');
+      gui.close();
+    }
+
+    function render() {
+      requestAnimationFrame(render);
+      time = clock.getElapsedTime();
+      delta = clock.getDelta();
+
+      // Update uniforms
+      uniforms.uTime.value = time;
+
+      stats.begin();
+      composer.render();
+      stats.end();
+    }
+
+    function postProcessing() {
+      renderScene = new RenderPass(scene, camera);
+      bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        settings.bloomStrength,
+        settings.bloomRadius,
+        settings.bloomThreshold,
+      );
+
+      ssrPass = new SSRPass({
+        renderer,
+        scene,
+        camera,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        groundReflector: settings.groundReflector ? groundReflector : null,
+        selects: null,
+      });
+      ssrPass.thickness = 0.018;
+      ssrPass.maxDistance = 0.1;
+      ssrPass.output = SSRPass.OUTPUT.Beauty;
+      ssrPass.opacity = 0.9;
+
+      composer.addPass(renderScene);
+      composer.addPass(ssrPass);
+      composer.addPass(bloomPass);
+    }
+
+    init();
+  };
+
+  App();
+</script>
+
+<style is:global>
+  html {
+    height: 100vh;
+    overflow: hidden;
+  }
+</style>
+
+<style>
+  body {
+    width: 100%;
+    height: 100vh;
+    background: var(--color-background);
+    overflow: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #app_view {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  #gui_container {
+    position: absolute;
+    top: var(--header-height);
+    left: 2rem;
+  }
+
+  #gui {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  #player_container {
+    display: inline-flex;
+    flex-direction: column;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    row-gap: 1rem;
+  }
+
+  #play_btn {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    bottom: 3px;
+    left: calc(50% - 125px);
+    transform: translateX(-50%);
+    background: transparent;
+    border: none;
+    z-index: 99;
+    cursor: pointer;
+  }
+
+  .controls {
+    position: relative;
+    z-index: 99;
+    display: flex;
+    flex-direction: column;
+    row-gap: 2rem;
+    transform: scale(0.9);
+  }
+</style>

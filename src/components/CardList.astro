@@ -28,18 +28,6 @@ const { viewAll, name } = Astro.props;
   </div>
 </section>
 
-<!-- <style is:global>
-  @media only screen and (min-width: 600px) {
-    .cards-container .card {
-      height: 500px;
-    }
-    .cards-container .card:nth-child(1),
-    .cards-container .card:nth-child(2) {
-      grid-column: span 2;
-    }
-  }
-</style> -->
-
 <style lang="scss">
   section {
     padding-top: 2rem;
@@ -54,7 +42,6 @@ const { viewAll, name } = Astro.props;
   .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    grid-template-rows: repeat(auto-fit, fit-content);
     row-gap: 2rem;
     column-gap: 3rem;
     justify-content: center;
@@ -84,9 +71,4 @@ const { viewAll, name } = Astro.props;
       max-width: 150px;
     }
   }
-  /* @media only screen and (min-width: 600px) {
-    section > .cards-container {
-      grid-template-columns: repeat(auto-fit, minmax(calc(100% / var(--columns) - var(--columns) * 2rem), 1fr));
-    }
-  } */
 </style>

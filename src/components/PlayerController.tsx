@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import '../styles/player.scss';
-import { clamp } from '../util/math';
-import { msToMinSec } from '../util/time';
+import { clamp } from '../utils/math';
+import { msToMinSec } from '../utils/time';
 import player from './Player';
 
 // frequency player controller will update progress

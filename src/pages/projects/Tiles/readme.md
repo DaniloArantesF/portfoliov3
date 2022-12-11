@@ -1,5 +1,5 @@
 ---
-title: SpaceJams
+title: Tiles
 subtitle: ThreeJS
 description:
 picture: projects/project-desktop-sample.webp

@@ -6,7 +6,7 @@ precision mediump float;
 
 uniform vec2 uResolution;
 uniform float uTime;
-varying vec2 vUV;
+varying vec2 vUv;
 varying vec3 vNormal;
 uniform float uTest;
 
@@ -21,8 +21,8 @@ void main(){
   // float pct = smoothstep(0.55, 0.5, distance(st, vec2(0.5)));
 
   // vec3 color = vec3(st + (sin(uTime)+1.)/2., 0.);
-  // vec3 color = vec3(sin(3.1*vUV) - (sin(uTime)+1.)/2., 0.);
-  vec3 color = vec3(sin(3.1*vUV.x), vUV.y, 0.);
+  // vec3 color = vec3(sin(3.1*vUv) - (sin(uTime)+1.)/2., 0.);
+  vec3 color = vec3(sin(3.1*vUv.x), vUv.y, 0.);
 
   gl_FragColor = vec4(vec3(uTest),1.);
 }

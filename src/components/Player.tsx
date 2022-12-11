@@ -1,3 +1,4 @@
+// TODO: don't do anything if audio is not present
 class Player {
   private static player: Player;
   audioContext: AudioContext | null;

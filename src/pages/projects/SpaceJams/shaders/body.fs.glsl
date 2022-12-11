@@ -6,7 +6,7 @@ precision mediump float;
 
 uniform vec2 uResolution;
 uniform float uScale;
-varying vec2 vUV;
+varying vec2 vUv;
 varying vec3 vNormal;
 uniform float uTest;
 varying vec3 vPosition;
@@ -98,7 +98,7 @@ vec4 cells(vec2 id, float t, float noiseSpeed, float noiseScale, float maxShades
 }
 
 void main(){
-  vec2 uv = vUV;
+  vec2 uv = vUv;
   vec4 color = vec4(1.);
 
   vec2 cellCount = vec2(51., 51.);
