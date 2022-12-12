@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import imageFragmentShader from '../pages/projects/Tiles/shaders/image.fs.glsl?raw';
-import imageVertexShader from '../pages/projects/Tiles/shaders/image.vs.glsl?raw';
+import imageFragmentShader from '../../pages/projects/Tiles/shaders/image.fs.glsl?raw';
+import imageVertexShader from '../../pages/projects/Tiles/shaders/image.vs.glsl?raw';
 
 type ImageProps = Partial<Omit<THREE.Mesh, 'scale'>> & {
   scale?: THREE.Vector3;
