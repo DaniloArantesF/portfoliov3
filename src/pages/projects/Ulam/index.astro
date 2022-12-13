@@ -22,14 +22,14 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   const { scene, renderer, camera, uniforms } = state;
 
   // [x, y]
-  const gridSize = [31, 31];
+  const gridSize = [100, 100];
 
   // Return a m x n list of booleans indicating whether a cell is prime
-  function UlamSpiral(size: number[]) {
-    // let start = Date.now();
+  function UlamSpiral(size: number[]): Array<Array<number>> {
+    let start = Date.now();
     const spiral = new Array(size[1])
       .fill(0)
-      .map(() => new Array(size[0]).fill(0));
+      .map(() => new Array<number>(size[0]).fill(0));
 
     let directions = [
       [0, 1],
@@ -50,7 +50,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     while (inRange(0, size[0], x) && inRange(0, size[1], y)) {
       while (curDistance < curPathLength) {
         // Write current number
-        spiral[y][x] = isPrime(curNumber);
+        spiral[y][x] = Number(isPrime(curNumber));
         curNumber++;
         curDistance++;
 
@@ -72,31 +72,33 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       curDistance = 0;
     }
 
-    // const end = Date.now();
+    const end = Date.now();
     // console.log({ delta: `${(end - start)}` })
     return spiral;
   }
 
-  // Calculate number spiral
-  const numberSpiral = UlamSpiral(gridSize).flat();
-
   /* ---------- Geometry ---------- */
   const geometry = new THREE.PlaneGeometry(1, 1, ...gridSize);
+
+  const pointCount = geometry.attributes.position.array.length / 3;
+  const spiralSize = Math.ceil(Math.sqrt(pointCount));
+
+  // Calculate number spiral
+  const numberSpiral = UlamSpiral([spiralSize, spiralSize]).flat();
+  const typed = new Float32Array(numberSpiral);
+  const spiralBuffer = new THREE.BufferAttribute(typed, 1);
+  geometry.setAttribute('isPrime', spiralBuffer);
+
   const material = new THREE.ShaderMaterial({
     uniforms: {
       ...uniforms,
-      gridSize: {
-        value: gridSize,
-      },
-      numbers: {
-        value: numberSpiral,
-      },
     },
     vertexShader: basicVertexShader,
     fragmentShader: basicFragmentShader,
+    transparent: true,
   });
 
-  const points = new THREE.Mesh(geometry, material);
+  const points = new THREE.Points(geometry, material);
   scene.add(points);
 
   function animationLoop(state: BaseSceneState) {}
