@@ -13,5 +13,5 @@ uniform float uTest;
 
 void main(){
   vec2 st = gl_FragCoord.xy/uResolution;
-  gl_FragColor = vec4(vec3(sin(uTest * uTime)/2. + .5),1.);
+  gl_FragColor = vec4(vec3(uTest),1.);
 }

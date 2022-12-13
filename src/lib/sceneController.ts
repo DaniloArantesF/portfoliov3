@@ -4,11 +4,48 @@ import Stats from 'three/examples/jsm/libs/stats.module';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 
+type useFrame = (state: BaseSceneState) => void;
+
 interface BaseSceneProps {
   canvas: HTMLCanvasElement;
+  onReady?: () => void;
 }
 
-interface BaseSceneState {}
+type UniformValue =
+  | {
+      type?: 'f';
+      value: number;
+    }
+  | {
+      type?: 'v2';
+      value: THREE.Vector2 | { x: number; y: number };
+    }
+  | {
+      type?: 'v3';
+      value: THREE.Vector3 | { x: number; y: number; z: number };
+    };
+
+interface Uniforms {
+  uTime: { type?: 'f'; value: number };
+  uResolution: { type?: 'v2'; value: THREE.Vector2 };
+  uMouse: { type?: 'v2'; value: { x: number; y: number } };
+  [key: string]: UniformValue;
+}
+
+export interface BaseSceneState {
+  ready: boolean;
+  scene: THREE.Scene;
+  renderer: THREE.WebGLRenderer;
+  composer: EffectComposer;
+  renderScene: RenderPass;
+  clock: THREE.Clock;
+  time: number;
+  delta: number;
+  camera: THREE.OrthographicCamera | THREE.PerspectiveCamera;
+  orbitControls: OrbitControls;
+  stats: Stats;
+  uniforms: Uniforms;
+}
 
 const defaultSceneParams = {
   cameraPosition: [0, 0, 1],
@@ -18,7 +55,6 @@ const defaultSceneParams = {
   fov: 75,
 };
 
-// TODO: Add raycaster and abstract mouse controller fn
 // TODO: Allow base functions to be overwritten or hooked into
 // TODO: Support custom canvas events
 
@@ -32,18 +68,19 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
   let orbitControls: OrbitControls;
   let stats: Stats;
 
+  // Render loop subscribers
+  const subscribers: useFrame[] = [];
+
   const settings = {
     orbitControls: false,
   };
 
-  const uniforms = {
+  const uniforms: Uniforms = {
     uResolution: {
       value: new THREE.Vector2(window.innerWidth, window.innerHeight),
-      type: 'v2',
     },
     uTime: {
-      type: 'f',
-      value: 0.0,
+      value: 0,
     },
     uMouse: { value: { x: 0, y: 0 } },
   };
@@ -76,11 +113,7 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     initGUI();
     render();
 
-    return { scene, renderer, camera, uniforms, settings, getSceneUtils };
-  }
-
-  function getSceneUtils() {
-    return { orbitControls };
+    return { state: getSceneState(), ...getSceneHooks() };
   }
 
   function initScene() {
@@ -150,9 +183,11 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     // Update uniforms
     uniforms.uTime.value = time;
 
-    // TODO: Execute render callbacks e.g. useFrame
-    // this callback will receive the current state
-    // and the delta from the last frame
+    // Execute render callbacks i.e. useFrame
+    const state = getSceneState();
+    for (let i = 0; i < subscribers.length; i++) {
+      subscribers[i](state);
+    }
 
     stats.begin();
     composer.render();
@@ -166,6 +201,35 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
 
   // TODO
   function cleanup() {}
+
+  function registerAnimationCallback(cb: useFrame) {
+    subscribers.push(cb);
+  }
+
+  function unregisterAnimationCallback(cb: useFrame) {
+    subscribers.splice(subscribers.indexOf(cb), 1);
+  }
+
+  function getSceneState(): BaseSceneState {
+    return {
+      ready: false,
+      scene,
+      renderer,
+      composer,
+      renderScene,
+      clock,
+      time,
+      delta,
+      camera,
+      orbitControls,
+      stats,
+      uniforms,
+    };
+  }
+
+  function getSceneHooks() {
+    return { registerAnimationCallback, unregisterAnimationCallback };
+  }
 
   return init();
 };

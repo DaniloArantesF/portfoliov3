@@ -1,10 +1,6 @@
-import * as THREE from 'three';
-
 export function clamp(n: number, min: number, max: number) {
   return n <= min ? min : n >= max ? max : n;
 }
-
-export const damp = THREE.MathUtils.damp;
 
 // 0-1-0 for a range between from -> from + distance
 export const curve = (
@@ -30,4 +26,16 @@ export const range = (
     : offset > end
     ? 1
     : (offset - start) / (end - start);
+};
+
+export const inRange = (s: number, e: number, n: number) => n >= s && n < e;
+
+// basic brute force prime test
+export const isPrime = (n: number) => {
+  for (let i = 2, s = Math.sqrt(n); i <= s; i++) {
+    if (n % i === 0) {
+      return false;
+    }
+  }
+  return n > 1;
 };
