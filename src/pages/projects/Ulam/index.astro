@@ -1,0 +1,143 @@
+---
+import StealthLayout from '../../../layouts/StealthLayout.astro';
+---
+
+<StealthLayout title="Template">
+  <main>
+    <canvas id="app_view"></canvas>
+    <div id="gui_container"></div>
+  </main>
+</StealthLayout>
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { BaseSceneState } from '@lib/sceneController';
+  import basicVertexShader from './shaders/vertex.vs.glsl?raw';
+  import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
+  import { inRange, isPrime } from '@utils/math';
+
+  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const { state, registerAnimationCallback, unregisterAnimationCallback } =
+    BaseScene({ canvas });
+  const { scene, renderer, camera, uniforms } = state;
+
+  // [x, y]
+  const gridSize = [31, 31];
+
+  // Return a m x n list of booleans indicating whether a cell is prime
+  function UlamSpiral(size: number[]) {
+    // let start = Date.now();
+    const spiral = new Array(size[1])
+      .fill(0)
+      .map(() => new Array(size[0]).fill(0));
+
+    let directions = [
+      [0, 1],
+      [1, 0],
+      [0, -1],
+      [-1, 0],
+    ];
+    let direction = 1;
+
+    let x = ~~((size[0] - 1) / 2),
+      y = ~~((size[1] - 1) / 2);
+
+    let curPathLength = 1; // number of steps in current path
+    let curDistance = 0; // number of steps traveled so far
+    let turns = 2; // turn counter to update path length
+    let curNumber = 1; // number to be written
+
+    while (inRange(0, size[0], x) && inRange(0, size[1], y)) {
+      while (curDistance < curPathLength) {
+        // Write current number
+        spiral[y][x] = isPrime(curNumber);
+        curNumber++;
+        curDistance++;
+
+        // Update coords
+        (y += directions[direction][1]), (x += directions[direction][0]);
+      }
+
+      // Cycle to next direction
+      direction = (direction + 1) % 4;
+
+      // Every other turn the current path length goes up by one
+      turns--;
+      if (turns === 0) {
+        curPathLength++;
+        turns = 2;
+      }
+
+      // Reset distance
+      curDistance = 0;
+    }
+
+    // const end = Date.now();
+    // console.log({ delta: `${(end - start)}` })
+    return spiral;
+  }
+
+  // Calculate number spiral
+  const numberSpiral = UlamSpiral(gridSize).flat();
+
+  /* ---------- Geometry ---------- */
+  const geometry = new THREE.PlaneGeometry(1, 1, ...gridSize);
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      ...uniforms,
+      gridSize: {
+        value: gridSize,
+      },
+      numbers: {
+        value: numberSpiral,
+      },
+    },
+    vertexShader: basicVertexShader,
+    fragmentShader: basicFragmentShader,
+  });
+
+  const points = new THREE.Mesh(geometry, material);
+  scene.add(points);
+
+  function animationLoop(state: BaseSceneState) {}
+
+  // registerAnimationCallback(animationLoop);
+</script>
+
+<style is:global>
+  html {
+    height: 100vh;
+    overflow: hidden;
+  }
+</style>
+
+<style>
+  body {
+    width: 100%;
+    height: 100vh;
+    background: var(--color-background);
+    overflow: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  #app_view {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #gui_container {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #gui {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+</style>
