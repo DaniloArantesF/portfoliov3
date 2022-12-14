@@ -56,23 +56,58 @@ const getLinkClasses = (path: string) => {
 
 <script>
   import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { Observer } from 'gsap/Observer';
+  import { layout } from '@lib/store/layout';
+
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(Observer);
+
+  ScrollTrigger.defaults({
+    scrub: 3,
+  });
+
+  gsap.defaults({
+    ease: 'power2',
+  });
+
+  // Hide navbar on scroll
+  // Display it when user scrolls up
+  Observer.create({
+    type: 'scroll',
+    onDown: (event) => {
+      if (layout.get().isNavVisible) {
+        gsap.fromTo(
+          'header',
+          { position: 'fixed', top: 0 },
+          { position: 'fixed', top: -100 },
+        );
+        layout.setKey('isNavVisible', false);
+      }
+      gsap.to('header', { position: 'relative', top: 0, delay: 0.1 });
+    },
+    onUp: () => {
+      if (!layout.get().isNavVisible) {
+        gsap.from('header', { position: 'fixed', top: -100 });
+        layout.setKey('isNavVisible', true);
+      }
+      gsap.to('header', { position: 'fixed', top: 0 });
+    },
+    tolerance: Math.min(300, window.innerHeight / 3),
+  });
 
   // Mobile Menu Button
-  const mobileNav = document.getElementById('mobile_nav')!;
   const mobileNavButton = document.getElementById('mobile_nav_button');
   const root = document.querySelector('html')!;
   const { width: iconWidth, height: iconHeight } = document
     .querySelector('#mobile_nav_button')!
     .getBoundingClientRect();
-  const animationDuration = 0.1;
-  gsap.defaults({ ease: 'power2.out', duration: 0.25 });
-  let isOpen = false;
 
   // Toggle Mobile Nav Menu
   if (mobileNavButton) {
     mobileNavButton.addEventListener('click', (event) => {
       event.preventDefault();
-      if (isOpen) {
+      if (layout.get().isNavOpen) {
         closeMenu();
       } else {
         openMenu();
@@ -114,7 +149,7 @@ const getLinkClasses = (path: string) => {
       duration: 0.1,
     });
 
-    isOpen = true;
+    layout.setKey('isNavOpen', true);
   }
 
   function closeMenu() {
@@ -152,7 +187,7 @@ const getLinkClasses = (path: string) => {
       background: 'transparent ',
       duration: 0.1,
     });
-    isOpen = false;
+    layout.setKey('isNavOpen', false);
   }
 </script>
 
@@ -162,8 +197,8 @@ const getLinkClasses = (path: string) => {
   }
 
   .header-container {
+    height: var(--header-height);
     width: 100%;
-    background: var(--color-surface-0);
     margin-bottom: var(--main-margin-y);
   }
 
@@ -177,6 +212,7 @@ const getLinkClasses = (path: string) => {
 
   header {
     display: flex;
+    width: 100vw;
     height: var(--header-height);
     position: relative;
     padding: var(--padding-y) var(--padding-x);
@@ -188,6 +224,11 @@ const getLinkClasses = (path: string) => {
     user-select: none;
     z-index: 999;
     box-shadow: var(--box-shadow);
+    background: var(--color-surface-0);
+  }
+
+  .header-container.stealth header {
+    background: transparent;
   }
 
   header > * {
