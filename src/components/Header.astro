@@ -17,40 +17,43 @@ const getLinkClasses = (path: string) => {
 
 <div class={`header-container ${stealth && 'stealth'}`}>
   <header>
-    <a role="navigation" aria-label="Home" class="logo" href="/"
-      ><Icon icon="logo" color="ff0000" width={'2.75rem'} />
-    </a>
-    <nav role="navigation">
-      <div class="navlinks">
-        <a aria-label="Home" role="navigation" href="/">Home</a>
-        <a aria-label="Projects" role="navigation" href="/projects">Portfolio</a
-        >
-        <a aria-label="Contact" role="navigation" href="/contact">Contact</a>
-      </div>
-      <button aria-label="mobile-navigation" id="mobile_nav_button"
-        ><Icon icon="menu" color="#5D5FEF" width="2rem" />
-      </button>
-      <div id="mobile_nav">
-        <a
-          aria-label="Home"
-          role="navigation"
-          href="/"
-          class={getLinkClasses('/')}>Home</a
-        >
-        <a
-          aria-label="Projects"
-          role="navigation"
-          href="/projects"
-          class={getLinkClasses('/projects')}>Projects</a
-        >
-        <a
-          aria-label="Contact"
-          role="navigation"
-          href="/contact"
-          class={getLinkClasses('/contact')}>Contact</a
-        >
-      </div>
-    </nav>
+    <div class="nav-container">
+      <a role="navigation" aria-label="Home" class="logo" href="/"
+        ><Icon icon="logo" color="ff0000" width={'2.75rem'} />
+      </a>
+      <nav role="navigation">
+        <div class="navlinks">
+          <a aria-label="Home" role="navigation" href="/">Home</a>
+          <a aria-label="Projects" role="navigation" href="/projects"
+            >Portfolio</a
+          >
+          <a aria-label="Contact" role="navigation" href="/contact">Contact</a>
+        </div>
+        <button aria-label="mobile-navigation" id="mobile_nav_button"
+          ><Icon icon="menu" color="#5D5FEF" width="2rem" />
+        </button>
+        <div id="mobile_nav">
+          <a
+            aria-label="Home"
+            role="navigation"
+            href="/"
+            class={getLinkClasses('/')}>Home</a
+          >
+          <a
+            aria-label="Projects"
+            role="navigation"
+            href="/projects"
+            class={getLinkClasses('/projects')}>Projects</a
+          >
+          <a
+            aria-label="Contact"
+            role="navigation"
+            href="/contact"
+            class={getLinkClasses('/contact')}>Contact</a
+          >
+        </div>
+      </nav>
+    </div>
   </header>
 </div>
 
@@ -73,6 +76,7 @@ const getLinkClasses = (path: string) => {
 
   // Hide navbar on scroll
   // Display it when user scrolls up
+  const tolerance = Math.min(300, window.innerHeight / 3);
   Observer.create({
     type: 'scroll',
     onDown: (event) => {
@@ -84,16 +88,22 @@ const getLinkClasses = (path: string) => {
         );
         layout.setKey('isNavVisible', false);
       }
-      gsap.to('header', { position: 'relative', top: 0, delay: 0.1 });
+      gsap.to('header', { position: 'relative', delay: 0.1 });
     },
-    onUp: () => {
-      if (!layout.get().isNavVisible) {
-        gsap.from('header', { position: 'fixed', top: -100 });
-        layout.setKey('isNavVisible', true);
+    onUp: (event) => {
+      // Snap back in place
+      if (event.scrollY() < 150) {
+        gsap.to('header', { position: 'relative' });
+        layout.setKey('isNavVisible', false);
+      } else {
+        if (!layout.get().isNavVisible) {
+          gsap.from('header', { position: 'fixed', top: -100, left: 0 });
+          layout.setKey('isNavVisible', true);
+        }
+        gsap.to('header', { position: 'fixed', top: 0, left: 0 });
       }
-      gsap.to('header', { position: 'fixed', top: 0 });
     },
-    tolerance: Math.min(300, window.innerHeight / 3),
+    tolerance,
   });
 
   // Mobile Menu Button
@@ -200,6 +210,7 @@ const getLinkClasses = (path: string) => {
     height: var(--header-height);
     width: 100%;
     margin-bottom: var(--main-margin-y);
+    background: var(--color-surface-0);
   }
 
   .header-container.stealth {
@@ -208,6 +219,16 @@ const getLinkClasses = (path: string) => {
     left: 0;
     margin-bottom: 0;
     background: transparent;
+  }
+
+  .nav-container {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: var(--content-max-width);
+    width: 100%;
+    margin: 0 auto;
+    height: 100%;
   }
 
   header {
@@ -219,7 +240,6 @@ const getLinkClasses = (path: string) => {
     justify-content: space-between;
     align-items: center;
     font-size: var(--text-md);
-    max-width: var(--content-max-width);
     margin: 0 auto;
     user-select: none;
     z-index: 999;
@@ -231,10 +251,10 @@ const getLinkClasses = (path: string) => {
     background: transparent;
   }
 
-  header > * {
+  /* header > div > * {
     display: flex;
     align-items: center;
-  }
+  } */
 
   .stealth header {
     box-shadow: none;
