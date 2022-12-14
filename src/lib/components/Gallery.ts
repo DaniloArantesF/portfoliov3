@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import Image from './Image';
+import Minimap from './Minimap';
 
 interface GalleryProps {
   pictures: { src: string }[];
@@ -32,7 +33,8 @@ const Gallery = ({
     );
   }
 
-  return galleryGroup;
+  const minimap = Minimap({ count: pictures.length });
+  return { gallery: galleryGroup, minimap };
 };
 
 export default Gallery;

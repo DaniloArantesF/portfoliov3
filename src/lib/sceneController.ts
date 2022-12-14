@@ -166,6 +166,8 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       clearTimeout(resizeEvent);
       resizeEvent = setTimeout(resizeHandler, 100);
     });
+
+    // window.addEventListener('wheel', (ev) => console.log(ev))
   }
 
   function resetCamera() {
