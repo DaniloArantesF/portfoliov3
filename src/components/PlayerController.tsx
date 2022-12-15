@@ -104,7 +104,7 @@ export function PlayerController() {
 
   return (
     <div id="player-container">
-      <div id="plauer-status">
+      <div id="player-status">
         <span>{msToMinSec(progress)}</span>
         <div
           id="progress-bar"

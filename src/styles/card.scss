@@ -33,12 +33,13 @@
 .picture {
   width: 100%;
   overflow: hidden;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
   aspect-ratio: 4/3;
   overflow: hidden;
+  background: black;
 }
 
 .card img,

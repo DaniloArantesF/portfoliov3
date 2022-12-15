@@ -8,8 +8,8 @@ import { Pane } from 'tweakpane';
 
 type useFrame = (state: BaseSceneState) => void;
 
-const isReady = atom(false);
-const loadingProgress = atom(0);
+export const isReady = atom(false);
+export const loadingProgress = atom(-1);
 
 interface BaseSceneProps {
   canvas: HTMLCanvasElement;
@@ -71,13 +71,13 @@ const settings = {
   gridHelper: false,
 };
 
-const loadingIndicator = document.getElementById('loading-indicator');
-
 // TODO: Allow all base functions to be overwritten or hooked into
 // TODO: Support custom canvas events
 // TODO: allow base settings overwrite(props & dynamic?)
 // TODO: don't start rendering until scene is explicitly set to ready
 const BaseScene = ({ canvas }: BaseSceneProps) => {
+  if (!canvas) throw new Error('Canvas is undefined!');
+
   let scene: THREE.Scene,
     renderer: THREE.WebGLRenderer,
     composer: EffectComposer,
@@ -185,17 +185,13 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     });
 
     // Loading events
-    THREE.DefaultLoadingManager.onLoad = function () {
-      console.log('Loading Complete!');
-    };
-
     // TODO: maybe debounce this?
     THREE.DefaultLoadingManager.onProgress = function (
       url,
       itemsLoaded,
       itemsTotal,
     ) {
-      // loadingIndicator!.innerText = `${~~((itemsLoaded / itemsTotal) * 100)}%`;
+      loadingProgress.set(~~((itemsLoaded / itemsTotal) * 100));
     };
 
     // THREE.DefaultLoadingManager.onError = function (url) {
@@ -218,9 +214,9 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       title: 'Settings',
       container: document.getElementById('gui_container')!,
     });
-
+    gui.expanded = false;
     const debugFolder = gui.addFolder({ title: 'Debug' });
-    debugFolder.expanded = true;
+    // debugFolder.expanded = true;
     debugFolder.addInput(settings, 'orbitControls').on('change', () => {
       orbitControls.enabled = settings.orbitControls;
       if (!settings.orbitControls) {

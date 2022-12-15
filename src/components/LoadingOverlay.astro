@@ -1,0 +1,104 @@
+---
+---
+
+<div id="loading_overlay">
+  <div class="loading_container">
+    <div id="loading_bar">
+      <span class="track"></span>
+      <span class="thumb"></span>
+    </div>
+    <span id="progress_label">0%</span>
+  </div>
+</div>
+
+<script>
+  import gsap from 'gsap';
+  import { loadingProgress, isReady } from '@lib/sceneController';
+
+  const thumb = document.querySelector(
+    '#loading_bar .thumb',
+  )! as HTMLSpanElement;
+  const percentLabel = document.getElementById(
+    'progress_label',
+  ) as HTMLSpanElement;
+
+  // TODO: make it smooth?
+  loadingProgress.listen((value) => {
+    thumb.style.width = `${value}%`;
+    percentLabel.innerText = thumb.style.width;
+  });
+
+  isReady.listen(() => {
+    fadeOut();
+  });
+
+  function fadeOut() {
+    const fade = gsap.timeline({});
+    fade.to('#loading_overlay', {
+      opacity: 0,
+      duration: 0.5,
+      ease: 'power4.out',
+    });
+    fade.set('#loading_overlay', { display: 'none' });
+  }
+</script>
+
+<style>
+  #loading_overlay {
+    position: absolute;
+    display: inline-block;
+    width: 100%;
+    height: 100vh;
+    background: var(--color-background);
+    z-index: 101;
+  }
+
+  .loading_container {
+    position: fixed;
+    width: 90%;
+    height: 2rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    display: grid;
+    grid-template-columns: 0.9fr 0.05fr;
+    justify-content: space-around;
+    align-items: center;
+    gap: 1rem;
+    user-select: none;
+    padding: 0 0.25rem;
+  }
+
+  .loading_container span {
+    font-size: var(--text-xs);
+    color: var(--color-text-sub);
+  }
+
+  #loading_bar {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    outline: 1px solid var(--color-accent-3);
+    outline-offset: 2px;
+    background: var(--color-surface-3);
+    margin: 0.25rem;
+  }
+
+  .track,
+  .thumb {
+    height: 100%;
+  }
+
+  #loading_bar .track {
+    width: 100%;
+    background: var(--color-surface-1);
+  }
+
+  #loading_bar .thumb {
+    position: absolute;
+    width: 0%;
+    background: var(--color-accent-2);
+    cursor: pointer;
+  }
+</style>
