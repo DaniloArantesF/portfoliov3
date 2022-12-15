@@ -8,7 +8,6 @@ uniform vec2 uResolution;
 uniform float uScale;
 varying vec2 vUv;
 varying vec3 vNormal;
-uniform float uTest;
 varying vec3 vPosition;
 varying float intensity;
 varying float vAmplitude;
@@ -121,11 +120,6 @@ void main(){
 
   color = abs(cells(id, vTime, noiseSpeed, noiseScale, maxShades));
   float w = color.w;
-
-
-  // fade out cells at the edges
-  // float cellLen = length(gv) + .25;
-  // color = color - cellLen * w;
 
   color.xyz *= mix(color3, color2, step(.7 - .1 * step(.5, sin(vTime/1. + intensity / vAmplitude / 2.)/.2 + .5), color.xyz)) * 1.;
 

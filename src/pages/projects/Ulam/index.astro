@@ -26,7 +26,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
-    let start = Date.now();
+    // let start = Date.now();
     const spiral = new Array(size[1])
       .fill(0)
       .map(() => new Array<number>(size[0]).fill(0));
@@ -72,7 +72,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
       curDistance = 0;
     }
 
-    const end = Date.now();
+    // const end = Date.now();
     // console.log({ delta: `${(end - start)}` })
     return spiral;
   }

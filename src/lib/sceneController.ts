@@ -3,8 +3,13 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { atom } from 'nanostores';
+import { Pane } from 'tweakpane';
 
 type useFrame = (state: BaseSceneState) => void;
+
+const isReady = atom(false);
+const loadingProgress = atom(0);
 
 interface BaseSceneProps {
   canvas: HTMLCanvasElement;
@@ -23,6 +28,14 @@ type UniformValue =
   | {
       type?: 'v3';
       value: THREE.Vector3 | { x: number; y: number; z: number };
+    }
+  | {
+      type?: `uint[${number}]`;
+      value: Uint8Array;
+    }
+  | {
+      type?: `float[${number}]`;
+      value: Float32Array;
     };
 
 interface Uniforms {
@@ -47,17 +60,23 @@ export interface BaseSceneState {
   uniforms: Uniforms;
 }
 
-const defaultSceneParams = {
+const settings = {
   cameraPosition: [0, 0, 1],
   aspect: window.innerWidth / window.innerHeight,
   near: 0.1,
   far: 1000,
   fov: 75,
+  orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
+  autoRotate: false,
+  gridHelper: false,
 };
 
-// TODO: Allow base functions to be overwritten or hooked into
-// TODO: Support custom canvas events
+const loadingIndicator = document.getElementById('loading-indicator');
 
+// TODO: Allow all base functions to be overwritten or hooked into
+// TODO: Support custom canvas events
+// TODO: allow base settings overwrite(props & dynamic?)
+// TODO: don't start rendering until scene is explicitly set to ready
 const BaseScene = ({ canvas }: BaseSceneProps) => {
   let scene: THREE.Scene,
     renderer: THREE.WebGLRenderer,
@@ -67,13 +86,10 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
   let camera: THREE.OrthographicCamera | THREE.PerspectiveCamera;
   let orbitControls: OrbitControls;
   let stats: Stats;
+  let gui: Pane;
 
   // Render loop subscribers
   const subscribers: useFrame[] = [];
-
-  const settings = {
-    orbitControls: false,
-  };
 
   const uniforms: Uniforms = {
     uResolution: {
@@ -85,13 +101,13 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     uMouse: { value: { x: 0, y: 0 } },
   };
 
-  const {
+  let {
     cameraPosition: defaultCameraPosition,
     fov,
     aspect,
     near,
     far,
-  } = defaultSceneParams;
+  } = settings;
 
   function init() {
     scene = new THREE.Scene();
@@ -113,26 +129,25 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     initGUI();
     render();
 
-    return { state: getSceneState(), ...getSceneHooks() };
+    return { state: getSceneState(), ...getSceneHooks(), utils: getUtils() };
   }
 
   function initScene() {
     /* --------- Camera --------- */
+    // TODO: implement ortho camera option
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     resetCamera();
-
-    /* ---------- Lights ---------- */
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambientLight);
 
     /* ---------- Utils ---------- */
     orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enabled = settings.orbitControls;
     orbitControls.autoRotateSpeed = 0.5;
 
-    const gridHelper = new THREE.GridHelper(10, 10);
-    gridHelper.rotateX(Math.PI / 2);
-    scene.add(gridHelper);
+    if (settings.gridHelper) {
+      const gridHelper = new THREE.GridHelper(10, 10);
+      gridHelper.rotateX(Math.PI / 2);
+      scene.add(gridHelper);
+    }
 
     stats = Stats();
     stats.dom.style.display = 'inline-block';
@@ -160,6 +175,8 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
       resetCamera();
+
+      // TODO: need to resize custom post processing effects as well
     }
 
     window.addEventListener('resize', function () {
@@ -167,15 +184,62 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       resizeEvent = setTimeout(resizeHandler, 100);
     });
 
-    // window.addEventListener('wheel', (ev) => console.log(ev))
+    // Loading events
+    THREE.DefaultLoadingManager.onLoad = function () {
+      console.log('Loading Complete!');
+    };
+
+    // TODO: maybe debounce this?
+    THREE.DefaultLoadingManager.onProgress = function (
+      url,
+      itemsLoaded,
+      itemsTotal,
+    ) {
+      // loadingIndicator!.innerText = `${~~((itemsLoaded / itemsTotal) * 100)}%`;
+    };
+
+    // THREE.DefaultLoadingManager.onError = function (url) {
+    //   console.log('There was an error loading ' + url);
+    // };
   }
 
   function resetCamera() {
     const [x, y, z] = defaultCameraPosition;
     camera.position.set(x, y, z);
+    camera.lookAt(scene.position);
   }
 
-  function initGUI() {}
+  function setDefaultCameraPosition(x: number, y: number, z: number) {
+    defaultCameraPosition = [x, y, z];
+  }
+
+  function initGUI() {
+    gui = new Pane({
+      title: 'Settings',
+      container: document.getElementById('gui_container')!,
+    });
+
+    const debugFolder = gui.addFolder({ title: 'Debug' });
+    debugFolder.expanded = true;
+    debugFolder.addInput(settings, 'orbitControls').on('change', () => {
+      orbitControls.enabled = settings.orbitControls;
+      if (!settings.orbitControls) {
+        settings.autoRotate = false;
+        gui.refresh();
+        camera.lookAt(scene.position);
+        resetCamera();
+      }
+    });
+
+    debugFolder.addInput(settings, 'autoRotate').on('change', () => {
+      if (settings.autoRotate) {
+        orbitControls.enabled = true;
+        settings.orbitControls = true;
+        gui.refresh();
+      }
+      orbitControls.autoRotate = settings.autoRotate;
+    });
+  }
 
   function render() {
     requestAnimationFrame(render);
@@ -189,6 +253,10 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     const state = getSceneState();
     for (let i = 0; i < subscribers.length; i++) {
       subscribers[i](state);
+    }
+
+    if (settings.orbitControls) {
+      orbitControls.update();
     }
 
     stats.begin();
@@ -231,6 +299,10 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
 
   function getSceneHooks() {
     return { registerAnimationCallback, unregisterAnimationCallback };
+  }
+
+  function getUtils() {
+    return { gui, resetCamera, setDefaultCameraPosition };
   }
 
   return init();

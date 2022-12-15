@@ -10,7 +10,6 @@ uniform vec2 uResolution;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
-uniform float uTest;
 
 varying float vAmplitude;
 varying float intensity;

@@ -6,7 +6,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 <StealthLayout title="SpaceJams">
   <main id="container">
     <canvas id="app_view"></canvas>
-    <div id="gui_container"></div>
+    <div id="gui_container"><div id="loading-indicator"></div></div>
     <div id="player_container">
       <audio></audio>
       <div class="controls">
@@ -18,49 +18,99 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
 <script>
   import * as THREE from 'three';
-  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+  import BaseScene, { BaseSceneState } from '@lib/sceneController';
+  import { loadGLTF } from '@lib/textureLoader';
+  import Player from 'src/components/Player';
+  import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
   import vertexShader from './shaders/vertex.vs.glsl?raw';
   import fragmentShader from './shaders/fragment.fs.glsl?raw';
   import bodyVertexShader from './shaders/body.vs.glsl?raw';
   import bodyFragmentShader from './shaders/body.fs.glsl?raw';
   import skyVertexShader from './shaders/sky.vs.glsl?raw';
   import skyFragmentShader from './shaders/sky.fs.glsl?raw';
-  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
-  import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
-  import type { ReflectorForSSRPass } from 'three/examples/jsm/objects/ReflectorForSSRPass';
-  // import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
-  // import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-  // import { RGBShiftShader } from 'three/examples/jsm/shaders/RGBShiftShader';
-  import Stats from 'three/examples/jsm/libs/stats.module';
-  import * as dat from 'dat.gui';
-  import Player from '../../../components/Player';
 
-  /* ---------------------------------------------- */
-  /*                   Constants                    */
-  /* ---------------------------------------------- */
+  import { fibonacciSphereV3 } from '@utils/geometry';
 
-  const App = () => {
-    /* ---------------------------------------------- */
-    /*                    Graphics                    */
-    /* ---------------------------------------------- */
-    const canvas = document.querySelector('#app_view') as HTMLCanvasElement;
-    let camera: THREE.PerspectiveCamera,
-      scene: THREE.Scene,
-      renderer: THREE.WebGLRenderer,
-      composer: EffectComposer,
-      renderScene: RenderPass;
-    let bloomPass: UnrealBloomPass,
-      ssrPass: SSRPass,
-      groundReflector: ReflectorForSSRPass;
-    const selects: any[] = [];
+  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
 
+  // Init scene
+  const { state, registerAnimationCallback, utils } = BaseScene({ canvas });
+  const { scene, renderer, camera, composer, uniforms, orbitControls } = state;
+
+  const { gui, resetCamera, setDefaultCameraPosition } = utils;
+
+  const customSettings = {
+    cameraPosition: [0, 2, 2],
+    skyModeCameraPosition: [0, 4, 20],
+    skyMode: false,
+    far: 3000,
+    enableSSR: true,
+    bloomStrength: 0.55,
+    bloomThreshold: 0.3,
+    bloomRadius: 0.6,
+    starLayers: 3,
+  };
+
+  // Load models
+  interface Assets {
+    rockColorMap: THREE.Texture;
+    rockDisplacementMap: THREE.Texture;
+    rockRoughnessMap: THREE.Texture;
+    rockAoMap: THREE.Texture;
+    rockNormalMap: THREE.Texture;
+    model?: GLTF;
+  }
+  let assets = loadAssets();
+
+  function loadAssets() {
+    let assets: Assets = {
+      rockColorMap: new THREE.TextureLoader().load(
+        '/assets/textures/ground_color_1k.jpg',
+      ),
+      rockDisplacementMap: new THREE.TextureLoader().load(
+        '/assets/textures/ground_height_1k.png',
+      ),
+      rockRoughnessMap: new THREE.TextureLoader().load(
+        '/assets/textures/ground_roughness_1k.jpg',
+      ),
+      rockAoMap: new THREE.TextureLoader().load(
+        '/assets/textures/ground_ao_1k.jpg',
+      ),
+      rockNormalMap: new THREE.TextureLoader().load(
+        '/assets/textures/ground_normal_opengl_1k.png',
+      ),
+    };
+    [
+      assets.rockColorMap,
+      assets.rockDisplacementMap,
+      assets.rockRoughnessMap,
+      assets.rockAoMap,
+      assets.rockNormalMap,
+    ].forEach((t) => {
+      if (!(t instanceof THREE.Texture)) return;
+      t.wrapS = THREE.RepeatWrapping;
+      t.wrapT = THREE.RepeatWrapping;
+      t.repeat.set(10, 10);
+      t.encoding = THREE.sRGBEncoding;
+    });
+
+    loadGLTF('/assets/models/speaker.glb', function (model) {
+      assets['model'] = model;
+      Scene();
+    });
+
+    return assets as Assets;
+  }
+
+  function Scene() {
     /* ---------------------------------------------- */
     /*                      Audio                     */
     /* ---------------------------------------------- */
     let player = Player.getInstance();
+    uniforms.uData = { type: `uint[128]`, value: player.buffer };
+    uniforms.uStarLayerCount = { type: `f`, value: 3 };
 
     /* ---------------------------------------------- */
     /*                      Scene                     */
@@ -69,401 +119,171 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     let rock: THREE.Mesh;
     let points: THREE.Points;
 
-    /* ---------------------------------------------- */
-    /*                    Settings                    */
-    /* ---------------------------------------------- */
-    let gui: dat.GUI;
-
-    const settings = {
-      texScale: 123,
-      exposure: 1,
-      enableSSR: true,
-      skyMode: false,
-      orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
-      autoRotate: false,
-      groundReflector: true,
-      bloomStrength: 0.55,
-      bloomThreshold: 0.3,
-      bloomRadius: 0.6,
-      starLayers: 3,
-    };
-    let controls: OrbitControls, clock: THREE.Clock, time: number;
-    let cameraPole: THREE.Object3D, gridHelper: THREE.GridHelper;
-    let stats: Stats;
-    const fov = 75;
-    const aspect = window.innerWidth / window.innerHeight;
-    const near = 0.1;
-    const far = 5000;
-    const uniforms = {
-      uResolution: {
-        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
-        type: 'v2',
-      },
-      uTime: {
-        type: 'f',
-        value: 0.0,
-      },
-      uMouse: { value: { x: 0, y: 0 } },
-      uTest: { value: 1 },
-      uData: { type: `float[128]`, value: player.buffer },
-      uScale: { type: 'f', value: settings.texScale },
-      uStarLayerCount: { type: 'f', value: settings.starLayers },
-    };
-
-    async function init() {
-      scene = new THREE.Scene();
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-      });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-      composer = new EffectComposer(renderer);
-      clock = new THREE.Clock();
-
-      await loadModels();
-      initScene();
-      postProcessing();
-      initGUI();
-      render();
-    }
-
-    function loadModel(url: string): Promise<GLTF> {
-      return new Promise((resolve) => new GLTFLoader().load(url, resolve));
-    }
-
-    async function loadModels() {
-      const model = await loadModel('/assets/models/speaker.glb');
-      speaker = model.scene.children[0];
-      rock = model.scene.children[1] as THREE.Mesh;
-      speaker.rotateY(Math.PI / 2);
-      rock.rotateY(-Math.PI / 2);
-      rock.position.y += 0.01;
-      rock.scale.x *= 0.75;
-      rock.scale.z *= 0.75;
-      selects.push(speaker);
-      selects.push(rock);
-
-      let body = speaker.children[1] as THREE.Mesh;
-      body.material = new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: bodyVertexShader,
-        fragmentShader: bodyFragmentShader,
-      });
-
-      body.scale.multiply(new THREE.Vector3(1.01, 1.01, 1.01));
-      speaker.castShadow = true;
-      speaker.receiveShadow = true;
-      scene.add(speaker);
-      scene.add(rock);
-    }
-
-    function resetCamera() {
-      if (settings.skyMode) {
-        camera.position.set(0, 50, 10);
-      } else {
-        camera.position.set(0, 2, 2.5);
-      }
-    }
-
-    function initScene() {
-      /* --------- Camera --------- */
-      camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    /* ---------- Settings ---------- */
+    function updateDefaultCameraPosition() {
+      const [x, y, z] = customSettings.skyMode
+        ? customSettings.skyModeCameraPosition
+        : customSettings.cameraPosition;
+      setDefaultCameraPosition(x, y, z);
       resetCamera();
-
-      cameraPole = new THREE.Object3D();
-      scene.add(cameraPole);
-      cameraPole.add(camera);
-
-      /* ---------- Lights ---------- */
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-      scene.add(ambientLight);
-
-      const spotLight = new THREE.SpotLight(0xffffff, 0.5);
-      spotLight.angle = Math.PI / 4;
-      spotLight.penumbra = 0.1;
-
-      spotLight.castShadow = true;
-      spotLight.position.set(-150, 75, 150);
-      scene.add(spotLight);
-
-      const spotLight2 = new THREE.SpotLight(0xaaaaaa, 0.8);
-      spotLight2.position.set(10, 100, 200);
-      spotLight2.castShadow = true;
-      spotLight2.shadow.mapSize.width = 1024;
-      spotLight2.shadow.mapSize.height = 1024;
-      scene.add(spotLight2);
-
-      /* ---------- Utils ---------- */
-      controls = new OrbitControls(camera, renderer.domElement);
-      controls.enabled = settings.orbitControls;
-      controls.autoRotateSpeed = 0.5;
-
-      stats = Stats();
-      stats.dom.style.display = 'inline-block';
-      document.querySelector('#gui_container')!.appendChild(stats.dom);
-
-      /* ---------- Geometry ---------- */
-      const skyGeometry = new THREE.IcosahedronGeometry(1000, 100);
-      const skyMaterial = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader: skyVertexShader,
-        fragmentShader: skyFragmentShader,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-        side: THREE.DoubleSide,
-      });
-
-      sky = new THREE.Mesh(skyGeometry, skyMaterial);
-      sky.position.set(0, 0, -110);
-      sky.rotation.y -= Math.PI / 2;
-      scene.add(sky);
-      selects.push(sky);
-
-      const material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
-        vertexShader,
-        fragmentShader,
-        transparent: true,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      });
-
-      const fibonacciSphereV3 = (samples: number, scale: number) => {
-        const gAng = 2.399963229728; // [golden angle: pi * (3 - sqrt(5))]
-        const points = [];
-        for (let i = 0; i < samples; i++) {
-          const y = 1.0 - (i / (samples - 1)) * 2.0;
-          const radius = Math.sqrt(1.0 - y * y);
-          const theta = gAng * i;
-          const x = Math.cos(theta) * radius;
-          const z = Math.sin(theta) * radius;
-          const v3 = new THREE.Vector3(x * scale, y * scale, z * scale);
-          points.push(v3);
-        }
-        return points;
-      };
-
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(32, 50, 50),
-        material,
-      );
-
-      mesh.scale.set(0.006, 0.003, 0.006);
-      mesh.position.set(0.52, 0.28, -0.012);
-      mesh.rotateZ(-Math.PI / 2);
-
-      points = new THREE.Points(
-        new THREE.BufferGeometry().setFromPoints(fibonacciSphereV3(10000, 32)),
-        material,
-      );
-
-      points.scale.set(0.006, 0.003, 0.006);
-      points.position.set(0.52, 0.28, -0.012);
-      points.rotateZ(-Math.PI / 2);
-      scene.add(points);
-
-      const mesh2 = new THREE.Mesh(
-        new THREE.SphereGeometry(32, 50, 50),
-        material,
-      );
-
-      mesh2.scale.set(0.006, 0.003, 0.006);
-      mesh2.position.set(-0.5, 0.28, -0.012);
-      mesh2.rotateZ(Math.PI / 2);
-
-      const points2 = new THREE.Points(
-        new THREE.BufferGeometry().setFromPoints(fibonacciSphereV3(10000, 32)),
-        material,
-      );
-
-      points2.scale.set(0.006, 0.003, 0.006);
-      points2.position.set(-0.52, 0.28, -0.012);
-      points2.rotateZ(Math.PI / 2);
-      scene.add(points2);
-
-      scene.add(mesh);
-      scene.add(mesh2);
-      selects.push(mesh);
-      selects.push(mesh2);
-
-      // Rock
-      const rockColorMap = new THREE.TextureLoader().load(
-        '/assets/textures/ground_color_1k.jpg',
-      );
-      const rockDisplacementMap = new THREE.TextureLoader().load(
-        '/assets/textures/ground_height_1k.png',
-      );
-      const rockRoughnessMap = new THREE.TextureLoader().load(
-        '/assets/textures/ground_roughness_1k.jpg',
-      );
-      const rockAoMap = new THREE.TextureLoader().load(
-        '/assets/textures/ground_ao_1k.jpg',
-      );
-      const rockNormalMap = new THREE.TextureLoader().load(
-        '/assets/textures/ground_normal_opengl_1k.png',
-      );
-
-      [
-        rockColorMap,
-        rockDisplacementMap,
-        rockRoughnessMap,
-        rockAoMap,
-        rockNormalMap,
-      ].forEach((t) => {
-        t.wrapS = THREE.RepeatWrapping;
-        t.wrapT = THREE.RepeatWrapping;
-        t.repeat.set(10, 10);
-        t.encoding = THREE.sRGBEncoding;
-      });
-
-      rock.material = new THREE.MeshStandardMaterial({
-        map: rockColorMap,
-        displacementBias: -0.5,
-        normalMap: rockNormalMap,
-        roughnessMap: rockRoughnessMap,
-        aoMap: rockAoMap,
-        // side: THREE.DoubleSide,
-      });
-
-      /* ---------- Events ---------- */
-      canvas.addEventListener('mousemove', (event) => {
-        uniforms.uMouse.value.x =
-          (event.clientX - window.innerWidth / 2) * 0.01;
-        uniforms.uMouse.value.y =
-          (event.clientY - window.innerHeight / 2) * 0.01;
-      });
-
-      // TODO: debounce resize handler
-      window.addEventListener('resize', () => {
-        uniforms.uResolution.value = new THREE.Vector2(
-          window.innerWidth,
-          window.innerHeight,
-        );
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        composer.setSize(window.innerWidth, window.innerHeight);
-        // groundReflector
-        //   .getRenderTarget()
-        //   .setSize(window.innerWidth, window.innerHeight);
-        // groundReflector.resolution.set( window.innerWidth, window.innerHeight );
-        resetCamera();
-      });
     }
+    updateDefaultCameraPosition();
 
-    function initGUI() {
-      gui = new dat.GUI({ autoPlace: false });
-      gui.width = 300;
-      gui.domElement.id = 'gui';
-      gui.domElement.style.display = 'inline-block';
+    /* ---------- GUI ---------- */
+    gui.addInput(customSettings, 'skyMode').on('change', () => {
+      if (customSettings.skyMode) {
+        orbitControls.enabled = false;
+        // TODO: set property in base settings and update ui
+      }
+      updateDefaultCameraPosition();
+    });
 
-      document.getElementById('gui_container')!.append(gui.domElement);
+    /* ---------- Effects ---------- */
+    function postProcessing() {
+      const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        customSettings.bloomStrength,
+        customSettings.bloomRadius,
+        customSettings.bloomThreshold,
+      );
 
-      const debugFolder = gui.addFolder('debug');
-      debugFolder.add(settings, 'orbitControls').onChange((value) => {
-        controls.enabled = value;
-        if (!value) {
-          settings.autoRotate = false;
-          gui.updateDisplay();
-          resetCamera();
-        }
+      const ssrPass = new SSRPass({
+        renderer,
+        scene,
+        camera,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        groundReflector: null,
+        selects: null,
       });
+      ssrPass.thickness = 0.018;
+      ssrPass.maxDistance = 0.1;
+      ssrPass.output = SSRPass.OUTPUT.Beauty;
+      ssrPass.opacity = 0.9;
 
-      debugFolder.add(settings, 'autoRotate').onChange((value) => {
-        if (value) {
-          controls.enabled = true;
-          settings.orbitControls = true;
-          gui.updateDisplay();
-        }
-        controls.autoRotate = value;
-      });
-
-      debugFolder.add(settings, 'starLayers').onChange((value) => {
-        uniforms.uStarLayerCount.value = parseInt(value) || 3;
-      });
-
-      gui.add(settings, 'skyMode').onChange((value) => {
-        // Disable orbit controls
-        controls.enabled = false;
-        settings.orbitControls = false;
-        gui.updateDisplay();
-        resetCamera();
-      });
-
-      const bloomFolder = gui.addFolder('Bloom');
-      bloomFolder
-        .add(settings, 'bloomThreshold', 0.0, 1.0)
-        .onChange((value) => {
-          bloomPass.threshold = Number(value);
-        });
-
-      bloomFolder.add(settings, 'bloomStrength', 0.0, 3.0).onChange((value) => {
-        bloomPass.strength = Number(value);
-      });
-
-      bloomFolder
-        .add(settings, 'bloomRadius', 0.0, 1.0)
-        .step(0.01)
-        .onChange((value) => {
-          bloomPass.radius = Number(value);
-        });
-
-      const folder = gui.addFolder('SSR');
-      // folder.add(ssrPass, 'fresnel').onChange(() => {
-      //   groundReflector.fresnel = ssrPass.fresnel;
-      // });
-
-      folder.add(ssrPass, 'thickness').min(0).max(0.1).step(0.0001);
-      // ssrPass.infiniteThick = false;
-      // folder.add(ssrPass, 'infiniteThick');
-      // folder.add(ssrPass, 'distanceAttenuation').onChange(() => {
-      //   groundReflector.distanceAttenuation = ssrPass.distanceAttenuation;
-      // });
-
-      // groundReflector.maxDistance = ssrPass.maxDistance;
-      // folder
-      //   .add(ssrPass, 'maxDistance')
-      //   .min(0)
-      //   .max(50)
-      //   .step(0.001)
-      //   .onChange(() => {
-      //     // groundReflector.maxDistance = ssrPass.maxDistance;
-      //   });
-
-      folder.add(ssrPass, 'bouncing');
-
-      folder
-        .add(ssrPass, 'output', {
-          Default: SSRPass.OUTPUT.Default,
-          'SSR Only': SSRPass.OUTPUT.SSR,
-          Beauty: SSRPass.OUTPUT.Beauty,
-          Depth: SSRPass.OUTPUT.Depth,
-          Normal: SSRPass.OUTPUT.Normal,
-          Metalness: SSRPass.OUTPUT.Metalness,
-        })
-        .onChange(function (value) {
-          ssrPass.output = parseInt(value);
-        });
-
-      // groundReflector.opacity = ssrPass.opacity;
-      // folder
-      //   .add(ssrPass, 'opacity')
-      //   .min(0)
-      //   .max(1)
-      //   .onChange(() => {
-      //     // groundReflector.opacity = ssrPass.opacity;
-      //   });
-      folder.add(ssrPass, 'blur');
-      gui.close();
+      composer.addPass(ssrPass);
+      composer.addPass(bloomPass);
     }
+    postProcessing();
 
-    function render() {
-      requestAnimationFrame(render);
-      time = clock.getElapsedTime();
+    /* ---------- Lights ---------- */
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+
+    const spotLight = new THREE.SpotLight(0xffffff, 0.5);
+    spotLight.angle = Math.PI / 4;
+    spotLight.penumbra = 0.1;
+
+    spotLight.castShadow = true;
+    spotLight.position.set(-150, 75, 150);
+    scene.add(spotLight);
+
+    const spotLight2 = new THREE.SpotLight(0xaaaaaa, 0.8);
+    spotLight2.position.set(10, 100, 200);
+    spotLight2.castShadow = true;
+    spotLight2.shadow.mapSize.width = 1024;
+    spotLight2.shadow.mapSize.height = 1024;
+    scene.add(spotLight2);
+
+    /* ---------- Geometry ---------- */
+    speaker = assets.model!.scene.children[0];
+    rock = assets.model!.scene.children[1] as THREE.Mesh;
+    speaker.rotateY(Math.PI / 2);
+    rock.rotateY(-Math.PI / 2);
+    rock.position.y += 0.01;
+    rock.scale.x *= 0.75;
+    rock.scale.z *= 0.75;
+    // selects.push(speaker);
+    // selects.push(rock);
+
+    let body = speaker.children[1] as THREE.Mesh;
+    body.material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: bodyVertexShader,
+      fragmentShader: bodyFragmentShader,
+    });
+
+    body.scale.multiply(new THREE.Vector3(1.01, 1.01, 1.01));
+    speaker.castShadow = true;
+    speaker.receiveShadow = true;
+    scene.add(speaker);
+    scene.add(rock);
+
+    const skyGeometry = new THREE.IcosahedronGeometry(1000, 100);
+    const skyMaterial = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: skyVertexShader,
+      fragmentShader: skyFragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    });
+
+    sky = new THREE.Mesh(skyGeometry, skyMaterial);
+    sky.position.set(0, 0, -110);
+    sky.rotation.y -= Math.PI / 2;
+    scene.add(sky);
+    // selects.push(sky);
+
+    const material = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(32, 50, 50), material);
+
+    mesh.scale.set(0.006, 0.003, 0.006);
+    mesh.position.set(0.52, 0.28, -0.012);
+    mesh.rotateZ(-Math.PI / 2);
+
+    points = new THREE.Points(
+      new THREE.BufferGeometry().setFromPoints(fibonacciSphereV3(10000, 32)),
+      material,
+    );
+
+    points.scale.set(0.006, 0.003, 0.006);
+    points.position.set(0.52, 0.28, -0.012);
+    points.rotateZ(-Math.PI / 2);
+    scene.add(points);
+
+    const mesh2 = new THREE.Mesh(
+      new THREE.SphereGeometry(32, 50, 50),
+      material,
+    );
+
+    mesh2.scale.set(0.006, 0.003, 0.006);
+    mesh2.position.set(-0.5, 0.28, -0.012);
+    mesh2.rotateZ(Math.PI / 2);
+
+    const points2 = new THREE.Points(
+      new THREE.BufferGeometry().setFromPoints(fibonacciSphereV3(10000, 32)),
+      material,
+    );
+
+    points2.scale.set(0.006, 0.003, 0.006);
+    points2.position.set(-0.52, 0.28, -0.012);
+    points2.rotateZ(Math.PI / 2);
+    scene.add(points2);
+
+    scene.add(mesh);
+    scene.add(mesh2);
+    // selects.push(mesh);
+    // selects.push(mesh2);
+
+    rock.material = new THREE.MeshStandardMaterial({
+      map: assets.rockColorMap,
+      displacementBias: -0.5,
+      normalMap: assets.rockNormalMap,
+      roughnessMap: assets.rockRoughnessMap,
+      aoMap: assets.rockAoMap,
+    });
+
+    function animationLoop(state: BaseSceneState) {
       let analyser = player.analyser;
       if (analyser) {
         // each item represents decibel value for specific frequency
@@ -472,56 +292,18 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
         uniforms.uData.value = player.buffer;
       }
 
-      // Update uniforms
-      uniforms.uTime.value = time;
-
-      if (settings.orbitControls) {
-        controls.update();
-      } else {
+      // Move camera
+      if (!orbitControls.enabled) {
         camera.position.x +=
           (uniforms.uMouse.value.x / 10 - camera.position.x) * 0.03;
         camera.position.y +=
           (-uniforms.uMouse.value.y / 20 - camera.position.y + 0.5) * 0.1;
         camera.lookAt(scene.position);
       }
-
-      stats.begin();
-      composer.render();
-      stats.end();
     }
 
-    function postProcessing() {
-      renderScene = new RenderPass(scene, camera);
-      bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        settings.bloomStrength,
-        settings.bloomRadius,
-        settings.bloomThreshold,
-      );
-
-      ssrPass = new SSRPass({
-        renderer,
-        scene,
-        camera,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        groundReflector: settings.groundReflector ? groundReflector : null,
-        selects: settings.groundReflector ? selects : null,
-      });
-      ssrPass.thickness = 0.018;
-      ssrPass.maxDistance = 0.1;
-      ssrPass.output = SSRPass.OUTPUT.Beauty;
-      ssrPass.opacity = 0.9;
-
-      composer.addPass(renderScene);
-      composer.addPass(ssrPass);
-      composer.addPass(bloomPass);
-    }
-
-    init();
-  };
-
-  App();
+    registerAnimationCallback(animationLoop);
+  }
 </script>
 
 <style is:global>

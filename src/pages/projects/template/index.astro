@@ -33,7 +33,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   scene.add(mesh);
 
   function animationLoop(state: BaseSceneState) {
-    mesh.position.y = Math.sin(state.time * 2) / 2;
+    // mesh.position.y = Math.sin(state.time * 2) / 2;
   }
 
   registerAnimationCallback(animationLoop);

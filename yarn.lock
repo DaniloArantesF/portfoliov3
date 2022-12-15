@@ -473,6 +473,11 @@
   dependencies:
     tsm "^2.1.4"
 
+"@tweakpane/core@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@tweakpane/core/-/core-1.1.1.tgz#5c8f7726f3574801e40811301506c6871bc128d1"
+  integrity sha512-bCywfumcPHiaPLzskFrkB5+hw070UHwxPI45e04TmWW/iIyMwFSJlRvKtbN5cX8Xq1VZedxCgBFoJIici0OyKA==
+
 "@types/acorn@^4.0.0":
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/@types/acorn/-/acorn-4.0.6.tgz#d61ca5480300ac41a7d973dd5b84d0a591154a22"
@@ -3508,6 +3513,11 @@ tsm@^2.1.4:
   integrity sha512-bXkt675NbbqfwRHSSn8kSNEEHvoIUFDM9G6tUENkjEKpAEbrEzieO3PxUiRJylMw8fEGpcf5lSjadzzz12pc2A==
   dependencies:
     esbuild "^0.14.0"
+
+tweakpane@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/tweakpane/-/tweakpane-3.1.1.tgz#d67bc2f6b8758bcb4630a0707f7c21a8ea515439"
+  integrity sha512-b9bpZSvG4KLtvSuyP3r20XWztdbzXleXO1RZN5pS4gcVAVesq0+mYz/bylYIckwh/VZjp3f3zUFJSeV2M3eRCw==
 
 type-fest@^0.13.1:
   version "0.13.1"
