@@ -15,22 +15,26 @@
   import gsap from 'gsap';
   import { loadingProgress, isReady } from '@lib/sceneController';
 
-  const thumb = document.querySelector(
-    '#loading_bar .thumb',
-  )! as HTMLSpanElement;
-  const percentLabel = document.getElementById(
-    'progress_label',
-  ) as HTMLSpanElement;
-
-  // TODO: make it smooth?
-  loadingProgress.listen((value) => {
-    thumb.style.width = `${value}%`;
-    percentLabel.innerText = thumb.style.width;
-  });
-
-  isReady.listen(() => {
+  if (isReady.get()) {
     fadeOut();
-  });
+  } else {
+    const thumb = document.querySelector(
+      '#loading_bar .thumb',
+    )! as HTMLSpanElement;
+    const percentLabel = document.getElementById(
+      'progress_label',
+    ) as HTMLSpanElement;
+
+    // TODO: make it smooth?
+    loadingProgress.listen((value) => {
+      thumb.style.width = `${value}%`;
+      percentLabel.innerText = thumb.style.width;
+    });
+
+    isReady.listen(() => {
+      fadeOut();
+    });
+  }
 
   function fadeOut() {
     const fade = gsap.timeline({});

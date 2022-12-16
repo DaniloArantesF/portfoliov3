@@ -66,9 +66,9 @@ const settings = {
   near: 0.1,
   far: 1000,
   fov: 75,
-  orbitControls: /Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
+  orbitControls: false, ///Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
   autoRotate: false,
-  gridHelper: false,
+  gridHelper: true,
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
@@ -297,8 +297,19 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     return { registerAnimationCallback, unregisterAnimationCallback };
   }
 
+  function getViewport() {
+    if (camera instanceof THREE.OrthographicCamera)
+      return { width: 1, height: 1 }; // ???
+
+    // Convert vertical fov to radians
+    const vfov = (fov * Math.PI) / 180;
+    const height = 2 * Math.tan(vfov / 2) * camera.position.z;
+    const width = height * camera.aspect;
+    return { height, width };
+  }
+
   function getUtils() {
-    return { gui, resetCamera, setDefaultCameraPosition };
+    return { gui, resetCamera, setDefaultCameraPosition, getViewport };
   }
 
   return init();

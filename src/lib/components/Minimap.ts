@@ -14,7 +14,7 @@ const Minimap = ({ count }: MinimapProps) => {
 
   for (let i = 0; i < count; i++) {
     const line = new THREE.Line(geometry, material);
-    line.position.set(i * 0.05 - count * 0.01, -1 / 2 - 0.01, 0.1);
+    line.position.set((i - ~~(count / 2)) * 0.05, -0.75, 0.1);
     minimap.add(line);
   }
 
