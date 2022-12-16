@@ -13,14 +13,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import imageFragmentShader from './shaders/image.fs.glsl?raw';
   import imageVertexShader from './shaders/image.vs.glsl?raw';
   import Minimap from '@lib/components/Minimap';
+
+  import PickHelper from '@lib/pickHelper';
   const damp = THREE.MathUtils.damp;
 
   // 0 means first picture is all the way to the left
   let scrollPosition = 0;
+  let clicked: null | number = null;
+
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state, registerAnimationCallback, utils } = BaseScene({ canvas });
   const { scene, renderer, camera, uniforms } = state;
-  utils.setDefaultCameraPosition(0, 0, 1.25);
+  utils.setDefaultCameraPosition(0, 0, 1);
   utils.resetCamera();
 
   type ImageProps = Partial<Omit<THREE.Mesh, 'scale'>> & {
@@ -30,10 +34,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     grayscale?: number;
     url: string;
     uniforms: any;
+    index: number;
   };
 
   const Image: (props: ImageProps) => THREE.Mesh = ({
     url,
+    index,
     uniforms,
     position = new THREE.Vector3(0, 0, 0),
     scale = new THREE.Vector3(0.3, 1, 1),
@@ -45,7 +51,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     const texture = new THREE.TextureLoader().load(url);
     const geometry = new THREE.PlaneGeometry(1, 1, 5, 5);
 
-    // texture encoding?
     const material = new THREE.ShaderMaterial({
       vertexShader: imageVertexShader,
       fragmentShader: imageFragmentShader,
@@ -68,6 +73,19 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     mesh.position.copy(position);
     mesh.scale.copy(scale);
 
+    function animationLoop(state: BaseSceneState) {
+      material.uniforms.grayscale.value = damp(
+        material.uniforms.grayscale.value,
+        clicked === index ? 0 : 1,
+        5,
+        0.01,
+      );
+      material.uniforms.color.value.lerp(
+        color.set(clicked === index ? 'white' : '#aaa'),
+      );
+    }
+
+    registerAnimationCallback(animationLoop);
     return mesh;
   };
 
@@ -84,16 +102,34 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     const { width: viewWidth } = utils.getViewport();
     const tiles: { scale: THREE.Vector3 }[] = [];
     const totalTileWidth = tileWidth + gap;
+    const pickHelper = PickHelper({ canvas });
 
     const pages =
       (viewWidth - totalTileWidth + pictures.length * totalTileWidth) /
       viewWidth;
 
     // Handle scroll
-    // TODO: refine this
+    // TODO: refine scroll/drag speed multiplier for mobile
+    // FIXME: implement touch events on pick helper
     gsap.registerPlugin(Observer);
     Observer.create({
       type: 'wheel, touch, pointer',
+      onClick: () => {
+        const picked = pickHelper.pick(
+          scene,
+          camera as THREE.PerspectiveCamera,
+          galleryGroup.children,
+        );
+        if (picked) {
+          clicked = galleryGroup.children.findIndex(
+            (i) => i.uuid === picked.uuid,
+          );
+          // Scroll to middle point of clicked image
+          scrollPosition = (1.5 * clicked) / gallery.children.length;
+        } else {
+          clicked = null;
+        }
+      },
       onDown: ({ deltaY }) => {
         scrollPosition += deltaY / 1500;
       },
@@ -101,12 +137,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         scrollPosition += deltaY / 1500;
       },
       onDrag: (event) => {
-        scrollPosition -= event.deltaX / 3000;
+        scrollPosition -= event.deltaX / 2000;
       },
       tolerance: 50,
     });
 
-    console.log(viewWidth);
     for (let i = 0; i < pictures.length; i++) {
       let position = new THREE.Vector3(i * totalTileWidth, 0, 0);
       tiles.push({ scale: new THREE.Vector3(tileWidth, 1, 1) });
@@ -114,6 +149,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       galleryGroup.add(
         Image({
           url: pictures[i].src,
+          index: i,
           uniforms: {
             ...uniforms,
             scale: { value: tiles[i].scale },
@@ -124,8 +160,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
     }
 
-    function animationCallback(state: BaseSceneState) {
+    let delta = 0.02;
+    function animationLoop(state: BaseSceneState) {
       scrollPosition = clamp(scrollPosition, 0, 1);
+
+      // Reset clicked if user scrolls away from it
+      if (
+        clicked !== null &&
+        Math.abs(scrollPosition - clicked / galleryGroup.children.length) >
+          1.75 / galleryGroup.children.length
+      ) {
+        clicked = null;
+      }
 
       for (let i = 0; i < galleryGroup.children.length; i++) {
         let picture = galleryGroup.children[i];
@@ -137,17 +183,31 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         );
 
         // Offset images based on scroll position
+        // Images are offset half of the additional space relative to clicked index
+        let clickedOffset =
+          clicked !== null && clicked !== i
+            ? clicked < i
+              ? (1 - tileWidth) / 2
+              : -(1 - tileWidth) / 2
+            : 0;
+
+        // Update position & scale
         picture.position.x = damp(
           picture.position.x,
-          (i - scrollPosition * (pictures.length - 1)) * totalTileWidth,
-          100,
-          0.1,
+          (i - scrollPosition * (pictures.length - 1)) * totalTileWidth +
+            clickedOffset,
+          5,
+          delta,
         );
-
-        // Vertical scaling
-        let scaleY = damp(picture.scale.y, 1 + y / 4, 50, 0.1);
-        picture.scale.y = scaleY;
-        tiles[i].scale.y = scaleY;
+        let scaleY = damp(picture.scale.y, 1 + y / 4, 5, delta);
+        let scaleX = damp(
+          picture.scale.x,
+          clicked === i ? 1 : tileWidth,
+          5,
+          delta,
+        );
+        (picture.scale.y = scaleY), (picture.scale.x = scaleX);
+        (tiles[i].scale.y = scaleY), (tiles[i].scale.x = scaleX);
       }
 
       // Update minimap
@@ -162,7 +222,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       });
     }
 
-    registerAnimationCallback(animationCallback);
+    registerAnimationCallback(animationLoop);
     return { gallery: galleryGroup, minimap };
   };
 
@@ -187,10 +247,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   scene.add(gallery);
   scene.add(minimap);
 
-  function animationLoop(state: BaseSceneState) {}
-
   isReady.set(true);
-  registerAnimationCallback(animationLoop);
 </script>
 
 <style is:global>

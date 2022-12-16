@@ -23,8 +23,11 @@ const PickHelper = ({ canvas }: PickHelperProps) => {
     window.addEventListener('mouseleave', clearPickPosition);
   }
 
-  // TODO: allow caller to pass selected objects
-  function pick(scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
+  function pick(
+    scene: THREE.Scene,
+    camera: THREE.PerspectiveCamera,
+    selected?: THREE.Object3D[],
+  ) {
     if (pickedObject) {
       pickedObject = null;
     }
@@ -32,13 +35,14 @@ const PickHelper = ({ canvas }: PickHelperProps) => {
     raycaster.setFromCamera(pickPosition, camera);
 
     // Get objects intersected by ray
-    const intersectedObjects = raycaster.intersectObjects(scene.children);
+    const intersectedObjects = raycaster.intersectObjects(
+      selected ? selected : scene.children,
+    );
 
     if (intersectedObjects.length) {
       if (intersectedObjects[0].object.type === 'GridHelper') return;
       // Pick the closest object (will be the first)
       pickedObject = intersectedObjects[0].object;
-      console.log(pickedObject);
     }
     return pickedObject;
   }

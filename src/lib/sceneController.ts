@@ -11,9 +11,20 @@ type useFrame = (state: BaseSceneState) => void;
 export const isReady = atom(false);
 export const loadingProgress = atom(-1);
 
+interface BaseSceneSettings {
+  cameraPosition: [number, number, number];
+  aspect: number;
+  near: number;
+  far: number;
+  fov: number;
+  orbitControls: boolean;
+  autoRotate: boolean;
+  gridHelper: boolean;
+}
+
 interface BaseSceneProps {
   canvas: HTMLCanvasElement;
-  onReady?: () => void;
+  settings?: Partial<BaseSceneSettings>;
 }
 
 type UniformValue =
@@ -66,15 +77,13 @@ const settings = {
   near: 0.1,
   far: 1000,
   fov: 75,
-  orbitControls: false, ///Android|webOS|iPhone|iPad/i.test(navigator.userAgent),
+  orbitControls: false,
   autoRotate: false,
-  gridHelper: true,
+  gridHelper: false,
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
 // TODO: Support custom canvas events
-// TODO: allow base settings overwrite(props & dynamic?)
-// TODO: don't start rendering until scene is explicitly set to ready
 const BaseScene = ({ canvas }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
@@ -185,7 +194,6 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     });
 
     // Loading events
-    // TODO: maybe debounce this?
     THREE.DefaultLoadingManager.onProgress = function (
       url,
       itemsLoaded,
