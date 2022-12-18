@@ -49,7 +49,7 @@ type UniformValue =
       value: Float32Array;
     };
 
-interface Uniforms {
+export interface Uniforms {
   uTime: { type?: 'f'; value: number };
   uResolution: { type?: 'v2'; value: THREE.Vector2 };
   uMouse: { type?: 'v2'; value: { x: number; y: number } };
@@ -83,7 +83,6 @@ const settings = {
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
-// TODO: Support custom canvas events
 const BaseScene = ({ canvas }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 

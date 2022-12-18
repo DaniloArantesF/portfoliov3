@@ -2,38 +2,43 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title="Tiles" />
+<SceneLayout title="Gallery" />
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
-  import { clamp, curve, range } from '@utils/math';
-  import { Observer } from 'gsap/Observer';
   import gsap from 'gsap';
+  import { Observer } from 'gsap/Observer';
+  import BaseScene, { isReady, Uniforms } from '@lib/sceneController';
   import imageFragmentShader from './shaders/image.fs.glsl?raw';
   import imageVertexShader from './shaders/image.vs.glsl?raw';
   import Minimap from '@lib/components/Minimap';
-
   import PickHelper from '@lib/pickHelper';
-  const damp = THREE.MathUtils.damp;
+  import { clamp, curve } from '@utils/math';
 
-  // 0 means first picture is all the way to the left
+  /* ---------------------------------------------- */
+  /*                 Setup & Globals                */
+  /* ---------------------------------------------- */
+  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const { state, registerAnimationCallback, utils } = BaseScene({
+    canvas,
+    settings: { cameraPosition: [0, 0, 1] },
+  });
+  const { scene, renderer, camera, uniforms } = state;
+
   let scrollPosition = 0;
   let clicked: null | number = null;
+  const damp = THREE.MathUtils.damp;
 
-  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerAnimationCallback, utils } = BaseScene({ canvas });
-  const { scene, renderer, camera, uniforms } = state;
-  utils.setDefaultCameraPosition(0, 0, 1);
-  utils.resetCamera();
-
+  /* ---------------------------------------------- */
+  /*                      Scene                     */
+  /* ---------------------------------------------- */
   type ImageProps = Partial<Omit<THREE.Mesh, 'scale'>> & {
     scale?: THREE.Vector3;
     color?: THREE.Color;
     zoom?: number;
     grayscale?: number;
     url: string;
-    uniforms: any;
+    uniforms: Uniforms;
     index: number;
   };
 
@@ -47,10 +52,13 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     zoom = 1,
     grayscale = 0,
   }) => {
-    const imageSize = new THREE.Vector2(4, 3); // TODO: improve this
-    const texture = new THREE.TextureLoader().load(url);
-    const geometry = new THREE.PlaneGeometry(1, 1, 5, 5);
+    const imageSize = new THREE.Vector2(1, 1);
+    const texture = new THREE.TextureLoader().load(url, () => {
+      imageSize.set(texture.image.width, texture.image.height);
+      isReady.set(true);
+    });
 
+    const geometry = new THREE.PlaneGeometry(1, 1, 5, 5);
     const material = new THREE.ShaderMaterial({
       vertexShader: imageVertexShader,
       fragmentShader: imageFragmentShader,
@@ -73,7 +81,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     mesh.position.copy(position);
     mesh.scale.copy(scale);
 
-    function animationLoop(state: BaseSceneState) {
+    function animationLoop() {
       material.uniforms.grayscale.value = damp(
         material.uniforms.grayscale.value,
         clicked === index ? 0 : 1,
@@ -91,22 +99,21 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
   interface GalleryProps {
     pictures: { src: string }[];
-    uniforms: any;
+    uniforms: Uniforms;
     tileWidth: number;
     gap: number;
   }
 
   const Gallery = ({ pictures, uniforms, tileWidth, gap }: GalleryProps) => {
     const galleryGroup = new THREE.Group();
-    const minimap = Minimap({ count: pictures.length });
-    const { width: viewWidth } = utils.getViewport();
     const tiles: { scale: THREE.Vector3 }[] = [];
     const totalTileWidth = tileWidth + gap;
-    const pickHelper = PickHelper({ canvas });
-
+    const { width: viewWidth } = utils.getViewport();
     const pages =
       (viewWidth - totalTileWidth + pictures.length * totalTileWidth) /
       viewWidth;
+    const pickHelper = PickHelper({ canvas });
+    const minimap = Minimap({ count: pictures.length });
 
     // Handle scroll
     gsap.registerPlugin(Observer);
@@ -159,7 +166,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
 
     let delta = 0.02;
-    function animationLoop(state: BaseSceneState) {
+    function animationLoop() {
       scrollPosition = clamp(scrollPosition, 0, 1);
 
       // Reset clicked if user scrolls away from it
@@ -224,125 +231,21 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     return { gallery: galleryGroup, minimap };
   };
 
-  /* ---------- Geometry ---------- */
   const pictures = [
     { src: '/assets/projects/benji-demo-1.webp' },
     { src: '/assets/projects/3d-audio-visualizer-demo-1.webp' },
     { src: '/assets/projects/stacks-demo-1.webp' },
-    { src: '/assets/projects/benji-demo-1.webp' },
-    { src: '/assets/projects/stacks-demo-1.webp' },
+    { src: '/assets/projects/task-manager-demo-1.webp' },
+    { src: '/assets/projects/project-desktop-sample.webp' },
   ];
-
-  const tileWidth = 0.3,
-    tileGap = 0.025;
 
   const { gallery, minimap } = Gallery({
     pictures,
     uniforms,
-    tileWidth,
-    gap: tileGap,
+    tileWidth: 0.3,
+    gap: 0.025,
   });
+
   scene.add(gallery);
   scene.add(minimap);
-
-  isReady.set(true);
 </script>
-
-<style is:global>
-  html {
-    height: 100vh;
-    overflow: hidden;
-  }
-</style>
-
-<style>
-  body {
-    width: 100%;
-    height: 100vh;
-    background: var(--color-background);
-    overflow: hidden;
-    overscroll-behavior: none;
-    margin: 0;
-    padding: 0;
-    position: relative;
-  }
-
-  #app_view {
-    display: block;
-    position: relative;
-    z-index: 99;
-    width: 100%;
-    height: 100%;
-  }
-
-  #scroll-container {
-    display: inline-block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100%;
-    overflow-y: hidden;
-    overflow-x: scroll;
-    z-index: 100;
-  }
-
-  #scroll-container::before {
-    content: '';
-    display: inline-block;
-    width: 200vw;
-  }
-
-  #container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-
-  #gui_container {
-    position: absolute;
-    top: var(--header-height);
-    left: 2rem;
-  }
-
-  #gui {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  #player_container {
-    display: inline-flex;
-    flex-direction: column;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    row-gap: 1rem;
-  }
-
-  #play_btn {
-    position: absolute;
-    width: 2rem;
-    height: 2rem;
-    bottom: 3px;
-    left: calc(50% - 125px);
-    transform: translateX(-50%);
-    background: transparent;
-    border: none;
-    z-index: 99;
-    cursor: pointer;
-  }
-
-  .controls {
-    position: relative;
-    z-index: 99;
-    display: flex;
-    flex-direction: column;
-    row-gap: 2rem;
-    transform: scale(0.9);
-  }
-</style>
