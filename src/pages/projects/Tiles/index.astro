@@ -109,8 +109,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       viewWidth;
 
     // Handle scroll
-    // TODO: refine scroll/drag speed multiplier for mobile
-    // FIXME: implement touch events on pick helper
     gsap.registerPlugin(Observer);
     Observer.create({
       type: 'wheel, touch, pointer',
@@ -125,7 +123,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
             (i) => i.uuid === picked.uuid,
           );
           // Scroll to middle point of clicked image
-          scrollPosition = (1.5 * clicked) / gallery.children.length;
+          scrollPosition = (clicked - 0.5) / (gallery.children.length - 1);
         } else {
           clicked = null;
         }
@@ -137,9 +135,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         scrollPosition += deltaY / 1500;
       },
       onDrag: (event) => {
-        scrollPosition -= event.deltaX / 2000;
+        scrollPosition -= event.deltaX / 1300;
       },
-      tolerance: 50,
+      tolerance: 25,
     });
 
     for (let i = 0; i < pictures.length; i++) {
@@ -218,7 +216,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
           0,
           scrollPosition,
         );
-        line.scale.y = Math.max(0.5, y);
+        line.scale.y = damp(line.scale.y, Math.max(0.5, y), 5, delta);
       });
     }
 

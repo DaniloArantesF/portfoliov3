@@ -51,8 +51,8 @@ const PickHelper = ({ canvas }: PickHelperProps) => {
     const pos = getCanvasRelativePosition(event);
 
     // Normalize relative position
-    pickPosition.x = (pos.x / canvas.width) * 2 - 1;
-    pickPosition.y = (pos.y / canvas.height) * -2 + 1; // Need to reflect Y
+    pickPosition.x = (pos.x / window.innerWidth) * 2 - 1;
+    pickPosition.y = (pos.y / window.innerHeight) * -2 + 1; // Need to reflect Y
   }
 
   function clearPickPosition() {

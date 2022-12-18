@@ -88,7 +88,7 @@ export default function Card({
       <a
         role="link"
         href={href}
-        target="_blank"
+        // target="_blank"
         aria-label={`${title}`}
         rel="noopener"
       >
