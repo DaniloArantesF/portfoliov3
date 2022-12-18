@@ -6,13 +6,10 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { atom } from 'nanostores';
 import { Pane } from 'tweakpane';
 
-type useFrame = (state: BaseSceneState) => void;
+export type useFrame = (state: BaseSceneState) => void;
 
-export const isReady = atom(false);
-export const loadingProgress = atom(-1);
-
-interface BaseSceneSettings {
-  cameraPosition: [number, number, number];
+export interface BaseSceneSettings {
+  cameraPosition: [number, number, number] | number[];
   aspect: number;
   near: number;
   far: number;
@@ -20,6 +17,8 @@ interface BaseSceneSettings {
   orbitControls: boolean;
   autoRotate: boolean;
   gridHelper: boolean;
+  antialias: boolean;
+  sceneDebugControls: boolean;
 }
 
 interface BaseSceneProps {
@@ -71,7 +70,10 @@ export interface BaseSceneState {
   uniforms: Uniforms;
 }
 
-const settings = {
+export const isReady = atom(false);
+export const loadingProgress = atom(-1);
+
+let settings: BaseSceneSettings = {
   cameraPosition: [0, 0, 1],
   aspect: window.innerWidth / window.innerHeight,
   near: 0.1,
@@ -80,10 +82,12 @@ const settings = {
   orbitControls: false,
   autoRotate: false,
   gridHelper: false,
+  antialias: true,
+  sceneDebugControls: true,
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
-const BaseScene = ({ canvas }: BaseSceneProps) => {
+const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
   let scene: THREE.Scene,
@@ -109,19 +113,14 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     uMouse: { value: { x: 0, y: 0 } },
   };
 
-  let {
-    cameraPosition: defaultCameraPosition,
-    fov,
-    aspect,
-    near,
-    far,
-  } = settings;
+  // Overwrite settings
+  settings = { ...settings, ...customSettings };
 
   function init() {
     scene = new THREE.Scene();
     renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: settings.antialias,
       alpha: true,
     });
     renderer.setClearAlpha(0);
@@ -142,7 +141,7 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
 
   function initScene() {
     /* --------- Camera --------- */
-    // TODO: implement ortho camera option
+    const { fov, aspect, near, far } = settings;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     resetCamera();
 
@@ -207,18 +206,14 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
   }
 
   function resetCamera() {
-    const [x, y, z] = defaultCameraPosition;
+    const [x, y, z] = settings.cameraPosition;
     camera.position.set(x, y, z);
     camera.lookAt(scene.position);
   }
 
-  function setDefaultCameraPosition(x: number, y: number, z: number) {
-    defaultCameraPosition = [x, y, z];
-  }
-
   function initGUI() {
     gui = new Pane({
-      title: 'Settings',
+      title: 'Debug Settings',
       container: document.getElementById('gui_container')!,
     });
     gui.expanded = false;
@@ -242,6 +237,9 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       }
       orbitControls.autoRotate = settings.autoRotate;
     });
+
+    gui.disabled = !settings.sceneDebugControls;
+    gui.hidden = gui.disabled;
   }
 
   function render() {
@@ -272,14 +270,11 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
     composer.addPass(renderScene);
   }
 
-  // TODO
-  function cleanup() {}
-
-  function registerAnimationCallback(cb: useFrame) {
+  function registerRenderCallback(cb: useFrame) {
     subscribers.push(cb);
   }
 
-  function unregisterAnimationCallback(cb: useFrame) {
+  function unregisterRenderCallback(cb: useFrame) {
     subscribers.splice(subscribers.indexOf(cb), 1);
   }
 
@@ -301,7 +296,7 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
   }
 
   function getSceneHooks() {
-    return { registerAnimationCallback, unregisterAnimationCallback };
+    return { registerRenderCallback, unregisterRenderCallback };
   }
 
   function getViewport() {
@@ -309,15 +304,25 @@ const BaseScene = ({ canvas }: BaseSceneProps) => {
       return { width: 1, height: 1 }; // ???
 
     // Convert vertical fov to radians
-    const vfov = (fov * Math.PI) / 180;
+    const vfov = (settings.fov * Math.PI) / 180;
     const height = 2 * Math.tan(vfov / 2) * camera.position.z;
     const width = height * camera.aspect;
     return { height, width };
   }
 
-  function getUtils() {
-    return { gui, resetCamera, setDefaultCameraPosition, getViewport };
+  function updateSetting<
+    S extends keyof typeof settings,
+    V extends typeof settings[S],
+  >(key: S, value: V) {
+    settings[key] = value;
   }
+
+  function getUtils() {
+    return { gui, updateSetting, resetCamera, getViewport };
+  }
+
+  // TODO
+  function cleanup() {}
 
   return init();
 };

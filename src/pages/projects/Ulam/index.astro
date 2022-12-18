@@ -1,28 +1,23 @@
 ---
-import StealthLayout from '../../../layouts/StealthLayout.astro';
+import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<StealthLayout title="Template">
-  <main>
-    <canvas id="app_view"></canvas>
-    <div id="gui_container"></div>
-  </main>
-</StealthLayout>
+<SceneLayout title={'Ulam'} />
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState } from '@lib/sceneController';
+  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
   import { inRange, isPrime } from '@utils/math';
 
+  /* ---------------------------------------------- */
+  /*                 Setup & Globals                */
+  /* ---------------------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerAnimationCallback, unregisterAnimationCallback } =
-    BaseScene({ canvas });
+  const { state } = BaseScene({ canvas });
   const { scene, renderer, camera, uniforms } = state;
-
-  // [x, y]
-  const gridSize = [100, 100];
+  const gridSize = [100, 100]; // [x, y]
 
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
@@ -103,43 +98,6 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
 
   function animationLoop(state: BaseSceneState) {}
 
-  // registerAnimationCallback(animationLoop);
+  isReady.set(true);
+  // registerRenderCallback(animationLoop);
 </script>
-
-<style is:global>
-  html {
-    height: 100vh;
-    overflow: hidden;
-  }
-</style>
-
-<style>
-  body {
-    width: 100%;
-    height: 100vh;
-    background: var(--color-background);
-    overflow: hidden;
-    overscroll-behavior: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  #app_view {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  #gui_container {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  #gui {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-</style>

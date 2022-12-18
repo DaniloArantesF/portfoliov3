@@ -3,7 +3,6 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 
 export const loadTexture = (url: string) => {
   return new THREE.TextureLoader().load(url);
-  //  TODO: get image dimensions using astro utils?
 };
 
 export function loadGLTF(url: string, onLoad: (model: GLTF) => void) {

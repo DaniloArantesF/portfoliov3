@@ -19,9 +19,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerAnimationCallback, utils } = BaseScene({
+  const { state, registerRenderCallback, utils } = BaseScene({
     canvas,
-    settings: { cameraPosition: [0, 0, 1] },
+    settings: { cameraPosition: [0, 0, 1.25] },
   });
   const { scene, renderer, camera, uniforms } = state;
 
@@ -93,7 +93,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
     }
 
-    registerAnimationCallback(animationLoop);
+    registerRenderCallback(animationLoop);
     return mesh;
   };
 
@@ -227,7 +227,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       });
     }
 
-    registerAnimationCallback(animationLoop);
+    registerRenderCallback(animationLoop);
     return { gallery: galleryGroup, minimap };
   };
 

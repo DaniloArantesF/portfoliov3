@@ -28,23 +28,27 @@ import { PlayerController } from '../../../components/PlayerController';
   import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
   import { fibonacciSphereV3 } from '@utils/geometry';
 
-  // Init scene
-  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerAnimationCallback, utils } = BaseScene({ canvas });
-  const { scene, renderer, camera, composer, uniforms, orbitControls } = state;
-  const { gui, resetCamera, setDefaultCameraPosition } = utils;
-
+  /* ---------------------------------------------- */
+  /*                 Setup & Globals                */
+  /* ---------------------------------------------- */
+  const defaultCameraPosition = [0, 2, 2];
+  const skyModeCameraPosition = [0, 4, 20];
   const customSettings = {
-    cameraPosition: [0, 2, 2],
-    skyModeCameraPosition: [0, 4, 20],
     skyMode: false,
-    far: 3000,
     enableSSR: true,
     bloomStrength: 0.55,
     bloomThreshold: 0.3,
     bloomRadius: 0.6,
     starLayers: 3,
   };
+
+  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback, utils } = BaseScene({
+    canvas,
+    settings: { cameraPosition: defaultCameraPosition, far: 3000 },
+  });
+  const { scene, renderer, camera, composer, uniforms, orbitControls } = state;
+  const { gui, resetCamera, updateSetting } = utils;
 
   // Load models
   interface Assets {
@@ -97,17 +101,16 @@ import { PlayerController } from '../../../components/PlayerController';
     return assets as Assets;
   }
 
+  /* ---------------------------------------------- */
+  /*                      Scene                     */
+  /* ---------------------------------------------- */
   function Scene() {
-    /* ---------------------------------------------- */
-    /*                      Audio                     */
-    /* ---------------------------------------------- */
+    /* ---------- Audio ---------- */
     let player = Player.getInstance();
     uniforms.uData = { type: `uint[128]`, value: player.buffer };
     uniforms.uStarLayerCount = { type: `f`, value: 3 };
 
-    /* ---------------------------------------------- */
-    /*                      Scene                     */
-    /* ---------------------------------------------- */
+    /* ---------- Scene ---------- */
     let speaker: THREE.Object3D, sky: THREE.Mesh;
     let rock: THREE.Mesh;
     let points: THREE.Points;
@@ -115,9 +118,9 @@ import { PlayerController } from '../../../components/PlayerController';
     /* ---------- Settings ---------- */
     function updateDefaultCameraPosition() {
       const [x, y, z] = customSettings.skyMode
-        ? customSettings.skyModeCameraPosition
-        : customSettings.cameraPosition;
-      setDefaultCameraPosition(x, y, z);
+        ? skyModeCameraPosition
+        : defaultCameraPosition;
+      updateSetting('cameraPosition', [x, y, z]);
       resetCamera();
     }
     updateDefaultCameraPosition();
@@ -126,7 +129,8 @@ import { PlayerController } from '../../../components/PlayerController';
     gui.addInput(customSettings, 'skyMode').on('change', () => {
       if (customSettings.skyMode) {
         orbitControls.enabled = false;
-        // TODO: set property in base settings and update ui
+        updateSetting('orbitControls', false);
+        gui.refresh();
       }
       updateDefaultCameraPosition();
     });
@@ -290,7 +294,7 @@ import { PlayerController } from '../../../components/PlayerController';
       }
     }
 
-    registerAnimationCallback(animationLoop);
+    registerRenderCallback(animationLoop);
     isReady.set(true);
   }
 </script>

@@ -16,8 +16,9 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
 
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerAnimationCallback, unregisterAnimationCallback } =
-    BaseScene({ canvas });
+  const { state, registerRenderCallback, unregisterRenderCallback } = BaseScene(
+    { canvas },
+  );
   const { scene, renderer, camera, uniforms } = state;
 
   /* ---------- Geometry ---------- */
@@ -36,7 +37,7 @@ import StealthLayout from '../../../layouts/StealthLayout.astro';
     // mesh.position.y = Math.sin(state.time * 2) / 2;
   }
 
-  registerAnimationCallback(animationLoop);
+  registerRenderCallback(animationLoop);
 </script>
 
 <style is:global>
