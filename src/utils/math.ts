@@ -39,3 +39,7 @@ export const isPrime = (n: number) => {
   }
   return n > 1;
 };
+
+export const rand = (a = 0, b = 1) => {
+  return Math.random() * (b - a) + a;
+};
