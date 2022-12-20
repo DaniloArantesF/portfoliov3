@@ -2,12 +2,14 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title="Fireflies" />
+<SceneLayout title="Boids" />
 
 <script>
   import * as THREE from 'three';
   import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
   import { rand } from '@utils/math';
+  import SpatialGrid from '@lib/SpatialGrid';
+  import { createDebugBounds } from '@lib/helpers';
 
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, unregisterRenderCallback } = BaseScene(
@@ -16,9 +18,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const { scene, renderer, camera, uniforms } = state;
 
   const BOUNDS = { width: 100, height: 100, depth: 100 };
-  const NUM_BOIDS = 50;
-  const BOID_SPEED = 2.5;
-  const BOID_ACCELERATION = BOID_SPEED / 5.0;
+  const NUM_BOIDS = 100;
+  const BOID_SPEED = 3.5;
+  const BOID_ACCELERATION = BOID_SPEED / 2.5;
   const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
   const BOID_FORCE_ORIGIN = 8;
   const BOID_FORCE_ALIGNMENT = 10;
@@ -29,9 +31,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const SPEED_MIN = 3;
   const SPEED_MAX = 4;
 
-  const fireflies: Firefly[] = [];
+  const boids: Boid[] = [];
 
-  interface FireflyParams {
+  interface BoidParams {
     speedMin: number;
     speedMax: number;
     speed: number;
@@ -40,19 +42,27 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     color: number;
   }
 
-  class Firefly {
-    private mesh: THREE.Mesh;
-    private group: THREE.Group;
-    private position: THREE.Vector3;
-    private direction: THREE.Vector3;
-    private velocity: THREE.Vector3;
+  const hashGrid = new SpatialGrid<Boid>({
+    bounds: [
+      new THREE.Vector3(-BOUNDS.width / 2, 0, -BOUNDS.depth / 2),
+      new THREE.Vector3(BOUNDS.width / 2, 0, BOUNDS.depth / 2),
+    ],
+    dimensions: [10, 10],
+  });
 
-    // Boid settings
+  class Boid {
+    public mesh: THREE.Mesh;
+    public readonly group: THREE.Group;
+    public position: THREE.Vector3;
+    public direction: THREE.Vector3;
+    public velocity: THREE.Vector3;
     private maxSteeringForce: number;
     private maxSpeed: number;
-    private acceleration: number;
-    private radius: number; // (used for collision detection)
+    public acceleration: number;
+    public radius: number; // (used for collision detection)
     private wanderAngle: number;
+    public hashPosition: [number, number]; // cur index of hash grid
+    // maybe add prev position ?
 
     constructor({
       speedMin,
@@ -61,15 +71,16 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       maxSteeringForce,
       acceleration,
       color,
-    }: FireflyParams) {
+    }: BoidParams) {
+      // Initialize boid, give it a random initial position and direction
       this.mesh = new THREE.Mesh(
         new THREE.ConeGeometry(1, speed * 2, 10, 10),
         new THREE.MeshBasicMaterial({ color }),
       );
       this.position = new THREE.Vector3(
-        rand(-50, 50),
-        rand(1, 25),
-        rand(-50, 50),
+        rand(-BOUNDS.width / 2, BOUNDS.width / 2),
+        rand(-BOUNDS.height / 4, BOUNDS.height / 4),
+        rand(-BOUNDS.depth / 2, BOUNDS.depth / 2),
       );
 
       this.group = new THREE.Group();
@@ -97,18 +108,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       this.mesh.rotateX(-Math.PI / 2);
 
       scene.add(this.group);
+      this.hashPosition = hashGrid.updateEntityPosition(this.group.uuid, this);
     }
 
+    // Applies steering behavior and updates direction/velocity
     step(timeSeconds: number) {
-      // Apply steering behavior
-      this.avoidWalls();
+      this.applySteering();
 
-      // Update velocity
       const frameVelocity = this.velocity.clone();
       frameVelocity.multiplyScalar(timeSeconds);
       this.group.position.add(frameVelocity);
+      this.position = this.group.position;
 
-      // Update direction
       const direction = this.direction;
       const m = new THREE.Matrix4();
       m.lookAt(
@@ -117,24 +128,35 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         new THREE.Vector3(0, 1, 0),
       );
       this.group.quaternion.setFromRotationMatrix(m);
+
+      // Update hash grid
+      this.hashPosition = hashGrid.updateEntityPosition(
+        this.group.uuid,
+        this,
+        this.hashPosition,
+      );
     }
 
-    applySteering() {}
+    // Applies steering behaviors
+    applySteering() {
+      this.avoidWalls();
+    }
 
-    applyGroupAvoidance() {}
-
-    applyWander() {}
-
+    // Calculates desired separation, steer it away if it gets too close
     applySeparation() {}
 
+    // Calculates average heading of neighbors and steer towards it
     applyAlignment() {}
 
+    // Calculates average position of neighbors and steer towards it
     applyCohesion() {}
 
+    applyGroupAvoidance() {}
+    applyWander() {}
     applySeek() {}
 
     avoidWalls() {
-      const position = this.group.position.clone(); //.addScalar(this.radius);
+      const position = this.group.position.clone();
       if (position.x <= -BOUNDS.width / 2 || position.x >= BOUNDS.width / 2) {
         this.direction.x = -this.direction.x;
         this.velocity = this.direction.clone();
@@ -152,43 +174,99 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
   }
 
-  function createFireflies() {
+  class BoidLeader extends Boid {
+    public influenceRadius: number;
+
+    constructor(params: BoidParams) {
+      super(params);
+      this.group.position.set(0, 0, 0);
+      this.position = this.group.position;
+      this.influenceRadius = 15;
+      this.hashPosition = hashGrid.updateEntityPosition(
+        this.group.uuid,
+        this,
+        this.hashPosition,
+      );
+      this.debug();
+    }
+
+    debug() {
+      const wireframe = new THREE.WireframeGeometry(
+        new THREE.SphereGeometry(this.influenceRadius),
+      );
+
+      const helper = new THREE.LineSegments(wireframe);
+      (helper.material as THREE.Material).depthTest = false;
+      (helper.material as THREE.Material).opacity = 0.25;
+      (helper.material as THREE.Material).transparent = true;
+
+      this.group.add(helper);
+    }
+  }
+
+  function createBoids() {
     for (let i = 0; i < NUM_BOIDS; i++) {
-      const f = new Firefly({
+      const f = new Boid({
         speedMin: 3.0,
         speedMax: 4.0,
         speed: BOID_SPEED,
         maxSteeringForce: BOID_FORCE_MAX,
         acceleration: BOID_ACCELERATION,
-        color: 0xff0000,
+        color: 0xc4c4c4,
       });
-      fireflies.push(f);
+      boids.push(f);
     }
+
+    // Create leader
+    const leader = new BoidLeader({
+      speedMin: 3.0,
+      speedMax: 4.0,
+      speed: BOID_SPEED,
+      maxSteeringForce: BOID_FORCE_MAX,
+      acceleration: BOID_ACCELERATION,
+      color: 0xff0000,
+    });
+
+    boids.push(leader);
   }
 
-  function createDebugBounds() {
-    const box = new THREE.Box3();
-    box.setFromCenterAndSize(
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(100, 100, 100),
-    );
-
-    const helper = new THREE.Box3Helper(box, new THREE.Color(0.5, 0.5, 0.5));
-    scene.add(helper);
-  }
+  createBoids();
+  const helper = createDebugBounds([BOUNDS.width, BOUNDS.height, BOUNDS.depth]);
+  scene.add(helper);
+  const timeMultiplier = 0.001;
+  const leader = boids[boids.length - 1] as BoidLeader;
+  let localEntities: Boid[] = [];
 
   function animationLoop({ time }: BaseSceneState) {
-    for (let i = 0; i < fireflies.length; i++) {
-      fireflies[i].step(time * 0.001);
+    for (let i = 0; i < boids.length; i++) {
+      let isLocal =
+        localEntities.findIndex((b) => b.group.uuid === boids[i].group.uuid) !==
+        -1;
+      let isLeader = boids[i] instanceof BoidLeader;
+
+      if (
+        !isLeader &&
+        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.g === 1 &&
+        !isLocal
+      ) {
+        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.setHex(
+          0xc4c4c4,
+        );
+      }
+
+      if (isLocal) {
+        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.set(0x00ff00);
+      }
+      boids[i].step(time * timeMultiplier);
     }
+
+    // Update local for next frame
+    localEntities = hashGrid.getLocalEntities(
+      leader.position,
+      leader.influenceRadius,
+    );
   }
 
-  createFireflies();
-  createDebugBounds();
   registerRenderCallback(animationLoop);
   isReady.set(true);
 </script>
-
-<style>
-
-</style>
