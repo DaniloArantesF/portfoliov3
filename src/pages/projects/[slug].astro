@@ -34,17 +34,6 @@ export async function getStaticPaths() {
           },
         };
       }),
-      // projects.map((project) => {
-      //   return {
-      //     params: {
-      //       slug: project.file.substring(
-      //         project.file.lastIndexOf('/') + 1,
-      //         project.file.length - 3,
-      //       ),
-      //     },
-      //     props: { project },
-      //   };
-      // }),
     ];
   } catch (error) {
     return [];
@@ -58,6 +47,7 @@ const { Content, frontmatter, url } = project;
 const { title } = frontmatter;
 ---
 
+<!-- FIXME only works in dev? -->
 <Fragment>
   {redirect ? <Redirect url={redirect} /> : <Layout title={title} />}
 </Fragment>
