@@ -2,7 +2,7 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title={'Ulam'} />
+<SceneLayout title={'Ulam Waves'} />
 
 <script>
   import * as THREE from 'three';
@@ -15,9 +15,27 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state } = BaseScene({ canvas });
-  const { scene, renderer, camera, uniforms } = state;
-  const gridSize = [100, 100]; // [x, y]
+  const { state, utils, registerRenderCallback } = BaseScene({
+    canvas,
+    settings: {
+      orbitControls: false,
+      cameraPosition: [0, 1.5, 0],
+      gridHelper: false,
+    },
+  });
+  const { scene, renderer, camera } = state;
+
+  const settings = {
+    gridSize: { x: 100, y: 100 }, // [x, y]
+    waveAmplitude: 0.3,
+    waveFrequency: 5,
+  };
+
+  const uniforms = {
+    ...state.uniforms,
+    waveFrequency: { value: settings.waveFrequency },
+    waveAmplitude: { value: settings.waveAmplitude },
+  };
 
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
@@ -72,8 +90,43 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     return spiral;
   }
 
-  /* ---------- Geometry ---------- */
-  const geometry = new THREE.PlaneGeometry(1, 1, ...gridSize);
+  function setupGUI() {
+    const gui = utils.gui;
+
+    gui
+      .addInput(settings, 'waveAmplitude', {
+        step: 0.001,
+        min: 0.05,
+        max: 2,
+      })
+      .on('change', ({ value }) => {
+        uniforms.waveAmplitude.value = value;
+      });
+
+    gui
+      .addInput(settings, 'waveFrequency', {
+        step: 0.01,
+        min: 0.01,
+        max: 50,
+      })
+      .on('change', ({ value }) => {
+        uniforms.waveFrequency.value = value;
+      });
+
+    // TODO
+    // gui.addInput(settings, 'gridSize');
+  }
+  setupGUI();
+
+  /* ---------------------------------------------- */
+  /*                      Scene                     */
+  /* ---------------------------------------------- */
+  const geometry = new THREE.PlaneGeometry(
+    2,
+    2,
+    settings.gridSize.x,
+    settings.gridSize.y,
+  );
 
   const pointCount = geometry.attributes.position.array.length / 3;
   const spiralSize = Math.ceil(Math.sqrt(pointCount));
@@ -85,19 +138,25 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   geometry.setAttribute('isPrime', spiralBuffer);
 
   const material = new THREE.ShaderMaterial({
-    uniforms: {
-      ...uniforms,
-    },
+    uniforms,
     vertexShader: basicVertexShader,
     fragmentShader: basicFragmentShader,
     transparent: true,
   });
 
   const points = new THREE.Points(geometry, material);
+  points.rotateX(-Math.PI / 2);
   scene.add(points);
 
-  function animationLoop(state: BaseSceneState) {}
+  function animationLoop(state: BaseSceneState) {
+    if (!state.orbitControls.enabled) {
+      let time = state.time * 0.05;
+      camera.position.x = -Math.sin(time) / 4;
+      camera.position.z = Math.cos(time) / 4;
+      camera.lookAt(scene.position);
+    }
+  }
 
+  registerRenderCallback(animationLoop);
   isReady.set(true);
-  // registerRenderCallback(animationLoop);
 </script>

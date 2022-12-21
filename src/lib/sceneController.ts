@@ -9,16 +9,17 @@ import { Pane } from 'tweakpane';
 export type useFrame = (state: BaseSceneState) => void;
 
 export interface BaseSceneSettings {
-  cameraPosition: [number, number, number] | number[];
+  antialias: boolean;
   aspect: number;
-  near: number;
+  autoRotate: boolean;
+  cameraPosition: [number, number, number] | number[];
   far: number;
   fov: number;
-  orbitControls: boolean;
-  autoRotate: boolean;
   gridHelper: boolean;
-  antialias: boolean;
+  near: number;
+  orbitControls: boolean;
   sceneDebugControls: boolean;
+  zoom: number;
 }
 
 interface BaseSceneProps {
@@ -26,47 +27,25 @@ interface BaseSceneProps {
   settings?: Partial<BaseSceneSettings>;
 }
 
-type UniformValue =
-  | {
-      type?: 'f';
-      value: number;
-    }
-  | {
-      type?: 'v2';
-      value: THREE.Vector2 | { x: number; y: number };
-    }
-  | {
-      type?: 'v3';
-      value: THREE.Vector3 | { x: number; y: number; z: number };
-    }
-  | {
-      type?: `uint[${number}]`;
-      value: Uint8Array;
-    }
-  | {
-      type?: `float[${number}]`;
-      value: Float32Array;
-    };
-
 export interface Uniforms {
-  uTime: { type?: 'f'; value: number };
-  uResolution: { type?: 'v2'; value: THREE.Vector2 };
+  [key: string]: THREE.IUniform;
   uMouse: { type?: 'v2'; value: { x: number; y: number } };
-  [key: string]: UniformValue;
+  uResolution: { type?: 'v2'; value: THREE.Vector2 };
+  uTime: { type?: 'f'; value: number };
 }
 
 export interface BaseSceneState {
-  ready: boolean;
-  scene: THREE.Scene;
-  renderer: THREE.WebGLRenderer;
-  composer: EffectComposer;
-  renderScene: RenderPass;
+  camera: THREE.PerspectiveCamera; //THREE.OrthographicCamera | ;
   clock: THREE.Clock;
-  time: number;
+  composer: EffectComposer;
   delta: number;
-  camera: THREE.OrthographicCamera | THREE.PerspectiveCamera;
   orbitControls: OrbitControls;
+  ready: boolean;
+  renderer: THREE.WebGLRenderer;
+  renderScene: RenderPass;
+  scene: THREE.Scene;
   stats: Stats;
+  time: number;
   uniforms: Uniforms;
 }
 
@@ -84,6 +63,7 @@ let settings: BaseSceneSettings = {
   gridHelper: false,
   antialias: true,
   sceneDebugControls: true,
+  zoom: 1,
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
@@ -95,7 +75,7 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     composer: EffectComposer,
     renderScene: RenderPass;
   let clock: THREE.Clock, time: number, delta: number;
-  let camera: THREE.OrthographicCamera | THREE.PerspectiveCamera;
+  let camera: THREE.PerspectiveCamera;
   let orbitControls: OrbitControls;
   let stats: Stats;
   let gui: Pane;
@@ -152,7 +132,7 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
 
     if (settings.gridHelper) {
       const gridHelper = new THREE.GridHelper(10, 10);
-      gridHelper.rotateX(Math.PI / 2);
+      // gridHelper.rotateX(Math.PI / 2);
       scene.add(gridHelper);
     }
 
@@ -218,7 +198,6 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     });
     gui.expanded = false;
     const debugFolder = gui.addFolder({ title: 'Debug' });
-    // debugFolder.expanded = true;
     debugFolder.addInput(settings, 'orbitControls').on('change', () => {
       orbitControls.enabled = settings.orbitControls;
       if (!settings.orbitControls) {
@@ -237,6 +216,13 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
       }
       orbitControls.autoRotate = settings.autoRotate;
     });
+
+    gui
+      .addInput(settings, 'zoom', { min: 0.1, max: 3, step: 0.001 })
+      .on('change', ({ value }) => {
+        camera.zoom = value;
+        camera.updateProjectionMatrix();
+      });
 
     gui.disabled = !settings.sceneDebugControls;
     gui.hidden = gui.disabled;
@@ -317,8 +303,12 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     settings[key] = value;
   }
 
+  function getSettings() {
+    return settings;
+  }
+
   function getUtils() {
-    return { gui, updateSetting, resetCamera, getViewport };
+    return { gui, getSettings, updateSetting, resetCamera, getViewport };
   }
 
   // TODO
