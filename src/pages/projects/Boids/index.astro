@@ -11,36 +11,32 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import SpatialGrid from '@lib/SpatialGrid';
   import { createDebugBounds } from '@lib/helpers';
 
+  /* ---------------------------------------------- */
+  /*                 Setup & Globals                */
+  /* ---------------------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback, unregisterRenderCallback } = BaseScene(
-    { canvas, settings: { cameraPosition: [0, 0, 100], orbitControls: true } },
-  );
+  const { state, registerRenderCallback, unregisterRenderCallback, utils } =
+    BaseScene({
+      canvas,
+      settings: { cameraPosition: [0, 0, 100], orbitControls: true },
+    });
+
   const { scene, renderer, camera, uniforms } = state;
+  const { gui } = utils;
 
   const BOUNDS = { width: 100, height: 100, depth: 100 };
-  const NUM_BOIDS = 100;
-  const BOID_SPEED = 3.5;
-  const BOID_ACCELERATION = BOID_SPEED / 2.5;
+  const NUM_BOIDS = 50;
+  const BOID_SPEED = 2.5;
+  const BOID_ACCELERATION = BOID_SPEED / 5;
   const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
-  const BOID_FORCE_ORIGIN = 8;
+  const BOID_FORCE_SEEK = 8;
   const BOID_FORCE_ALIGNMENT = 10;
   const BOID_FORCE_SEPARATION = 20;
   const BOID_FORCE_COHESION = 10;
   const BOID_FORCE_WANDER = 3;
 
-  const SPEED_MIN = 3;
+  const SPEED_MIN = 2;
   const SPEED_MAX = 4;
-
-  const boids: Boid[] = [];
-
-  interface BoidParams {
-    speedMin: number;
-    speedMax: number;
-    speed: number;
-    maxSteeringForce: number;
-    acceleration: number;
-    color: number;
-  }
 
   const hashGrid = new SpatialGrid<Boid>({
     bounds: [
@@ -49,6 +45,28 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ],
     dimensions: [10, 10],
   });
+  const boids: Boid[] = [];
+
+  const settings = {
+    debug: {
+      boidRadius: false,
+      leaderRadius: true,
+    },
+    timeMultiplier: 1,
+    boidRadiusMultiplier: 3,
+  };
+
+  /* ---------------------------------------------- */
+  /*                       Scene                    */
+  /* ---------------------------------------------- */
+  interface BoidParams {
+    speedMin: number;
+    speedMax: number;
+    speed: number;
+    maxSteeringForce: number;
+    acceleration: number;
+    color: number;
+  }
 
   class Boid {
     public mesh: THREE.Mesh;
@@ -74,7 +92,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }: BoidParams) {
       // Initialize boid, give it a random initial position and direction
       this.mesh = new THREE.Mesh(
-        new THREE.ConeGeometry(1, speed * 2, 10, 10),
+        new THREE.ConeGeometry(2, 2 + speed * 2, 10, 10),
         new THREE.MeshBasicMaterial({ color }),
       );
       this.position = new THREE.Vector3(
@@ -103,20 +121,26 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
       // Scale down based on speed multiplier
       const scale = 1.0 / speedMultiplier;
-      this.radius = scale;
+      this.radius = settings.boidRadiusMultiplier * scale;
       this.mesh.scale.setScalar(scale);
       this.mesh.rotateX(-Math.PI / 2);
 
       scene.add(this.group);
       this.hashPosition = hashGrid.updateEntityPosition(this.group.uuid, this);
+
+      if (settings.debug.boidRadius) this.debug();
     }
 
     // Applies steering behavior and updates direction/velocity
-    step(timeSeconds: number) {
-      this.applySteering();
+    step(timeMs: number) {
+      const localEntities = hashGrid.getLocalEntities(
+        this.position,
+        this.radius,
+      );
+      this.applySteering(localEntities);
 
       const frameVelocity = this.velocity.clone();
-      frameVelocity.multiplyScalar(timeSeconds);
+      frameVelocity.multiplyScalar(timeMs / 1000);
       this.group.position.add(frameVelocity);
       this.position = this.group.position;
 
@@ -137,40 +161,167 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
     }
 
-    // Applies steering behaviors
-    applySteering() {
-      this.avoidWalls();
+    // Apply steering behaviors
+    applySteering(localEntities: Boid[]) {
+      const steeringForce = new THREE.Vector3(0, 0, 0);
+      const forces = [
+        this.applyAlignment(localEntities),
+        this.applySeparation(localEntities),
+        this.applyCohesion(localEntities),
+        this.avoidWalls(),
+      ];
+
+      for (const f of forces) {
+        steeringForce.add(f);
+      }
+
+      // Limit force & velocity
+      if (steeringForce.length() > this.maxSteeringForce) {
+        steeringForce.normalize();
+        steeringForce.multiplyScalar(this.maxSteeringForce);
+      }
+
+      this.velocity.add(steeringForce);
+
+      if (this.velocity.length() > this.maxSpeed) {
+        this.velocity.normalize();
+        this.velocity.multiplyScalar(this.maxSpeed);
+      }
+
+      // Update direction
+      this.direction = this.velocity.clone();
+      this.direction.normalize();
     }
 
     // Calculates desired separation, steer it away if it gets too close
-    applySeparation() {}
+    applySeparation(localEntities: Boid[]) {
+      const force = new THREE.Vector3(0, 0, 0);
+      if (!localEntities.length) return force;
+
+      for (const entity of localEntities) {
+        const distanceToEntity = Math.max(
+          0.001,
+          entity.position.distanceTo(this.position) -
+            1.5 * (this.radius + entity.radius),
+        );
+
+        const multiplier =
+          (BOID_FORCE_SEPARATION / distanceToEntity) *
+          (this.radius + entity.radius);
+        const directionFromEntity = new THREE.Vector3().subVectors(
+          this.position,
+          entity.position,
+        );
+        directionFromEntity.normalize();
+        force.add(directionFromEntity.multiplyScalar(multiplier));
+      }
+
+      return force;
+    }
 
     // Calculates average heading of neighbors and steer towards it
-    applyAlignment() {}
+    applyAlignment(localEntities: Boid[]) {
+      const force = new THREE.Vector3(0, 0, 0);
 
-    // Calculates average position of neighbors and steer towards it
-    applyCohesion() {}
+      for (let entity of localEntities) {
+        force.add(entity.direction);
+      }
 
-    applyGroupAvoidance() {}
-    applyWander() {}
-    applySeek() {}
+      force.normalize();
+      force.multiplyScalar(BOID_FORCE_ALIGNMENT);
+      return force;
+    }
 
     avoidWalls() {
       const position = this.group.position.clone();
-      if (position.x <= -BOUNDS.width / 2 || position.x >= BOUNDS.width / 2) {
-        this.direction.x = -this.direction.x;
-        this.velocity = this.direction.clone();
+      const force = new THREE.Vector3(0, 0, 0);
+
+      // Calculate the distance to nearest wall
+      const xDistance = BOUNDS.width / 2 - Math.abs(position.x);
+      const yDistance = BOUNDS.height / 2 - Math.abs(position.y);
+      const zDistance = BOUNDS.depth / 2 - Math.abs(position.z);
+
+      const minDist = 0.5 + this.radius;
+      const wallSeparationForce = 500;
+
+      let multiplier = 0;
+      let sign = 1;
+      let wall: THREE.Vector3;
+      let directionFromWall = new THREE.Vector3();
+
+      // Avoid width bounds
+      if (xDistance <= minDist) {
+        multiplier = (wallSeparationForce / xDistance) * this.radius;
+        sign = this.position.x >= 0 ? 1 : -1;
+        wall = new THREE.Vector3(
+          (sign * BOUNDS.width) / 2,
+          this.position.y,
+          this.position.z,
+        );
+        directionFromWall = new THREE.Vector3().subVectors(this.position, wall);
       }
 
-      if (position.z < -BOUNDS.depth / 2 || position.z > BOUNDS.depth / 2) {
-        this.direction.z = -this.direction.z;
-        this.velocity = this.direction.clone();
+      // Avoid height bounds
+      if (yDistance <= minDist) {
+        multiplier = (wallSeparationForce / yDistance) * this.radius;
+        sign = this.position.y >= 0 ? 1 : -1;
+        wall = new THREE.Vector3(
+          this.position.x,
+          (sign * BOUNDS.height) / 2,
+          this.position.z,
+        );
+        directionFromWall = new THREE.Vector3().subVectors(this.position, wall);
       }
 
-      if (position.y < -BOUNDS.height / 2 || position.y > BOUNDS.height / 2) {
-        this.direction.y = -this.direction.y;
-        this.velocity = this.direction.clone();
+      // Avoid depth bounds
+      if (zDistance <= minDist) {
+        multiplier = (wallSeparationForce / zDistance) * this.radius;
+        sign = this.position.z >= 0 ? 1 : -1;
+        wall = new THREE.Vector3(
+          this.position.x,
+          this.position.y,
+          (sign * BOUNDS.depth) / 2,
+        );
+        directionFromWall = new THREE.Vector3().subVectors(this.position, wall);
       }
+
+      directionFromWall.normalize();
+      force.add(directionFromWall.multiplyScalar(multiplier));
+      return force;
+    }
+
+    // Calculates average position of neighbors and steer towards it
+    applyCohesion(localEntities: Boid[]) {
+      const force = new THREE.Vector3(0, 0, 0);
+      if (!localEntities.length) return force;
+
+      const averagePosition = new THREE.Vector3(0, 0, 0);
+      for (const entity of localEntities) {
+        averagePosition.add(entity.position);
+      }
+      averagePosition.multiplyScalar(1 / localEntities.length);
+
+      const directionToTarget = averagePosition.clone().sub(this.position);
+      directionToTarget.normalize();
+      directionToTarget.multiplyScalar(BOID_FORCE_COHESION);
+
+      return directionToTarget;
+    }
+
+    applyWander() {}
+    applySeek() {}
+
+    debug() {
+      const wireframe = new THREE.WireframeGeometry(
+        new THREE.SphereGeometry(this.radius),
+      );
+
+      const helper = new THREE.LineSegments(wireframe);
+      (helper.material as THREE.Material).depthTest = false;
+      (helper.material as THREE.Material).opacity = 0.25;
+      (helper.material as THREE.Material).transparent = true;
+
+      this.group.add(helper);
     }
   }
 
@@ -187,28 +338,15 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         this,
         this.hashPosition,
       );
-      this.debug();
-    }
-
-    debug() {
-      const wireframe = new THREE.WireframeGeometry(
-        new THREE.SphereGeometry(this.influenceRadius),
-      );
-
-      const helper = new THREE.LineSegments(wireframe);
-      (helper.material as THREE.Material).depthTest = false;
-      (helper.material as THREE.Material).opacity = 0.25;
-      (helper.material as THREE.Material).transparent = true;
-
-      this.group.add(helper);
+      if (settings.debug.leaderRadius) this.debug();
     }
   }
 
   function createBoids() {
     for (let i = 0; i < NUM_BOIDS; i++) {
       const f = new Boid({
-        speedMin: 3.0,
-        speedMax: 4.0,
+        speedMin: SPEED_MIN,
+        speedMax: SPEED_MAX,
         speed: BOID_SPEED,
         maxSteeringForce: BOID_FORCE_MAX,
         acceleration: BOID_ACCELERATION,
@@ -219,8 +357,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
     // Create leader
     const leader = new BoidLeader({
-      speedMin: 3.0,
-      speedMax: 4.0,
+      speedMin: SPEED_MIN,
+      speedMax: SPEED_MAX,
       speed: BOID_SPEED,
       maxSteeringForce: BOID_FORCE_MAX,
       acceleration: BOID_ACCELERATION,
@@ -229,44 +367,29 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
     boids.push(leader);
   }
-
   createBoids();
-  const helper = createDebugBounds([BOUNDS.width, BOUNDS.height, BOUNDS.depth]);
-  scene.add(helper);
-  const timeMultiplier = 0.001;
-  const leader = boids[boids.length - 1] as BoidLeader;
-  let localEntities: Boid[] = [];
+
+  const boundsHelper = createDebugBounds([
+    BOUNDS.width,
+    BOUNDS.height,
+    BOUNDS.depth,
+  ]);
+  function setupGUI() {
+    gui.addInput(settings, 'timeMultiplier', {
+      min: 0.05,
+      max: 500,
+      step: 0.01,
+    });
+  }
+  setupGUI();
 
   function animationLoop({ time }: BaseSceneState) {
     for (let i = 0; i < boids.length; i++) {
-      let isLocal =
-        localEntities.findIndex((b) => b.group.uuid === boids[i].group.uuid) !==
-        -1;
-      let isLeader = boids[i] instanceof BoidLeader;
-
-      if (
-        !isLeader &&
-        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.g === 1 &&
-        !isLocal
-      ) {
-        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.setHex(
-          0xc4c4c4,
-        );
-      }
-
-      if (isLocal) {
-        (boids[i].mesh.material as THREE.MeshBasicMaterial).color.set(0x00ff00);
-      }
-      boids[i].step(time * timeMultiplier);
+      boids[i].step(time * settings.timeMultiplier);
     }
-
-    // Update local for next frame
-    localEntities = hashGrid.getLocalEntities(
-      leader.position,
-      leader.influenceRadius,
-    );
   }
 
+  scene.add(boundsHelper);
   registerRenderCallback(animationLoop);
   isReady.set(true);
 </script>
