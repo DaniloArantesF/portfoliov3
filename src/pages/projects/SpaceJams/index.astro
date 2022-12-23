@@ -107,8 +107,8 @@ import { PlayerController } from '../../../components/PlayerController';
   function Scene() {
     /* ---------- Audio ---------- */
     let player = Player.getInstance();
-    uniforms.uData = { type: `uint[128]`, value: player.buffer };
-    uniforms.uStarLayerCount = { type: `f`, value: 3 };
+    uniforms.uData = { value: player.buffer };
+    uniforms.uStarLayerCount = { value: 3 };
 
     /* ---------- Scene ---------- */
     let speaker: THREE.Object3D, sky: THREE.Mesh;

@@ -10,6 +10,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import { rand } from '@utils/math';
   import SpatialGrid from '@lib/SpatialGrid';
   import { createDebugBounds } from '@lib/helpers';
+  import { loadGLTF } from '@lib/textureLoader';
+  import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
+  import lightVertexShader from './shaders/lightShader.vs.glsl?raw';
+  import lightFragmentShader from './shaders/lightShader.fs.glsl?raw';
 
   /* ---------------------------------------------- */
   /*                 Setup & Globals                */
@@ -31,7 +35,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ),
   );
 
-  const NUM_BOIDS = 100;
+  const NUM_BOIDS = 0;
   const BOID_SPEED = 1.5;
   const BOID_ACCELERATION = BOID_SPEED / 10;
   const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
@@ -56,7 +60,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const settings = {
     debug: {
       boidRadius: false,
-      leaderRadius: true,
+      leaderRadius: false,
     },
     timeMultiplier: 1,
     boidRadiusMultiplier: 3,
@@ -65,6 +69,49 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /* ---------------------------------------------- */
   /*                       Scene                    */
   /* ---------------------------------------------- */
+
+  let fireflyGeometry: THREE.Object3D;
+  let bodyGeometry: THREE.BufferGeometry;
+  let lightMesh: THREE.Mesh;
+  let wings: THREE.Group;
+  let firefly: THREE.Group;
+  let bodyMesh: THREE.Mesh;
+
+  let lightMaterial = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: lightVertexShader,
+    fragmentShader: lightFragmentShader,
+  });
+  let bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x6a4219 });
+  let bodyPartsMaterial = new THREE.MeshBasicMaterial({ color: 0x211408 });
+
+  function loadAssets() {
+    loadGLTF('/assets/models/firefly.glb', function (model) {
+      lightMesh = model.scene.children[1] as THREE.Mesh;
+
+      wings = new THREE.Group();
+      wings.add(model.scene.children[2], model.scene.children[3]);
+
+      // TODO: separate body parts
+      bodyGeometry = BufferGeometryUtils.mergeBufferGeometries(
+        model.scene.children[0].children.map((c) => (c as THREE.Mesh).geometry),
+      );
+
+      bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+      lightMesh.material = lightMaterial;
+
+      firefly = new THREE.Group();
+      firefly.add(bodyMesh);
+      firefly.add(wings);
+      firefly.add(lightMesh);
+
+      init();
+      isReady.set(true);
+    });
+  }
+
+  loadAssets();
+
   interface BoidParams {
     speedMin: number;
     speedMax: number;
@@ -75,7 +122,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   }
 
   class Boid {
-    public mesh: THREE.Mesh;
+    public mesh: THREE.Mesh | THREE.Group;
     public readonly group: THREE.Group;
     public position: THREE.Vector3;
     public direction: THREE.Vector3;
@@ -97,10 +144,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       color,
     }: BoidParams) {
       // Initialize boid, give it a random initial position and direction
-      this.mesh = new THREE.Mesh(
-        new THREE.ConeGeometry(2, 2 + speed * 2, 10, 10),
-        new THREE.MeshBasicMaterial({ color }),
-      );
+      this.mesh = firefly;
       this.position = new THREE.Vector3(
         rand(-BOUNDS.width / 2, BOUNDS.width / 2),
         rand(-BOUNDS.height / 4, BOUNDS.height / 4),
@@ -129,7 +173,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       const scale = 1.0 / speedMultiplier;
       this.radius = settings.boidRadiusMultiplier * scale;
       this.mesh.scale.setScalar(scale);
-      this.mesh.rotateX(-Math.PI / 2);
+      this.mesh.rotateY(Math.PI);
 
       scene.add(this.group);
       this.hashPosition = hashGrid.updateEntityPosition(this.group.uuid, this);
@@ -250,7 +294,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       const zDistance = BOUNDS.depth / 2 - Math.abs(position.z);
 
       const minDist = 0.5 + this.radius;
-      const wallSeparationForce = 1000;
+      const wallSeparationForce = 200;
 
       let multiplier = 0;
       let sign = 1;
@@ -395,7 +439,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
     boids.push(leader);
   }
-  createBoids();
 
   const boundsHelper = createDebugBounds([
     BOUNDS.width,
@@ -412,14 +455,17 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   }
   setupGUI();
 
-  const leader = boids[boids.length - 1];
   function animationLoop({ time }: BaseSceneState) {
     for (let i = 0; i < boids.length; i++) {
       boids[i].step(time * settings.timeMultiplier);
     }
   }
 
-  scene.add(boundsHelper);
-  registerRenderCallback(animationLoop);
-  isReady.set(true);
+  function init() {
+    createBoids();
+
+    const leader = boids[boids.length - 1];
+    scene.add(boundsHelper);
+    registerRenderCallback(animationLoop);
+  }
 </script>
