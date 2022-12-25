@@ -15,6 +15,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import lightVertexShader from './shaders/lightShader.vs.glsl?raw';
   import lightFragmentShader from './shaders/lightShader.fs.glsl?raw';
 
+  import { BufferGeometry } from 'three';
+
   /* ---------------------------------------------- */
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
@@ -35,7 +37,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ),
   );
 
-  const NUM_BOIDS = 200;
+  const NUM_BOIDS = 100;
   const BOID_SPEED = 1.5;
   const BOID_ACCELERATION = BOID_SPEED / 10;
   const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
@@ -69,55 +71,87 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /* ---------------------------------------------- */
   /*                       Scene                    */
   /* ---------------------------------------------- */
-  let bodyGeometry: THREE.InstancedBufferGeometry;
+  let bodyGeometry: THREE.BufferGeometry;
   let lightGeometry: THREE.BufferGeometry;
-
+  let legsGeometry: THREE.BufferGeometry,
+    lWingGeometry: THREE.BufferGeometry,
+    rWingGeometry: THREE.BufferGeometry,
+    eyesGeometry: THREE.BufferGeometry;
   let bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x6a4219 });
   let bodyPartsMaterial = new THREE.MeshBasicMaterial({ color: 0x211408 });
+
   let instancedBodyMesh: THREE.InstancedMesh;
-  let instancedWings: THREE.InstancedMesh;
+  let instancedLegsMesh: THREE.InstancedMesh;
+  let instancedLeftWing: THREE.InstancedMesh;
+  let instancedRightWing: THREE.InstancedMesh;
+  let instancedEyes: THREE.InstancedMesh;
+
+  const instancedMeshes: THREE.InstancedMesh[] = [];
 
   function loadAssets() {
     loadGLTF('/assets/models/firefly.glb', function (model) {
-      lightGeometry = (model.scene.children[1] as THREE.Mesh).geometry; //new THREE.InstancedBufferGeometry().copy((model.scene.children[1] as THREE.Mesh).geometry);
-
-      const bodyBufferGeometry = BufferGeometryUtils.mergeBufferGeometries(
-        model.scene.children[0].children.map((c) => (c as THREE.Mesh).geometry),
-      );
-
-      // TODO: separate body parts
-      bodyGeometry = new THREE.InstancedBufferGeometry().copy(
-        bodyBufferGeometry,
-      );
-
-      const wingsMergedGeometry = [
-        model.scene.children[2],
-        model.scene.children[3],
-      ].reduce((prev, cur) => {
-        const geometries = (cur as THREE.Group).children.map(
+      lightGeometry = (model.scene.children[1] as THREE.Mesh).geometry;
+      bodyGeometry = (model.scene.children[0].children[0] as THREE.Mesh)
+        .geometry;
+      lWingGeometry = BufferGeometryUtils.mergeBufferGeometries(
+        (model.scene.children[2] as THREE.Group).children.map(
           (c) => (c as THREE.Mesh).geometry,
-        );
-        prev.push(...geometries);
-        return prev;
-      }, [] as THREE.BufferGeometry[]);
-
-      const wingsBufferGeometry =
-        BufferGeometryUtils.mergeBufferGeometries(wingsMergedGeometry);
-
-      instancedWings = new THREE.InstancedMesh(
-        wingsBufferGeometry,
-        bodyPartsMaterial,
-        NUM_BOIDS + 1,
+        ),
       );
+      rWingGeometry = BufferGeometryUtils.mergeBufferGeometries(
+        (model.scene.children[3] as THREE.Group).children.map(
+          (c) => (c as THREE.Mesh).geometry,
+        ),
+      );
+      eyesGeometry = (model.scene.children[0].children[3] as THREE.Mesh)
+        .geometry;
+      legsGeometry = BufferGeometryUtils.mergeBufferGeometries([
+        (model.scene.children[0].children[1] as THREE.Mesh).geometry,
+        (model.scene.children[0].children[2] as THREE.Mesh).geometry,
+      ]);
+
+      legsGeometry.scale(0.9, 0.9, 0.9);
+      lWingGeometry.scale(0.9, 0.9, 0.9);
+      rWingGeometry.scale(0.9, 0.9, 0.9);
+
       instancedBodyMesh = new THREE.InstancedMesh(
         bodyGeometry,
         bodyMaterial,
         NUM_BOIDS + 1,
       );
-      instancedBodyMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      instancedLegsMesh = new THREE.InstancedMesh(
+        legsGeometry,
+        bodyPartsMaterial,
+        NUM_BOIDS + 1,
+      );
+      instancedLeftWing = new THREE.InstancedMesh(
+        lWingGeometry,
+        bodyPartsMaterial,
+        NUM_BOIDS + 1,
+      );
+      instancedRightWing = new THREE.InstancedMesh(
+        rWingGeometry,
+        bodyPartsMaterial,
+        NUM_BOIDS + 1,
+      );
+      instancedEyes = new THREE.InstancedMesh(
+        eyesGeometry,
+        bodyPartsMaterial,
+        NUM_BOIDS + 1,
+      );
 
-      scene.add(instancedBodyMesh);
-      scene.add(instancedWings);
+      instancedMeshes.push(
+        instancedBodyMesh,
+        instancedLegsMesh,
+        instancedRightWing,
+        instancedLeftWing,
+        instancedEyes,
+      );
+
+      for (let i = 0; i < instancedMeshes.length; i++) {
+        instancedMeshes[i].instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        scene.add(instancedMeshes[i]);
+      }
 
       init();
       isReady.set(true);
@@ -161,35 +195,38 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }: BoidParams) {
       // Initialize boid, give it a random initial position and direction
       this.index = index;
-      this.position = new THREE.Vector3(
-        rand(-BOUNDS.width / 2, BOUNDS.width / 2),
-        rand(-BOUNDS.height / 4, BOUNDS.height / 4),
-        rand(-BOUNDS.depth / 2, BOUNDS.depth / 2),
-      );
-
       this.group = new THREE.Group();
-      this.group.position.set(
-        this.position.x,
-        this.position.y,
-        this.position.z,
-      );
 
       let lightMaterial = new THREE.ShaderMaterial({
         uniforms: {
           ...uniforms,
           index: { value: this.index },
           randomColor: {
-            value: new THREE.Color(Math.random(), Math.random(), Math.random()),
+            value: new THREE.Color(
+              Math.random() > 0.5 ? 1 : 0,
+              Math.random() > 0.5 ? 1 : 0,
+              Math.random() > 0.5 ? 1 : 0,
+            ),
           },
         },
         vertexShader: lightVertexShader,
         fragmentShader: lightFragmentShader,
       });
       const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
-
       lightMesh.material.uniforms.index = { value: this.index };
-
       this.group.add(lightMesh);
+
+      this.position = new THREE.Vector3(
+        rand(-BOUNDS.width / 2, BOUNDS.width / 2),
+        rand(-BOUNDS.height / 4, BOUNDS.height / 4),
+        rand(-BOUNDS.depth / 2, BOUNDS.depth / 2),
+      );
+
+      this.group.position.set(
+        this.position.x,
+        this.position.y,
+        this.position.z,
+      );
 
       this.direction = new THREE.Vector3(rand(-1, 1), 0, rand(-1, 1));
       this.velocity = this.direction.clone();
@@ -208,8 +245,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       this.group.updateMatrix();
 
       // Update instance matrix
-      instancedBodyMesh.setMatrixAt(index, this.group.matrix);
-      instancedWings.setMatrixAt(index, this.group.matrix);
+      for (let i = 0; i < instancedMeshes.length; i++) {
+        instancedMeshes[i].setMatrixAt(index, this.group.matrix);
+      }
 
       // Set hash position
       this.hashPosition = hashGrid.updateEntityPosition(this.group.uuid, this);
@@ -250,8 +288,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       // Update instance
       this.group.rotateY(Math.PI);
       this.group.updateMatrix();
-      instancedBodyMesh.setMatrixAt(this.index, this.group.matrix);
-      instancedWings.setMatrixAt(this.index, this.group.matrix);
+
+      for (let i = 0; i < instancedMeshes.length; i++) {
+        instancedMeshes[i].setMatrixAt(this.index, this.group.matrix);
+      }
     }
 
     // Apply steering behaviors
@@ -480,7 +520,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       acceleration: BOID_ACCELERATION,
       color: 0xff0000,
     });
-
     boids.push(leader);
   }
 
@@ -499,18 +538,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   }
   setupGUI();
 
-  function animationLoop({ time }: BaseSceneState) {
+  function animationLoop({ time, delta }: BaseSceneState) {
     for (let i = 0; i < boids.length; i++) {
       boids[i].step(time * settings.timeMultiplier);
     }
-    instancedBodyMesh.instanceMatrix.needsUpdate = true;
-    instancedWings.instanceMatrix.needsUpdate = true;
+
+    for (let i = 0; i < instancedMeshes.length; i++) {
+      instancedMeshes[i].instanceMatrix.needsUpdate = true;
+    }
   }
 
   function init() {
     createBoids();
-
-    const leader = boids[boids.length - 1];
     scene.add(boundsHelper);
     registerRenderCallback(animationLoop);
   }
