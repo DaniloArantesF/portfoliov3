@@ -20,6 +20,7 @@ export interface BaseSceneSettings {
   orbitControls: boolean;
   sceneDebugControls: boolean;
   zoom: number;
+  axesHelper: boolean;
 }
 
 interface BaseSceneProps {
@@ -64,6 +65,7 @@ let settings: BaseSceneSettings = {
   antialias: true,
   sceneDebugControls: true,
   zoom: 1,
+  axesHelper: false,
 };
 
 // TODO: Allow all base functions to be overwritten or hooked into
@@ -129,6 +131,11 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enabled = settings.orbitControls;
     orbitControls.autoRotateSpeed = 0.5;
+
+    if (settings.axesHelper) {
+      const axesHelper = new THREE.AxesHelper(5);
+      scene.add(axesHelper);
+    }
 
     if (settings.gridHelper) {
       const gridHelper = new THREE.GridHelper(10, 10);

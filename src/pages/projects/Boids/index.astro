@@ -7,15 +7,14 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 <script>
   import * as THREE from 'three';
   import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
-  import { rand } from '@utils/math';
+  import { lerp, rand } from '@utils/math';
   import SpatialGrid from '@lib/SpatialGrid';
   import { createDebugBounds } from '@lib/helpers';
   import { loadGLTF } from '@lib/textureLoader';
   import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
   import lightVertexShader from './shaders/lightShader.vs.glsl?raw';
   import lightFragmentShader from './shaders/lightShader.fs.glsl?raw';
-
-  import { BufferGeometry } from 'three';
+  import { damp } from 'three/src/math/MathUtils';
 
   /* ---------------------------------------------- */
   /*                 Setup & Globals                */
@@ -24,13 +23,13 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const { state, registerRenderCallback, unregisterRenderCallback, utils } =
     BaseScene({
       canvas,
-      settings: { cameraPosition: [0, 0, 100], orbitControls: true },
+      settings: { cameraPosition: [0, 50, 200], orbitControls: true },
     });
 
   const { scene, renderer, camera, uniforms } = state;
   const { gui } = utils;
 
-  const BOUNDS = { width: 100, height: 100, depth: 100 };
+  const BOUNDS = { width: 500, height: 200, depth: 500 };
   const BOUNDS_RADIUS = new THREE.Vector3(0, 0, 0).distanceTo(
     new THREE.Vector3().addScalar(
       Math.max(BOUNDS.width, BOUNDS.height, BOUNDS.depth) / 2,
@@ -41,9 +40,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const BOID_SPEED = 1.5;
   const BOID_ACCELERATION = BOID_SPEED / 10;
   const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
-  const BOID_FORCE_SEEK = 5;
+  const BOID_FORCE_SEEK = 2;
   const BOID_FORCE_ALIGNMENT = 10;
-  const BOID_FORCE_SEPARATION = 20;
+  const BOID_FORCE_SEPARATION = 30;
   const BOID_FORCE_COHESION = 10;
   const BOID_FORCE_WANDER = 3;
 
@@ -55,17 +54,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       new THREE.Vector3(-BOUNDS.width / 2, 0, -BOUNDS.depth / 2),
       new THREE.Vector3(BOUNDS.width / 2, 0, BOUNDS.depth / 2),
     ],
-    dimensions: [10, 10],
+    dimensions: [100, 100],
   });
+
   const boids: Boid[] = [];
+  const lights: LightEntity[] = [];
 
   const settings = {
     debug: {
       boidRadius: false,
-      leaderRadius: false,
+      leaderRadius: true,
     },
     timeMultiplier: 1,
-    boidRadiusMultiplier: 3,
   };
 
   /* ---------------------------------------------- */
@@ -77,8 +77,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     lWingGeometry: THREE.BufferGeometry,
     rWingGeometry: THREE.BufferGeometry,
     eyesGeometry: THREE.BufferGeometry;
-  let bodyMaterial = new THREE.MeshBasicMaterial({ color: 0x6a4219 });
-  let bodyPartsMaterial = new THREE.MeshBasicMaterial({ color: 0x211408 });
+  let bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x6a4219 });
+  let bodyPartsMaterial = new THREE.MeshPhongMaterial({ color: 0x211408 });
 
   let instancedBodyMesh: THREE.InstancedMesh;
   let instancedLegsMesh: THREE.InstancedMesh;
@@ -110,34 +110,34 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         (model.scene.children[0].children[2] as THREE.Mesh).geometry,
       ]);
 
-      legsGeometry.scale(0.9, 0.9, 0.9);
+      legsGeometry.scale(0.7, 0.7, 0.7);
       lWingGeometry.scale(0.9, 0.9, 0.9);
       rWingGeometry.scale(0.9, 0.9, 0.9);
 
       instancedBodyMesh = new THREE.InstancedMesh(
         bodyGeometry,
         bodyMaterial,
-        NUM_BOIDS + 1,
+        NUM_BOIDS,
       );
       instancedLegsMesh = new THREE.InstancedMesh(
         legsGeometry,
         bodyPartsMaterial,
-        NUM_BOIDS + 1,
+        NUM_BOIDS,
       );
       instancedLeftWing = new THREE.InstancedMesh(
         lWingGeometry,
         bodyPartsMaterial,
-        NUM_BOIDS + 1,
+        NUM_BOIDS,
       );
       instancedRightWing = new THREE.InstancedMesh(
         rWingGeometry,
         bodyPartsMaterial,
-        NUM_BOIDS + 1,
+        NUM_BOIDS,
       );
       instancedEyes = new THREE.InstancedMesh(
         eyesGeometry,
         bodyPartsMaterial,
-        NUM_BOIDS + 1,
+        NUM_BOIDS,
       );
 
       instancedMeshes.push(
@@ -167,7 +167,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     speed: number;
     maxSteeringForce: number;
     acceleration: number;
-    color: number;
   }
 
   class Boid {
@@ -181,7 +180,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     public radius: number; // (used for collision detection)
     private wanderAngle: number;
     public hashPosition: [number, number]; // cur index of hash grid
-    // maybe add prev position ?
     public index: number;
 
     constructor({
@@ -190,31 +188,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       speed,
       maxSteeringForce,
       acceleration,
-      color,
       index,
     }: BoidParams) {
       // Initialize boid, give it a random initial position and direction
       this.index = index;
       this.group = new THREE.Group();
-
-      let lightMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          ...uniforms,
-          index: { value: this.index },
-          randomColor: {
-            value: new THREE.Color(
-              Math.random() > 0.5 ? 1 : 0,
-              Math.random() > 0.5 ? 1 : 0,
-              Math.random() > 0.5 ? 1 : 0,
-            ),
-          },
-        },
-        vertexShader: lightVertexShader,
-        fragmentShader: lightFragmentShader,
-      });
-      const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
-      lightMesh.material.uniforms.index = { value: this.index };
-      this.group.add(lightMesh);
 
       this.position = new THREE.Vector3(
         rand(-BOUNDS.width / 2, BOUNDS.width / 2),
@@ -228,7 +206,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         this.position.z,
       );
 
-      this.direction = new THREE.Vector3(rand(-1, 1), 0, rand(-1, 1));
+      this.direction = new THREE.Vector3(
+        rand(-1, 1),
+        rand(-0.5, 0.5),
+        rand(-1, 1),
+      );
       this.velocity = this.direction.clone();
 
       // Calculate the boid's speed and scale based on the provided parameters
@@ -240,7 +222,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
       // Scale down based on speed multiplier
       const scale = 1.0 / speedMultiplier;
-      this.radius = settings.boidRadiusMultiplier * scale;
+      const radiusMultiplier = 15;
+      this.radius = radiusMultiplier * scale;
       this.group.scale.setScalar(scale);
       this.group.updateMatrix();
 
@@ -298,11 +281,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     applySteering(localEntities: Boid[]) {
       const steeringForce = new THREE.Vector3(0, 0, 0);
       const forces = [
-        this.applySeek(new THREE.Vector3(0, BOUNDS.height / 4, 0)),
         this.applyAlignment(localEntities),
         this.applySeparation(localEntities),
         this.applyCohesion(localEntities),
         this.avoidWalls(true), // smoothly avoid bounds
+        ...lights.map((l) => this.applySeek(l.position)), // seek lights
       ];
 
       for (const f of forces) {
@@ -367,7 +350,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
 
     // Calculates distance to bounds and avoids them
-    avoidWalls(smooth = false, wallSeparationForce = 10) {
+    avoidWalls(smooth = false, wallSeparationForce = 20) {
       const position = this.group.position.clone();
       const force = new THREE.Vector3(0, 0, 0);
 
@@ -450,12 +433,19 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       return directionToTarget;
     }
 
-    applySeek(target: THREE.Vector3, seekMinRadius = 50) {
-      const distance =
-        Math.max(
-          0,
-          (this.position.distanceTo(target) - seekMinRadius) / BOUNDS_RADIUS,
-        ) ** 2;
+    applySeek(
+      target: THREE.Vector3,
+      seekMinRadius = BOUNDS_RADIUS / 8,
+      seekMaxRadius = BOUNDS_RADIUS / 4,
+    ) {
+      const distance = Math.max(
+        0,
+        (this.position.distanceTo(target) - seekMinRadius) / BOUNDS_RADIUS,
+      );
+
+      // Limit range of seek
+      if (distance > seekMaxRadius / BOUNDS.width)
+        return new THREE.Vector3(0, 0, 0);
 
       const direction = target.clone().sub(this.position).normalize();
       const force = direction.multiplyScalar(BOID_FORCE_SEEK * distance);
@@ -479,55 +469,149 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
   }
 
-  class BoidLeader extends Boid {
-    public influenceRadius: number;
+  interface FireflyParams extends BoidParams {
+    color: THREE.Color;
+  }
 
-    constructor(params: BoidParams) {
+  class Firefly extends Boid {
+    public color: THREE.Color;
+    public frequency: number;
+    private lightUniforms: { [key: string]: THREE.IUniform };
+    public nearestLight: LightEntity | null;
+
+    constructor(params: FireflyParams) {
       super(params);
-      this.group.position.set(0, 0, 0);
-      this.position = this.group.position;
-      this.influenceRadius = 15;
-      this.hashPosition = hashGrid.updateEntityPosition(
-        this.group.uuid,
-        this,
-        this.hashPosition,
+      this.color = params.color;
+      this.frequency = Math.random() * 5;
+
+      this.lightUniforms = {
+        ...uniforms,
+        index: { value: this.index },
+        color: {
+          value: this.color,
+        },
+        frequency: {
+          value: this.frequency,
+        },
+      };
+
+      let lightMaterial = new THREE.ShaderMaterial({
+        uniforms: this.lightUniforms,
+        vertexShader: lightVertexShader,
+        fragmentShader: lightFragmentShader,
+      });
+
+      const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
+      lightMesh.material.uniforms.index = { value: this.index };
+      this.group.add(lightMesh);
+
+      this.nearestLight = this.syncNearestLight();
+    }
+
+    // loop through lights, sync color and progressively sync frequency
+    syncNearestLight() {
+      let minDistance1 = Infinity;
+      let minDistance2 = Infinity;
+      let closestObject1 = null,
+        closestObject2 = null;
+
+      for (const light of lights) {
+        const distance = light.position.distanceTo(this.position);
+        if (distance < minDistance1) {
+          minDistance2 = minDistance1;
+          closestObject2 = closestObject1;
+          minDistance1 = distance;
+          closestObject1 = light;
+        } else if (distance < minDistance2) {
+          minDistance2 = distance;
+          closestObject2 = light;
+        }
+      }
+
+      if (closestObject1 && this.color !== closestObject1.color) {
+        this.color.lerp(
+          closestObject1.color,
+          minDistance1 / (minDistance1 + minDistance2),
+        );
+        this.lightUniforms.color.value = this.color;
+      }
+
+      if (!closestObject1) return null;
+
+      this.frequency = damp(this.frequency, closestObject1.frequency, 1, 0.5);
+
+      this.lightUniforms.frequency.value = this.frequency;
+      return closestObject1;
+    }
+
+    step(timeMs: number) {
+      this.syncNearestLight();
+      super.step(timeMs);
+    }
+  }
+
+  class LightEntity {
+    public position: THREE.Vector3;
+    public frequency: number;
+    public color: THREE.Color;
+    public intensity: number;
+    public distance: number;
+    private light: THREE.PointLight;
+
+    constructor(
+      position: THREE.Vector3,
+      frequency: number,
+      color: THREE.Color,
+    ) {
+      this.position = position;
+      this.frequency = frequency;
+      this.color = color;
+      this.intensity = 0.5;
+      this.distance = 1.5 * BOUNDS.height;
+
+      this.light = new THREE.PointLight(
+        this.color,
+        this.intensity,
+        this.distance,
       );
-      if (settings.debug.leaderRadius) this.debug();
+      this.light.position.copy(this.position);
+
+      scene.add(this.light);
+      this.debug();
+    }
+
+    debug() {
+      const lightHelper = new THREE.PointLightHelper(this.light, 2);
+      scene.add(lightHelper);
     }
   }
 
   function createBoids() {
-    for (let i = 0; i < NUM_BOIDS; i++) {
-      const f = new Boid({
+    for (let i = 0; i < NUM_BOIDS - 1; i++) {
+      const b = new Firefly({
         index: i,
         speedMin: SPEED_MIN,
         speedMax: SPEED_MAX,
         speed: BOID_SPEED,
         maxSteeringForce: BOID_FORCE_MAX,
         acceleration: BOID_ACCELERATION,
-        color: 0xc4c4c4,
+        color: new THREE.Color(1, 1, 1),
       });
-      boids.push(f);
+      boids.push(b);
     }
 
     // Create leader
-    const leader = new BoidLeader({
-      index: NUM_BOIDS,
+    const leader = new Firefly({
+      index: NUM_BOIDS - 1,
       speedMin: SPEED_MIN,
       speedMax: SPEED_MAX,
       speed: BOID_SPEED,
       maxSteeringForce: BOID_FORCE_MAX,
       acceleration: BOID_ACCELERATION,
-      color: 0xff0000,
+      color: new THREE.Color(1, 1, 1),
     });
     boids.push(leader);
   }
-
-  const boundsHelper = createDebugBounds([
-    BOUNDS.width,
-    BOUNDS.height,
-    BOUNDS.depth,
-  ]);
 
   function setupGUI() {
     gui.addInput(settings, 'timeMultiplier', {
@@ -536,7 +620,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       step: 0.01,
     });
   }
-  setupGUI();
 
   function animationLoop({ time, delta }: BaseSceneState) {
     for (let i = 0; i < boids.length; i++) {
@@ -548,9 +631,51 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
   }
 
+  function createLights() {
+    const light1 = new LightEntity(
+      new THREE.Vector3(0, BOUNDS.height / 3, -BOUNDS.depth / 4),
+      1,
+      new THREE.Color(1, 0, 0),
+    );
+    const light2 = new LightEntity(
+      new THREE.Vector3(-BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
+      2,
+      new THREE.Color(0, 1, 0),
+    );
+    const light3 = new LightEntity(
+      new THREE.Vector3(BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
+      3,
+      new THREE.Color(0, 0, 1),
+    );
+
+    const hemisphereLight = new THREE.HemisphereLight(0x262626, 0xc4c4c4, 0.55);
+    scene.add(hemisphereLight);
+
+    return { light1, light2, light3, hemisphereLight };
+  }
+
   function init() {
+    setupGUI();
+
+    const plane = new THREE.PlaneGeometry(BOUNDS.width, BOUNDS.depth, 10, 10);
+    const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xc4c4c4 });
+    const groundMesh = new THREE.Mesh(plane, groundMaterial);
+    groundMesh.rotation.x -= Math.PI / 2;
+    groundMesh.position.y = -BOUNDS.height / 2;
+
+    const boundsHelper = createDebugBounds([
+      BOUNDS.width,
+      BOUNDS.height,
+      BOUNDS.depth,
+    ]);
+
+    const { light1, light2, light3, hemisphereLight } = createLights();
+    lights.push(light1, light2, light3);
+
     createBoids();
+
     scene.add(boundsHelper);
+    scene.add(groundMesh);
     registerRenderCallback(animationLoop);
   }
 </script>

@@ -1,3 +1,7 @@
+export function lerp(n: number, min: number, max: number) {
+  return min + (max - min) * n;
+}
+
 export function clamp(n: number, min: number, max: number) {
   return n <= min ? min : n >= max ? max : n;
 }
