@@ -4,14 +4,14 @@ precision mediump float;
 
 #define TAU 6.28318530718
 
-uniform vec2 uResolution;
 uniform float uScale;
+uniform float uTime;
+uniform vec2 uResolution;
+varying float intensity;
+varying float vAmplitude;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
-varying float intensity;
-varying float vAmplitude;
-varying float vTime;
 
 
 //  Simplex 3D Noise
@@ -118,10 +118,10 @@ void main(){
   vec2 id = floor(uv);
   vec2 gv = fract(uv) - .5;
 
-  color = abs(cells(id, vTime, noiseSpeed, noiseScale, maxShades));
+  color = abs(cells(id, uTime, noiseSpeed, noiseScale, maxShades));
   float w = color.w;
 
-  color.xyz *= mix(color3, color2, step(.7 - .1 * step(.5, sin(vTime/1. + intensity / vAmplitude / 2.)/.2 + .5), color.xyz)) * 1.;
+  color.xyz *= mix(color3, color2, step(.7 - .1 * step(.5, sin(uTime/1. + intensity / vAmplitude / 2.)/.2 + .5), color.xyz)) * 1.;
 
   // Cut off corners
   color -= step(.49, uv.y / cellCount.y);
@@ -131,6 +131,5 @@ void main(){
   if (color.xyz == vec3(0.)) {
     gl_FragColor = vec4(color1, w) * .9;
   }
-
 }
 

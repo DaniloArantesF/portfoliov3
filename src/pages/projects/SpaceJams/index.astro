@@ -1,16 +1,8 @@
 ---
 import SceneLayout from 'src/layouts/SceneLayout.astro';
-import { PlayerController } from '../../../components/PlayerController';
 ---
 
-<SceneLayout title="SpaceJams">
-  <div id="player_container">
-    <audio></audio>
-    <div class="controls">
-      <PlayerController client:only="react" />
-    </div>
-  </div>
-</SceneLayout>
+<SceneLayout title="SpaceJams" audio />
 
 <script>
   import * as THREE from 'three';

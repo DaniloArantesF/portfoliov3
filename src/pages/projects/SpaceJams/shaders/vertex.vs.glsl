@@ -1,16 +1,14 @@
-varying vec2 vUv;
-varying vec3 vNormal;
-varying float vAmplitude;
-uniform float uTime;
-varying vec3 vPosition;
-
-varying float intensity;
-varying vec3 normalizedPosition;
-
-#define BIN_COUNT 128.
+#define BIN_COUNT 32.
 #define SCALE 64.
 
-uniform float[128] uData;
+uniform float uTime;
+uniform uint[int(BIN_COUNT)] uData;
+varying float intensity;
+varying float vAmplitude;
+varying vec2 vUv;
+varying vec3 normalizedPosition;
+varying vec3 vNormal;
+varying vec3 vPosition;
 
 void main() {
   // Pass uv data to fragment shader
@@ -19,12 +17,10 @@ void main() {
   vAmplitude = 15.;
   vNormal = normalize(normalMatrix * normal);
 
-  // Update vertex position
   float scale = 50.;
-
   normalizedPosition = abs(position/SCALE);
-  float freq = (64. * normalizedPosition.y);
-  intensity = sin(uData[int(round(freq))] / 24.) * vAmplitude;
+  float freq = (BIN_COUNT * normalizedPosition.y);
+  intensity = sin(float(uData[int(round(freq))]) / 24.) * vAmplitude;
 
   gl_PointSize = 1. + 1.5 * smoothstep(0.2, .8, (1. - normalizedPosition.y)) + .5 * (1. - intensity/vAmplitude);
 

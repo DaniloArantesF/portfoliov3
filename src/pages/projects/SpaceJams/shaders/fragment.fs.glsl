@@ -7,12 +7,11 @@ precision mediump float;
 #define SCALE 64.
 
 uniform vec2 uResolution;
+varying float intensity;
+varying float vAmplitude;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
-
-varying float vAmplitude;
-varying float intensity;
 
 float lines(vec2 uv, float offset) {
   return smoothstep(.5, .5 + offset, uv.x);

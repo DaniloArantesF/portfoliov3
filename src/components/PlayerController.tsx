@@ -2,29 +2,29 @@ import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import '../styles/player.scss';
 import { clamp } from '../utils/math';
 import { msToMinSec } from '../utils/time';
-import player from './Player';
+import { usePlayer } from './Player';
+import { useStore } from '@nanostores/react';
 
 // frequency player controller will update progress
 const POOLING_RATE = 1000;
 
 export function PlayerController() {
   const audioRef = useRef<HTMLAudioElement>(document.querySelector('audio'));
+  const player = useStore(usePlayer);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const [customTrack, setCustomTrack] = useState(false);
   const progressInterval = useRef<NodeJS.Timer>();
   const progressBarRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef(player.getInstance());
-  const [loaded, setLoaded] = useState(false);
-  const [customTrack, setCustomTrack] = useState(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
-    playerRef.current?.loadDefaultSong();
 
     audioEl.addEventListener('play', function () {
       setPlaying(true);
@@ -57,6 +57,7 @@ export function PlayerController() {
       setPlaying(false);
     });
 
+    // TODO: cleanup event listeners
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
@@ -68,7 +69,9 @@ export function PlayerController() {
 
   function handlePlay() {
     if (!loaded) return;
-    if (!playerRef.current.audioContext) {
+
+    // Audio context needs to be initialized by user interaction **
+    if (!player.audioContext) {
       player.initContext();
     }
     audioRef.current?.play();
@@ -88,7 +91,6 @@ export function PlayerController() {
     }
   }
 
-  // TODO: handle seek when mouse leaves container
   function handleSeek(event: React.MouseEvent<HTMLDivElement>) {
     const { left, width } = progressBarRef.current!.getBoundingClientRect();
     const mouseX = event.clientX - left;
@@ -98,7 +100,7 @@ export function PlayerController() {
   }
 
   function ejectFile() {
-    playerRef.current.loadDefaultSong();
+    player.loadDefaultSong();
     setCustomTrack(false);
   }
 

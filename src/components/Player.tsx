@@ -1,6 +1,5 @@
-import atom from 'nanostores';
+import { atom } from 'nanostores';
 
-// TODO: don't do anything if audio is not present
 class Player {
   private static player: Player;
   audioContext: AudioContext | null;
@@ -19,27 +18,25 @@ class Player {
     this.loadDefaultSong();
   }
 
-  public static initContext = () => {
-    const player = Player.getInstance();
-
+  public initContext = () => {
     let AudioContext =
       window.AudioContext || (window as any).webkitAudioContext;
-    player.audioContext = new AudioContext();
-    player.source = player.audioContext.createMediaElementSource(player.audio);
+    this.audioContext = new AudioContext();
+    this.source = this.audioContext.createMediaElementSource(this.audio);
 
     // exposes audio time and frequency data
-    player.analyser = player.audioContext.createAnalyser();
+    this.analyser = this.audioContext.createAnalyser();
 
     // pipe audio source through analyzer
-    player.source.connect(player.analyser);
+    this.source.connect(this.analyser);
 
     // output audio to default speaker device
-    player.analyser.connect(player.audioContext.destination);
-    player.analyser.fftSize = 64; // sampling rate
+    this.analyser.connect(this.audioContext.destination);
+    this.analyser.fftSize = 64; // sampling rate
 
     // array holding 8-bit integers representing frequencies
     // analyser.frequencyBinCount is equal to fftSize / 2
-    player.buffer = new Uint8Array(player.analyser.frequencyBinCount);
+    this.buffer = new Uint8Array(this.analyser.frequencyBinCount);
   };
 
   public static getInstance = () => {
@@ -55,4 +52,5 @@ class Player {
   }
 }
 
+export const usePlayer = atom<Player>(Player.getInstance());
 export default Player;

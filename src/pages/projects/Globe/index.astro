@@ -1,16 +1,8 @@
 ---
 import SceneLayout from 'src/layouts/SceneLayout.astro';
-import { PlayerController } from '../../../components/PlayerController';
 ---
 
-<SceneLayout title="SpaceJams">
-  <div id="player_container">
-    <audio src="/assets/songs/song1.mp3" preload=""></audio>
-    <div class="controls">
-      <PlayerController client:only="react" />
-    </div>
-  </div>
-</SceneLayout>
+<SceneLayout title="Globe" audio />
 
 <script>
   import * as THREE from 'three';
@@ -19,7 +11,7 @@ import { PlayerController } from '../../../components/PlayerController';
   import fragmentShader from './shaders/fragment.fs.glsl?raw';
   import globePassVertexShader from './shaders/globePass.vs.glsl?raw';
   import globePassFragmentShader from './shaders/globePass.fs.glsl?raw';
-  import Player from 'src/components/Player';
+  import { usePlayer } from 'src/components/Player';
   import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
 
   /* ---------------------------------------------- */
@@ -48,7 +40,7 @@ import { PlayerController } from '../../../components/PlayerController';
     let globePass: ShaderPass;
 
     /* ---------- Audio ---------- */
-    let player = Player.getInstance();
+    let player = usePlayer.get();
     uniforms.uData = { value: player.buffer };
 
     /* ---------- Geometry  ---------- */
@@ -171,38 +163,5 @@ import { PlayerController } from '../../../components/PlayerController';
 </script>
 
 <style>
-  #player_container {
-    display: inline-flex;
-    flex-direction: column;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    row-gap: 1rem;
-  }
 
-  #play_btn {
-    position: absolute;
-    width: 2rem;
-    height: 2rem;
-    bottom: 3px;
-    left: calc(50% - 125px);
-    transform: translateX(-50%);
-    background: transparent;
-    border: none;
-    z-index: 99;
-    cursor: pointer;
-  }
-
-  .controls {
-    position: relative;
-    z-index: 99;
-    display: flex;
-    flex-direction: column;
-    row-gap: 2rem;
-    transform: scale(0.9);
-  }
 </style>

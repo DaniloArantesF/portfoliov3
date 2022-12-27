@@ -5,14 +5,13 @@ precision mediump float;
 #define TAU 6.28318530718
 #define GRID_SCALE 10.
 
+uniform float uStarLayerCount;
+uniform float uTime;
 uniform vec2 uResolution;
-varying float vTime;
-varying vec2 vUv;
-varying vec3 vNormal;
-uniform float uTest;
 varying float intensity;
 varying float vAmplitude;
-varying float vStarLayerCount;
+varying vec2 vUv;
+varying vec3 vNormal;
 
 mat2 Rot(float a) {
   float s = sin(a);
@@ -31,7 +30,7 @@ float Star(vec2 uv, float flare) {
   // Add second flair
   uv *= Rot(3.1415/4.); // rotate 45 degres
   rays =  max(0., 1. - abs(uv.x * uv.y * 700.));
-  star += rays * .3 * flare + .1 * (sin(vTime*2.)/2.+.5)/2.;
+  star += rays * .3 * flare + .1 * (sin(uTime*2.)/2.+.5)/2.;
 
   // limit light propagation
   star *= smoothstep(0.4, 0., d);
@@ -73,12 +72,12 @@ vec3 Stars(vec2 uv) {
 void main(){
   vec2 uv = (vUv - .5);
   vec3 color = vec3(0.);
-  float NUM_LAYERS = vStarLayerCount;
-  uv *= Rot(vTime/50.);
+  float NUM_LAYERS = uStarLayerCount;
+  uv *= Rot(uTime/50.);
 
   float scale = 1.;
   for (float  i = 0.; i < 1.; i+= 1./NUM_LAYERS) {
-    float depth = fract(i+vTime/15.);
+    float depth = fract(i+uTime/15.);
     scale = mix(10., .5, depth);
 
     float fade = sin(depth * TAU / 2.);
