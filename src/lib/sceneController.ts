@@ -26,7 +26,10 @@ export interface BaseSceneSettings {
 interface BaseSceneProps {
   canvas: HTMLCanvasElement;
   settings?: Partial<BaseSceneSettings>;
+  onResize?: () => void;
 }
+
+type SceneHook = 'onResize';
 
 export interface Uniforms {
   [key: string]: THREE.IUniform;
@@ -54,6 +57,7 @@ export const isReady = atom(false);
 export const loadingProgress = atom(-1);
 
 let settings: BaseSceneSettings = {
+  axesHelper: false,
   cameraPosition: [0, 0, 1],
   aspect: window.innerWidth / window.innerHeight,
   near: 0.1,
@@ -65,11 +69,13 @@ let settings: BaseSceneSettings = {
   antialias: true,
   sceneDebugControls: true,
   zoom: 1,
-  axesHelper: false,
 };
 
-// TODO: Allow all base functions to be overwritten or hooked into
-const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
+const BaseScene = ({
+  canvas,
+  settings: customSettings,
+  onResize = () => {},
+}: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
   let scene: THREE.Scene,
@@ -139,7 +145,6 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
 
     if (settings.gridHelper) {
       const gridHelper = new THREE.GridHelper(10, 10);
-      // gridHelper.rotateX(Math.PI / 2);
       scene.add(gridHelper);
     }
 
@@ -150,6 +155,7 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     handleEvents();
   }
 
+  /* ---------- Events ---------- */
   function handleEvents() {
     canvas.addEventListener('mousemove', (event) => {
       uniforms.uMouse.value.x = (event.clientX - window.innerWidth / 2) * 0.01;
@@ -167,8 +173,10 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
       }
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
+
+      // Call resize hook
+      onResize();
       resetCamera();
-      // TODO: need to resize custom post processing effects as well
     }
 
     window.addEventListener('resize', function () {
@@ -286,9 +294,18 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
 
   function getSceneHooks() {
     return {
+      setSceneHook,
       registerRenderCallback,
       unregisterRenderCallback,
     };
+  }
+
+  function setSceneHook(hook: SceneHook, handler: () => void) {
+    switch (hook) {
+      case 'onResize':
+        onResize = handler;
+        break;
+    }
   }
 
   function getViewport() {

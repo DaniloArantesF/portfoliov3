@@ -49,7 +49,7 @@ void main() {
   tUv *= (d * fullRadius);
 
   // Adjust the texture coordinates for smaller resolutions
-  if(uResolution.x < 1024.) {
+  if (uResolution.x < 1000.) {
     tUv /= aspect;
   }
   tUv += vec2(0.5);
@@ -59,7 +59,7 @@ void main() {
   vec4 tColor = texture2D(tDiffuse,tUv);
   vec4 destColor = mix(vec4(uBackgroundColor.rgb,1.0),tColor,c);
 
-  if(uActive) {
+  if (uActive) {
     gl_FragColor = vec4(destColor.rgb ,1.0);
   }else{
     gl_FragColor = texture2D(tDiffuse,vUv);

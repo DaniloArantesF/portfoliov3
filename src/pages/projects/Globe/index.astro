@@ -26,9 +26,9 @@ import { PlayerController } from '../../../components/PlayerController';
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback, utils } = BaseScene({
+  const { state, registerRenderCallback, utils, setSceneHook } = BaseScene({
     canvas,
-    settings: { cameraPosition: [0, 0, 0], orbitControls: true },
+    settings: { orbitControls: true },
   });
   const { scene, camera, uniforms, composer } = state;
   const { gui } = utils;
@@ -36,14 +36,10 @@ import { PlayerController } from '../../../components/PlayerController';
   const effectSettings = {
     uActive: true,
     uProgress: 1,
-    uScale: 2,
+    uScale: 1.3,
     uPower: 10,
-    uSize: 0.17,
+    uSize: 0.13,
   };
-
-  // Set default camera position
-  utils.updateSetting('cameraPosition', [0, 0, calculateZ(0, 100, 400)]);
-  utils.resetCamera();
 
   /* ---------------------------------------------- */
   /*                       Scene                    */
@@ -66,38 +62,45 @@ import { PlayerController } from '../../../components/PlayerController';
       }),
     );
 
+    function calculateZ(
+      targetZ: number,
+      targetHeight1 = window.innerHeight / 8,
+      targetHeight2 = window.innerHeight / 2,
+    ) {
+      let vFOV = (camera.fov * Math.PI) / 180;
+
+      // calculate height of viewport as seen from camera position
+      let vHeightPartial = 2 * Math.tan(vFOV / 2);
+
+      var p1 = targetHeight1 * window.innerHeight;
+      var p2 = targetZ * vHeightPartial;
+      var p3 = targetHeight2 * vHeightPartial;
+      var p4 = targetHeight2 * p2;
+      var p5 = p1 + p4;
+      var z = p5 / p3;
+      return z;
+    }
+
     function animationLoop(state: BaseSceneState) {
       if (player) {
         let analyser = player.analyser;
         analyser?.getByteFrequencyData(player.buffer);
         uniforms.uData.value = player.buffer;
       }
+
+      // Update uniforms
+      globePass.uniforms.uTime.value = uniforms.uTime.value;
     }
 
-    function postProcessing() {
-      globePass = new ShaderPass({
-        uniforms: {
-          ...uniforms,
-          tDiffuse: { value: null },
-          uBackgroundColor: { value: new THREE.Color(0x090c1b) },
-          uProgress: { value: effectSettings.uProgress },
-          uScale: { value: effectSettings.uScale },
-          uPower: { value: effectSettings.uPower },
-          uSize: { value: effectSettings.uSize },
-          uActive: { value: effectSettings.uActive },
-        },
-        vertexShader: globePassVertexShader,
-        fragmentShader: globePassFragmentShader,
-      });
-
+    function initGUI() {
       gui
-        .addInput(effectSettings, 'uScale', { min: 0, max: 10, step: 0.01 })
+        .addInput(effectSettings, 'uScale', { min: -5, max: 10, step: 0.01 })
         .on(
           'change',
           () => (globePass.uniforms.uScale.value = effectSettings.uScale),
         );
       gui
-        .addInput(effectSettings, 'uPower', { min: 0, max: 50, step: 0.01 })
+        .addInput(effectSettings, 'uPower', { min: -5, max: 50, step: 0.01 })
         .on(
           'change',
           () => (globePass.uniforms.uPower.value = effectSettings.uPower),
@@ -120,36 +123,50 @@ import { PlayerController } from '../../../components/PlayerController';
           'change',
           () => (globePass.uniforms.uActive.value = effectSettings.uActive),
         );
-      composer.addPass(globePass);
     }
-    postProcessing();
 
+    function postProcessing() {
+      globePass = new ShaderPass({
+        uniforms: {
+          ...uniforms,
+          tDiffuse: { value: null },
+          uBackgroundColor: { value: new THREE.Color(0x090c1b) },
+          uProgress: { value: effectSettings.uProgress },
+          uScale: { value: effectSettings.uScale },
+          uPower: { value: effectSettings.uPower },
+          uSize: { value: effectSettings.uSize },
+          uActive: { value: effectSettings.uActive },
+        },
+        vertexShader: globePassVertexShader,
+        fragmentShader: globePassFragmentShader,
+      });
+
+      composer.addPass(globePass);
+
+      // Handle resize
+      setSceneHook('onResize', () => {
+        globePass.uniforms.uResolution.value = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+
+        utils.updateSetting('cameraPosition', [0, 0, calculateZ(0)]);
+        utils.resetCamera();
+      });
+    }
+
+    // Set default camera position
+    utils.updateSetting('cameraPosition', [0, 0, calculateZ(0)]);
+    utils.resetCamera();
+
+    postProcessing();
+    initGUI();
     scene.add(plane);
 
     registerRenderCallback(animationLoop);
     isReady.set(true);
   }
 
-  function calculateZ(
-    targetZ: number,
-    targetHeight1 = window.innerHeight / 8,
-    targetHeight2 = window.innerHeight / 2,
-  ) {
-    let vFOV = (camera.fov * Math.PI) / 180;
-
-    // calculate height of viewport as seen from camera position
-    let vHeightPartial = 2 * Math.tan(vFOV / 2);
-
-    var p1 = targetHeight1 * window.innerHeight;
-    var p2 = targetZ * vHeightPartial;
-    var p3 = targetHeight2 * vHeightPartial;
-    var p4 = targetHeight2 * p2;
-    var p5 = p1 + p4;
-    var z = p5 / p3;
-    return z;
-  }
-
-  // TODO: handle resize e.g. aspect & update camera z
   Scene();
 </script>
 
