@@ -165,11 +165,9 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
       if (camera instanceof THREE.PerspectiveCamera) {
         camera.aspect = window.innerWidth / window.innerHeight;
       }
-      camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
       resetCamera();
-
       // TODO: need to resize custom post processing effects as well
     }
 
@@ -186,16 +184,13 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
     ) {
       loadingProgress.set(~~((itemsLoaded / itemsTotal) * 100));
     };
-
-    // THREE.DefaultLoadingManager.onError = function (url) {
-    //   console.log('There was an error loading ' + url);
-    // };
   }
 
   function resetCamera() {
     const [x, y, z] = settings.cameraPosition;
     camera.position.set(x, y, z);
     camera.lookAt(scene.position);
+    camera.updateProjectionMatrix();
   }
 
   function initGUI() {
@@ -249,6 +244,7 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
       subscribers[i](state);
     }
 
+    // Update orbit controls
     if (settings.orbitControls) {
       orbitControls.update();
     }
@@ -273,23 +269,26 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
 
   function getSceneState(): BaseSceneState {
     return {
-      ready: false,
-      scene,
-      renderer,
-      composer,
-      renderScene,
-      clock,
-      time,
-      delta,
       camera,
+      clock,
+      composer,
+      delta,
       orbitControls,
+      ready: false,
+      renderer,
+      renderScene,
+      scene,
       stats,
+      time,
       uniforms,
     };
   }
 
   function getSceneHooks() {
-    return { registerRenderCallback, unregisterRenderCallback };
+    return {
+      registerRenderCallback,
+      unregisterRenderCallback,
+    };
   }
 
   function getViewport() {
@@ -298,6 +297,8 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
 
     // Convert vertical fov to radians
     const vfov = (settings.fov * Math.PI) / 180;
+
+    // Calculate viewport height from camera perspective
     const height = 2 * Math.tan(vfov / 2) * camera.position.z;
     const width = height * camera.aspect;
     return { height, width };
@@ -315,7 +316,13 @@ const BaseScene = ({ canvas, settings: customSettings }: BaseSceneProps) => {
   }
 
   function getUtils() {
-    return { gui, getSettings, updateSetting, resetCamera, getViewport };
+    return {
+      gui,
+      getSettings,
+      updateSetting,
+      resetCamera,
+      getViewport,
+    };
   }
 
   // TODO

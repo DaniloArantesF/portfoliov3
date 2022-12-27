@@ -1,3 +1,5 @@
+import atom from 'nanostores';
+
 // TODO: don't do anything if audio is not present
 class Player {
   private static player: Player;
@@ -33,7 +35,7 @@ class Player {
 
     // output audio to default speaker device
     player.analyser.connect(player.audioContext.destination);
-    player.analyser.fftSize = 256; // sampling rate
+    player.analyser.fftSize = 64; // sampling rate
 
     // array holding 8-bit integers representing frequencies
     // analyser.frequencyBinCount is equal to fftSize / 2

@@ -6,7 +6,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState } from '@lib/sceneController';
+  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
 
@@ -22,20 +22,25 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /* ---------------------------------------------- */
   /*                       Scene                    */
   /* ---------------------------------------------- */
-  const geometry = new THREE.SphereGeometry(0.25, 30, 30);
-  const material = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: basicVertexShader,
-    fragmentShader: basicFragmentShader,
-    wireframe: true,
-  });
+  function Scene() {
+    const geometry = new THREE.SphereGeometry(0.25, 30, 30);
+    const material = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader: basicVertexShader,
+      fragmentShader: basicFragmentShader,
+      wireframe: true,
+    });
 
-  const mesh = new THREE.Mesh(geometry, material);
-  scene.add(mesh);
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
 
-  function animationLoop(state: BaseSceneState) {
-    mesh.position.y = Math.sin(state.time * 2) / 2;
+    function animationLoop(state: BaseSceneState) {
+      mesh.position.y = Math.sin(state.time * 2) / 2;
+    }
+
+    registerRenderCallback(animationLoop);
+    isReady.set(true);
   }
 
-  registerRenderCallback(animationLoop);
+  Scene();
 </script>
