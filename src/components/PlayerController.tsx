@@ -4,6 +4,7 @@ import { clamp } from '../utils/math';
 import { msToMinSec } from '../utils/time';
 import { usePlayer } from './Player';
 import { useStore } from '@nanostores/react';
+import { isSafari } from '@utils/utils';
 
 // frequency player controller will update progress
 const POOLING_RATE = 1000;
@@ -23,6 +24,7 @@ export function PlayerController() {
 
   useEffect(() => {
     if (!audioRef.current) return;
+    player.loadDefaultSong();
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
 
@@ -61,6 +63,14 @@ export function PlayerController() {
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
     };
+  }, []);
+
+  // TODO: intro player animation
+  useEffect(() => {
+    if (isSafari()) {
+      // temp safari fix
+      document.getElementById('audioPlayer-container')!.style.bottom = '5rem';
+    }
   }, []);
 
   useEffect(() => {

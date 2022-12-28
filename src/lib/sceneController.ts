@@ -6,6 +6,15 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { atom } from 'nanostores';
 import { Pane } from 'tweakpane';
 
+export const useGUI = atom(
+  new Pane({
+    title: 'Settings',
+    container: document.getElementById('gui_container')!,
+  }),
+);
+
+const gui = useGUI.get();
+
 export type useFrame = (state: BaseSceneState) => void;
 
 export interface BaseSceneSettings {
@@ -86,7 +95,6 @@ const BaseScene = ({
   let camera: THREE.PerspectiveCamera;
   let orbitControls: OrbitControls;
   let stats: Stats;
-  let gui: Pane;
 
   // Render loop subscribers
   const subscribers: useFrame[] = [];
@@ -202,10 +210,6 @@ const BaseScene = ({
   }
 
   function initGUI() {
-    gui = new Pane({
-      title: 'Debug Settings',
-      container: document.getElementById('gui_container')!,
-    });
     gui.expanded = false;
     const debugFolder = gui.addFolder({ title: 'Debug' });
     debugFolder.addInput(settings, 'orbitControls').on('change', () => {
