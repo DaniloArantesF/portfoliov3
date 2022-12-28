@@ -2,7 +2,7 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title={'Ulam Waves'} />
+<SceneLayout title={'Ulam Waves'} audio />
 
 <script>
   import * as THREE from 'three';
@@ -10,25 +10,37 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
   import { inRange, isPrime } from '@utils/math';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+  import globePassVertexShader from './shaders/globePass.vs.glsl?raw';
+  import globePassFragmentShader from './shaders/globePass.fs.glsl?raw';
+  import { usePlayer } from '@components/Player';
+
+  // TODO: adaptive grid size and params
 
   /* ---------------------------------------------- */
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
+  let globePass: ShaderPass;
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, utils, registerRenderCallback } = BaseScene({
+
+  const { state, utils, registerRenderCallback, setSceneHook } = BaseScene({
     canvas,
     settings: {
       orbitControls: false,
-      cameraPosition: [0, 1.5, 0],
-      gridHelper: false,
     },
   });
-  const { scene, renderer, camera } = state;
+  const { scene, renderer, camera, composer } = state;
 
   const settings = {
-    gridSize: { x: 100, y: 100 }, // [x, y]
+    cameraPosition: [0, 1.25, calculateZ(0)],
+    gridSize: { x: 200, y: 200 }, // [x, y]
     waveAmplitude: 0.3,
     waveFrequency: 5,
+    uActive: true,
+    uProgress: 1,
+    uScale: 1.15,
+    uPower: 11,
+    uSize: 0.1,
   };
 
   const uniforms = {
@@ -36,6 +48,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     waveFrequency: { value: settings.waveFrequency },
     waveAmplitude: { value: settings.waveAmplitude },
   };
+
+  /* ---------- Audio ---------- */
+  let player = usePlayer.get();
+  uniforms.uData = { value: player.buffer };
 
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
@@ -113,17 +129,101 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         uniforms.waveFrequency.value = value;
       });
 
-    // TODO
-    // gui.addInput(settings, 'gridSize');
+    gui
+      .addInput(settings, 'uScale', { min: -5, max: 10, step: 0.01 })
+      .on('change', () => (globePass.uniforms.uScale.value = settings.uScale));
+    gui
+      .addInput(settings, 'uPower', { min: -5, max: 50, step: 0.1 })
+      .on('change', () => (globePass.uniforms.uPower.value = settings.uPower));
+    gui
+      .addInput(settings, 'uSize', { min: -2, max: 5, step: 0.01 })
+      .on('change', () => (globePass.uniforms.uSize.value = settings.uSize));
+    gui
+      .addInput(settings, 'uProgress', { min: 0, max: 1, step: 0.01 })
+      .on(
+        'change',
+        () => (globePass.uniforms.uProgress.value = settings.uProgress),
+      );
+    gui
+      .addInput(settings, 'uActive')
+      .on(
+        'change',
+        () => (globePass.uniforms.uActive.value = settings.uActive),
+      );
   }
-  setupGUI();
+
+  function animationLoop(state: BaseSceneState) {
+    if (!state.orbitControls.enabled) {
+      let time = state.time * 0.05;
+      camera.position.x = -Math.sin(time) / 4;
+      // camera.position.y = 1 + Math.cos(time) / 4;
+      camera.position.z = Math.cos(time) / 4;
+      camera.lookAt(scene.position);
+    }
+
+    if (player) {
+      let analyser = player.analyser;
+      analyser?.getByteFrequencyData(player.buffer);
+      uniforms.uData.value = player.buffer;
+    }
+  }
+
+  function calculateZ(
+    targetZ: number,
+    targetHeight1 = window.innerHeight / 8,
+    targetHeight2 = window.innerHeight / 2,
+  ) {
+    let vFOV = (camera.fov * Math.PI) / 180;
+
+    // calculate height of viewport as seen from camera position
+    let vHeightPartial = 2 * Math.tan(vFOV / 2);
+
+    var p1 = targetHeight1 * window.innerHeight;
+    var p2 = targetZ * vHeightPartial;
+    var p3 = targetHeight2 * vHeightPartial;
+    var p4 = targetHeight2 * p2;
+    var p5 = p1 + p4;
+    var z = p5 / p3;
+    return z;
+  }
+
+  function handleEvents() {
+    // Handle resize
+    setSceneHook('onResize', () => {
+      globePass.uniforms.uResolution.value = new THREE.Vector2(
+        window.innerWidth,
+        window.innerHeight,
+      );
+      utils.updateSetting('cameraPosition', settings.cameraPosition);
+      utils.resetCamera();
+    });
+  }
+
+  function postProcessing() {
+    globePass = new ShaderPass({
+      uniforms: {
+        ...uniforms,
+        tDiffuse: { value: null },
+        uBackgroundColor: { value: new THREE.Color(0x090c1b) },
+        uProgress: { value: settings.uProgress },
+        uScale: { value: settings.uScale },
+        uPower: { value: settings.uPower },
+        uSize: { value: settings.uSize },
+        uActive: { value: settings.uActive },
+      },
+      vertexShader: globePassVertexShader,
+      fragmentShader: globePassFragmentShader,
+    });
+
+    composer.addPass(globePass);
+  }
 
   /* ---------------------------------------------- */
   /*                      Scene                     */
   /* ---------------------------------------------- */
   const geometry = new THREE.PlaneGeometry(
-    2,
-    2,
+    10,
+    10,
     settings.gridSize.x,
     settings.gridSize.y,
   );
@@ -148,15 +248,13 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   points.rotateX(-Math.PI / 2);
   scene.add(points);
 
-  function animationLoop(state: BaseSceneState) {
-    if (!state.orbitControls.enabled) {
-      let time = state.time * 0.05;
-      camera.position.x = -Math.sin(time) / 4;
-      camera.position.z = Math.cos(time) / 4;
-      camera.lookAt(scene.position);
-    }
-  }
+  // Set default camera position
+  utils.updateSetting('cameraPosition', settings.cameraPosition);
+  utils.resetCamera();
 
+  postProcessing();
+  setupGUI();
+  handleEvents();
   registerRenderCallback(animationLoop);
   isReady.set(true);
 </script>

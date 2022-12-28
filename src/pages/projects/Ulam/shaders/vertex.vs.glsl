@@ -2,16 +2,14 @@
 precision mediump float;
 #endif
 
+attribute float isPrime;
+uniform float uTime;
+uniform float waveAmplitude;
+uniform float waveFrequency;
+varying float elevation;
+varying float vPrime;
 varying vec2 vUv;
 varying vec3 vNormal;
-uniform float uTime;
-attribute float isPrime;
-varying float vPrime;
-
-uniform float waveFrequency;
-uniform float waveAmplitude;
-
-varying float elevation;
 varying vec3 vPosition;
 
 void main() {
@@ -26,6 +24,9 @@ void main() {
 
   vPosition.z += smoothstep(.01, .99, abs(elevation));
 
-  gl_PointSize = 3.5;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.);
+  vec4 modelViewPosition = modelViewMatrix * vec4( vPosition, 1.0 );
+
+  gl_PointSize = ( 3.5 / -modelViewPosition.z );
+  gl_Position = projectionMatrix * modelViewPosition;
+
 }
