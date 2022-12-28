@@ -8,7 +8,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import * as THREE from 'three';
   import gsap from 'gsap';
   import { Observer } from 'gsap/Observer';
-  import BaseScene, { isReady, Uniforms } from '@lib/sceneController';
+  import BaseScene, {
+    BaseSceneState,
+    isReady,
+    Uniforms,
+  } from '@lib/sceneController';
   import imageFragmentShader from './shaders/image.fs.glsl?raw';
   import imageVertexShader from './shaders/image.vs.glsl?raw';
   import Minimap from '@lib/components/Minimap';
@@ -28,6 +32,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   let scrollPosition = 0;
   let clicked: null | number = null;
   const damp = THREE.MathUtils.damp;
+  const dampingFactor = 0.05;
 
   /* ---------------------------------------------- */
   /*                      Scene                     */
@@ -81,12 +86,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     mesh.position.copy(position);
     mesh.scale.copy(scale);
 
-    function animationLoop() {
+    function animationLoop({ time }: BaseSceneState) {
       material.uniforms.grayscale.value = damp(
         material.uniforms.grayscale.value,
         clicked === index ? 0 : 1,
-        5,
-        0.01,
+        dampingFactor,
+        time,
       );
       material.uniforms.color.value.lerp(
         color.set(clicked === index ? 'white' : '#aaa'),
@@ -136,15 +141,15 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         }
       },
       onDown: ({ deltaY }) => {
-        scrollPosition += deltaY / 1500;
+        scrollPosition += deltaY / window.innerWidth;
       },
       onUp: ({ deltaY }) => {
-        scrollPosition += deltaY / 1500;
+        scrollPosition += deltaY / window.innerWidth;
       },
-      onDrag: (event) => {
-        scrollPosition -= event.deltaX / 1300;
+      onDrag: ({ deltaX }) => {
+        scrollPosition -= deltaX / window.innerWidth;
       },
-      tolerance: 25,
+      tolerance: (window.innerWidth / 100),
     });
 
     for (let i = 0; i < pictures.length; i++) {
@@ -165,8 +170,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
     }
 
-    let delta = 0.02;
-    function animationLoop() {
+    function animationLoop({ time: delta }: BaseSceneState) {
       scrollPosition = clamp(scrollPosition, 0, 1);
 
       // Reset clicked if user scrolls away from it
@@ -201,14 +205,14 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
           picture.position.x,
           (i - scrollPosition * (pictures.length - 1)) * totalTileWidth +
             clickedOffset,
-          5,
+          dampingFactor,
           delta,
         );
         let scaleY = damp(picture.scale.y, 1 + y / 4, 5, delta);
         let scaleX = damp(
           picture.scale.x,
           clicked === i ? 1 : tileWidth,
-          5,
+          dampingFactor,
           delta,
         );
         (picture.scale.y = scaleY), (picture.scale.x = scaleX);
@@ -223,7 +227,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
           0,
           scrollPosition,
         );
-        line.scale.y = damp(line.scale.y, Math.max(0.5, y), 5, delta);
+        line.scale.y = damp(
+          line.scale.y,
+          Math.max(0.5, y),
+          dampingFactor,
+          delta,
+        );
       });
     }
 

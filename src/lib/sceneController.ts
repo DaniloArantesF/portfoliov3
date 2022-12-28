@@ -346,7 +346,6 @@ const BaseScene = ({
     };
   }
 
-  // TODO
   function cleanup() {}
 
   return init();

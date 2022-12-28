@@ -43,6 +43,7 @@ class Player {
     // Exposes audio time and frequency data
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = this.fftSize;
+    this.analyser.smoothingTimeConstant = 0.85;
 
     this.gainNode = this.audioContext.createGain();
     this.iirfilter = new IIRFilterNode(this.audioContext, {

@@ -1,5 +1,5 @@
-export function lerp(n: number, min: number, max: number) {
-  return min + (max - min) * n;
+export function lerp(a: number, b: number, t: number) {
+  return (1 - t) * a + t * b;
 }
 
 export function clamp(n: number, min: number, max: number) {

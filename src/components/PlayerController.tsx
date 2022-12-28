@@ -21,47 +21,59 @@ export function PlayerController() {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     if (!audioRef.current) return;
     player.loadDefaultSong();
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
 
-    audioEl.addEventListener('play', function () {
+    const onPlay = () => {
       setPlaying(true);
       progressInterval.current = setInterval(
         () => setProgress((p) => p + POOLING_RATE),
         POOLING_RATE,
       );
-    });
+    };
 
-    audioEl.addEventListener('loadeddata', function () {
+    const onLoadedData = () => {
       setLoaded(true);
-    });
+    };
 
-    audioEl.addEventListener('pause', function () {
+    const onPause = () => {
       setPlaying(false);
       clearInterval(progressInterval.current!);
-    });
+    };
 
-    audioEl.addEventListener('ended', function () {
+    const onEnded = () => {
       clearInterval(progressInterval.current!);
       setProgress(0);
       audioEl.currentTime = 0;
       setPlaying(false);
-    });
+    };
 
-    audioEl.addEventListener('durationchange', function (e) {
+    const onDurationChange = () => {
       setProgress(0);
       setDuration(audioEl.duration);
       clearInterval(progressInterval.current!);
       setPlaying(false);
-    });
+    };
 
-    // TODO: cleanup event listeners
+    // Add event listeners
+    audioEl.addEventListener('play', onPlay);
+    audioEl.addEventListener('loadeddata', onLoadedData);
+    audioEl.addEventListener('pause', onPause);
+    audioEl.addEventListener('ended', onEnded);
+    audioEl.addEventListener('durationchange', onDurationChange);
+
     return () => {
       if (progressInterval.current) clearInterval(progressInterval.current);
+
+      audioEl.removeEventListener('play', onPlay);
+      audioEl.removeEventListener('loadeddata', onLoadedData);
+      audioEl.removeEventListener('pause', onPause);
+      audioEl.removeEventListener('ended', onEnded);
+      audioEl.removeEventListener('durationchange', onDurationChange);
     };
   }, []);
 
