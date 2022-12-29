@@ -72,6 +72,7 @@ export default function Card({
       currentTarget.querySelector('.card_footer').clientHeight;
 
     ctx.add(() => {
+      if (!document.querySelectorAll('.links').length) return;
       gsap.to(currentTarget, { y: 0, duration: 0.1 });
       gsap.to('.tag', { y: 0, opacity: 1, duration: 0.1 });
       gsap.to('.links a', { y: -1 * footerHeight, opacity: 0, duration: 0.1 });

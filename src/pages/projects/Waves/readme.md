@@ -1,5 +1,5 @@
 ---
-title: Brownie Waves
+title: fbmWaves
 subtitle: ThreeJS
 description:
 picture: projects/project-desktop-sample.webp

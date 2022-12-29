@@ -2,9 +2,9 @@ import { atom } from 'nanostores';
 import { useGUI } from '../lib/sceneController';
 
 const gui = useGUI.get();
-
 export const BIN_COUNT = 32;
 
+// TODO: allow sound processing to be turned off
 class Player {
   private static player: Player;
   audioContext: AudioContext | null = null;

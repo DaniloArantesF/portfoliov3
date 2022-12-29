@@ -6,9 +6,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
   import { loadGLTF } from '@lib/textureLoader';
-  import Player from 'src/components/Player';
+  import { usePlayer } from '@components/Player';
   import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
   import vertexShader from './shaders/vertex.vs.glsl?raw';
   import fragmentShader from './shaders/fragment.fs.glsl?raw';
@@ -19,10 +19,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
   import { fibonacciSphereV3 } from '@utils/geometry';
+  import type { BaseSceneState } from '@lib/types';
 
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   const defaultCameraPosition = [0, 2, 2];
   const skyModeCameraPosition = [0, 4, 20];
   const customSettings = {
@@ -35,7 +36,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   };
 
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback, utils } = BaseScene({
+  const { state, registerRenderCallback, utils, setSceneHook } = BaseScene({
     canvas,
     settings: { cameraPosition: defaultCameraPosition, far: 3000 },
   });
@@ -93,67 +94,21 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     return assets as Assets;
   }
 
-  /* ---------------------------------------------- */
-  /*                      Scene                     */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
   function Scene() {
+    let bloomPass: UnrealBloomPass;
+    let ssrPass: SSRPass;
+
     /* ---------- Audio ---------- */
-    let player = Player.getInstance();
+    let player = usePlayer.get();
     uniforms.uData = { value: player.buffer };
     uniforms.uStarLayerCount = { value: 3 };
 
-    /* ---------- Scene ---------- */
     let speaker: THREE.Object3D, sky: THREE.Mesh;
     let rock: THREE.Mesh;
     let points: THREE.Points;
-
-    /* ---------- Settings ---------- */
-    function updateDefaultCameraPosition() {
-      const [x, y, z] = customSettings.skyMode
-        ? skyModeCameraPosition
-        : defaultCameraPosition;
-      updateSetting('cameraPosition', [x, y, z]);
-      resetCamera();
-    }
-    updateDefaultCameraPosition();
-
-    /* ---------- GUI ---------- */
-    gui.addInput(customSettings, 'skyMode').on('change', () => {
-      if (customSettings.skyMode) {
-        orbitControls.enabled = false;
-        updateSetting('orbitControls', false);
-        gui.refresh();
-      }
-      updateDefaultCameraPosition();
-    });
-
-    /* ---------- Effects ---------- */
-    function postProcessing() {
-      const bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth, window.innerHeight),
-        customSettings.bloomStrength,
-        customSettings.bloomRadius,
-        customSettings.bloomThreshold,
-      );
-
-      const ssrPass = new SSRPass({
-        renderer,
-        scene,
-        camera,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        groundReflector: null,
-        selects: null,
-      });
-      ssrPass.thickness = 0.018;
-      ssrPass.maxDistance = 0.1;
-      ssrPass.output = SSRPass.OUTPUT.Beauty;
-      ssrPass.opacity = 0.9;
-
-      composer.addPass(ssrPass);
-      composer.addPass(bloomPass);
-    }
-    postProcessing();
 
     /* ---------- Lights ---------- */
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
@@ -267,11 +222,62 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       aoMap: assets.rockAoMap,
     });
 
+    function updateDefaultCameraPosition() {
+      const [x, y, z] = customSettings.skyMode
+        ? skyModeCameraPosition
+        : defaultCameraPosition;
+      updateSetting('cameraPosition', [x, y, z]);
+      resetCamera();
+    }
+    updateDefaultCameraPosition();
+
+    function setupGUI() {
+      gui.addInput(customSettings, 'skyMode').on('change', () => {
+        if (customSettings.skyMode) {
+          orbitControls.enabled = false;
+          updateSetting('orbitControls', false);
+          gui.refresh();
+        }
+        updateDefaultCameraPosition();
+      });
+    }
+
+    function postProcessing() {
+      bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth, window.innerHeight),
+        customSettings.bloomStrength,
+        customSettings.bloomRadius,
+        customSettings.bloomThreshold,
+      );
+
+      ssrPass = new SSRPass({
+        renderer,
+        scene,
+        camera,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        groundReflector: null,
+        selects: null,
+      });
+      ssrPass.thickness = 0.018;
+      ssrPass.maxDistance = 0.1;
+      ssrPass.output = SSRPass.OUTPUT.Beauty;
+      ssrPass.opacity = 0.9;
+
+      composer.addPass(ssrPass);
+      composer.addPass(bloomPass);
+    }
+
+    function handleEvents() {
+      // Handle resize
+      setSceneHook('onResize', () => {
+        // TODO
+      });
+    }
+
     function animationLoop(state: BaseSceneState) {
       let analyser = player.analyser;
       if (analyser) {
-        // each item represents decibel value for specific frequency
-        // freqs go from 0 to 1/2 of the sample rate
         analyser.getByteFrequencyData(player.buffer);
         uniforms.uData.value = player.buffer;
       }
@@ -286,6 +292,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       }
     }
 
+    postProcessing();
+    setupGUI();
+    handleEvents();
     registerRenderCallback(animationLoop);
     isReady.set(true);
   }

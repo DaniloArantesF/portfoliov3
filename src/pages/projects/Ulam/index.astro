@@ -2,11 +2,11 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title={'Ulam Waves'} audio />
-<!-- FIX FIREFOX -->
+<SceneLayout title={'Ulam Orb'} audio />
+
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
   import { inRange, isPrime } from '@utils/math';
@@ -14,12 +14,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import globePassVertexShader from './shaders/globePass.vs.glsl?raw';
   import globePassFragmentShader from './shaders/globePass.fs.glsl?raw';
   import { usePlayer } from '@components/Player';
+  import type { BaseSceneState } from '@lib/types';
 
-  // TODO: adaptive grid size and params
-  // TODO: allow sound processing to be turned off
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   let globePass: ShaderPass;
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
 
@@ -30,6 +29,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     },
   });
   const { scene, renderer, camera, composer } = state;
+
+  /* ---------- Audio ---------- */
+  let player = usePlayer.get();
 
   const settings = {
     cameraPosition: [0, 2, 0],
@@ -47,11 +49,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ...state.uniforms,
     waveFrequency: { value: settings.waveFrequency },
     waveAmplitude: { value: settings.waveAmplitude },
+    uData: { value: player.buffer },
   };
-
-  /* ---------- Audio ---------- */
-  let player = usePlayer.get();
-  uniforms.uData = { value: player.buffer };
 
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
@@ -157,7 +156,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     if (!state.orbitControls.enabled) {
       let time = state.time * 0.05;
       camera.position.x = -Math.sin(time) / 2;
-      // camera.position.y = 1 + Math.cos(time) / 4;
       camera.position.z = Math.cos(time) / 2;
       camera.lookAt(focusPoint);
     }
@@ -219,9 +217,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     composer.addPass(globePass);
   }
 
-  /* ---------------------------------------------- */
-  /*                      Scene                     */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
   const geometry = new THREE.PlaneGeometry(
     10,
     10,

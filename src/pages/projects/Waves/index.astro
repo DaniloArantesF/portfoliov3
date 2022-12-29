@@ -6,13 +6,14 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
+  import type { BaseSceneState } from '@lib/types';
 
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state } = BaseScene({
     canvas,
@@ -44,9 +45,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     foldHeight: { value: settings.foldsHeight },
   };
 
-  /* ---------------------------------------------- */
-  /*                       Scene                    */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
   const geometry = new THREE.PlaneGeometry(10, 10, 50, 50);
   const material = new THREE.ShaderMaterial({
     uniforms,

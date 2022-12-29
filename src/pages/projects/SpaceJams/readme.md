@@ -10,3 +10,6 @@ tags: ['threejs', 'typescript']
 ---
 
 ## Todos
+* Simplify geometries
+* Optimize for low-end devices
+* Improve lighting

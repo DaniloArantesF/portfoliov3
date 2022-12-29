@@ -2,11 +2,12 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title="Boids" />
+<SceneLayout title="FireflyDisco" />
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import type { BaseSceneState } from '@lib/types';
   import { rand } from '@utils/math';
   import SpatialGrid from '@lib/SpatialGrid';
   import { createDebugBounds } from '@lib/helpers';
@@ -16,15 +17,14 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import lightFragmentShader from './shaders/lightShader.fs.glsl?raw';
   import { damp } from 'three/src/math/MathUtils';
 
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback, unregisterRenderCallback, utils } =
-    BaseScene({
-      canvas,
-      settings: { cameraPosition: [0, 50, 200], orbitControls: true },
-    });
+  const { state, registerRenderCallback, utils } = BaseScene({
+    canvas,
+    settings: { cameraPosition: [0, 50, 200], orbitControls: true },
+  });
 
   const { scene, renderer, camera, uniforms } = state;
   const { gui } = utils;
@@ -47,7 +47,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const BOID_FORCE_WANDER = 3;
 
   const SPEED_MIN = 2;
-  const SPEED_MAX = 3;
+  const SPEED_MAX = 2.5;
 
   const hashGrid = new SpatialGrid<Boid>({
     bounds: [
@@ -68,9 +68,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     timeMultiplier: 1,
   };
 
-  /* ---------------------------------------------- */
-  /*                       Scene                    */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
   let bodyGeometry: THREE.BufferGeometry;
   let lightGeometry: THREE.BufferGeometry;
   let legsGeometry: THREE.BufferGeometry,
@@ -538,7 +538,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
       if (!closestObject1) return null;
 
-      this.frequency = damp(this.frequency, closestObject1.frequency, 1, 0.5);
+      this.frequency = damp(
+        this.frequency,
+        closestObject1.frequency,
+        0.01,
+        state.clock.getElapsedTime(),
+      );
 
       this.lightUniforms.frequency.value = this.frequency;
       return closestObject1;
@@ -621,7 +626,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     });
   }
 
-  function animationLoop({ time, delta }: BaseSceneState) {
+  function animationLoop({ time }: BaseSceneState) {
     for (let i = 0; i < boids.length; i++) {
       boids[i].step(time * settings.timeMultiplier);
     }

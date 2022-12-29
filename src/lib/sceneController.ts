@@ -5,6 +5,7 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { atom } from 'nanostores';
 import { Pane } from 'tweakpane';
+import type { BaseSceneProps, BaseSceneSettings, BaseSceneState, SceneHook, Uniforms, useFrame } from './types';
 
 export const useGUI = atom(
   new Pane({
@@ -14,54 +15,6 @@ export const useGUI = atom(
 );
 
 const gui = useGUI.get();
-
-export type useFrame = (state: BaseSceneState) => void;
-
-export interface BaseSceneSettings {
-  antialias: boolean;
-  aspect: number;
-  autoRotate: boolean;
-  cameraPosition: [number, number, number] | number[];
-  far: number;
-  fov: number;
-  gridHelper: boolean;
-  near: number;
-  orbitControls: boolean;
-  sceneDebugControls: boolean;
-  zoom: number;
-  axesHelper: boolean;
-}
-
-interface BaseSceneProps {
-  canvas: HTMLCanvasElement;
-  settings?: Partial<BaseSceneSettings>;
-  onResize?: () => void;
-}
-
-type SceneHook = 'onResize';
-
-export interface Uniforms {
-  [key: string]: THREE.IUniform;
-  uMouse: { type?: 'v2'; value: { x: number; y: number } };
-  uResolution: { type?: 'v2'; value: THREE.Vector2 };
-  uTime: { type?: 'f'; value: number };
-}
-
-export interface BaseSceneState {
-  camera: THREE.PerspectiveCamera; //THREE.OrthographicCamera | ;
-  clock: THREE.Clock;
-  composer: EffectComposer;
-  delta: number;
-  orbitControls: OrbitControls;
-  ready: boolean;
-  renderer: THREE.WebGLRenderer;
-  renderScene: RenderPass;
-  scene: THREE.Scene;
-  stats: Stats;
-  time: number;
-  uniforms: Uniforms;
-}
-
 export const isReady = atom(false);
 export const loadingProgress = atom(-1);
 
@@ -346,6 +299,7 @@ const BaseScene = ({
     };
   }
 
+  // TODO
   function cleanup() {}
 
   return init();

@@ -8,20 +8,18 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import * as THREE from 'three';
   import gsap from 'gsap';
   import { Observer } from 'gsap/Observer';
-  import BaseScene, {
-    BaseSceneState,
-    isReady,
-    Uniforms,
-  } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
   import imageFragmentShader from './shaders/image.fs.glsl?raw';
   import imageVertexShader from './shaders/image.vs.glsl?raw';
   import Minimap from '@lib/components/Minimap';
   import PickHelper from '@lib/pickHelper';
   import { clamp, curve } from '@utils/math';
 
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  import type { BaseSceneState, Uniforms } from '@lib/types';
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, utils } = BaseScene({
     canvas,
@@ -34,9 +32,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const damp = THREE.MathUtils.damp;
   const dampingFactor = 0.05;
 
-  /* ---------------------------------------------- */
-  /*                      Scene                     */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
   type ImageProps = Partial<Omit<THREE.Mesh, 'scale'>> & {
     scale?: THREE.Vector3;
     color?: THREE.Color;
@@ -149,7 +147,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       onDrag: ({ deltaX }) => {
         scrollPosition -= deltaX / window.innerWidth;
       },
-      tolerance: (window.innerWidth / 100),
+      tolerance: window.innerWidth / 100,
     });
 
     for (let i = 0; i < pictures.length; i++) {
@@ -208,7 +206,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
           dampingFactor,
           delta,
         );
-        let scaleY = damp(picture.scale.y, 1 + y / 4, 5, delta);
+        let scaleY = damp(picture.scale.y, 1 + y / 4, dampingFactor, delta);
         let scaleX = damp(
           picture.scale.x,
           clicked === i ? 1 : tileWidth,

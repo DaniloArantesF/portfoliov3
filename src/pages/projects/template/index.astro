@@ -10,9 +10,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
 
-  /* ---------------------------------------------- */
-  /*                 Setup & Globals                */
-  /* ---------------------------------------------- */
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, unregisterRenderCallback } = BaseScene(
     { canvas },
