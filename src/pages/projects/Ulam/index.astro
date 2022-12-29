@@ -3,7 +3,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
 <SceneLayout title={'Ulam Waves'} audio />
-
+<!-- FIX FIREFOX -->
 <script>
   import * as THREE from 'three';
   import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
@@ -16,7 +16,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import { usePlayer } from '@components/Player';
 
   // TODO: adaptive grid size and params
-
+  // TODO: allow sound processing to be turned off
   /* ---------------------------------------------- */
   /*                 Setup & Globals                */
   /* ---------------------------------------------- */
@@ -32,8 +32,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const { scene, renderer, camera, composer } = state;
 
   const settings = {
-    cameraPosition: [0, 1.25, calculateZ(0)],
-    gridSize: { x: 200, y: 200 }, // [x, y]
+    cameraPosition: [0, 2, 0],
+    gridSize: { x: 100, y: 100 }, // [x, y]
     waveAmplitude: 0.3,
     waveFrequency: 5,
     uActive: true,
@@ -152,13 +152,14 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
   }
 
+  let focusPoint = new THREE.Vector3(0, 1.5, 0).add(scene.position);
   function animationLoop(state: BaseSceneState) {
     if (!state.orbitControls.enabled) {
       let time = state.time * 0.05;
-      camera.position.x = -Math.sin(time) / 4;
+      camera.position.x = -Math.sin(time) / 2;
       // camera.position.y = 1 + Math.cos(time) / 4;
-      camera.position.z = Math.cos(time) / 4;
-      camera.lookAt(scene.position);
+      camera.position.z = Math.cos(time) / 2;
+      camera.lookAt(focusPoint);
     }
 
     if (player) {

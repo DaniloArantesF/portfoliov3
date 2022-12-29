@@ -25,7 +25,6 @@
       'progress_label',
     ) as HTMLSpanElement;
 
-    // TODO: make it smooth?
     loadingProgress.listen((value) => {
       thumb.style.width = `${value}%`;
       percentLabel.innerText = thumb.style.width;

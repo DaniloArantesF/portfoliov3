@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 #define BIN_COUNT 32.
 
 uniform float uStarLayerCount;

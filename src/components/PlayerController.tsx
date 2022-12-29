@@ -21,7 +21,7 @@ export function PlayerController() {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     if (!audioRef.current) return;
     player.loadDefaultSong();
@@ -75,14 +75,6 @@ export function PlayerController() {
       audioEl.removeEventListener('ended', onEnded);
       audioEl.removeEventListener('durationchange', onDurationChange);
     };
-  }, []);
-
-  // TODO: intro player animation
-  useEffect(() => {
-    if (isSafari()) {
-      // temp safari fix
-      document.getElementById('audioPlayer-container')!.style.bottom = '5rem';
-    }
   }, []);
 
   useEffect(() => {

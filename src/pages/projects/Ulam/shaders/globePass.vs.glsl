@@ -1,3 +1,7 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
 varying vec2 vUv;
 varying vec3 vNormal;
 uniform float uTime;
