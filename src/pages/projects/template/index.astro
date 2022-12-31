@@ -6,9 +6,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
 <script>
   import * as THREE from 'three';
-  import BaseScene, { BaseSceneState, isReady } from '@lib/sceneController';
+  import BaseScene, { isReady } from '@lib/sceneController';
   import basicVertexShader from './shaders/vertex.vs.glsl?raw';
   import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
+  import type { BaseSceneState } from '@lib/types';
 
   /* -------------------------------- */
   /*          Setup & Globals         */

@@ -10,6 +10,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "fix": "prettier --write .",
+    "check": "astro check",
     "post-pull": "node src/NotionIntegration.js pull",
     "post-clean": "node src/NotionIntegration.js clean",
     "prepare": "husky install"

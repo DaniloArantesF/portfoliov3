@@ -1,5 +1,5 @@
 ---
-title: UlamOrb
+title: Ulam's Orb
 subtitle: ThreeJS
 description:
 picture: projects/project-desktop-sample.webp
@@ -10,4 +10,3 @@ tags: ['threejs', 'typescript']
 ---
 
 ## Todos
-* adaptive grid size and params
