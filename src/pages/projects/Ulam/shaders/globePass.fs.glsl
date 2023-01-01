@@ -18,13 +18,15 @@ uniform float uProgress;
 uniform bool uActive;
 uniform vec3 uBackgroundColor;
 
+#define BIN_COUNT 33.
+#define MAX_INTENSITY 255.
+uniform uint[int(BIN_COUNT)] uData;
+
 void main() {
   float aspect = uResolution.y / uResolution.x;
 
-  // Calculate the distance from center of canvas to current pixel
+  float intensity = float(uData[int(BIN_COUNT/2. - 1.)])/MAX_INTENSITY;
   vec2 dist = vec2(.5);
-
-  // Calculate the full radius of the canvas
   float fullRadius = sqrt(dist.x * dist.x + dist.y * dist.y);
 
   // Center and normalize uv
@@ -32,8 +34,7 @@ void main() {
   uv /= fullRadius * 2.0;
   uv.y *= aspect;
 
-  // Calculate the distance from the center of the texture coordinates
-  float d = length(uv);
+  float d = length(uv - sin(uTime + intensity/200.));
 
   // Use the distance wavy distortion
   d = sin(
@@ -48,19 +49,18 @@ void main() {
   tUv /= uScale;
   tUv *= (d * fullRadius);
 
-  // Adjust the texture coordinates for smaller resolutions
+  // Adjust for smaller resolutions
   if (uResolution.x < 1000.) {
     tUv /= aspect;
   }
   tUv += vec2(0.5);
 
-  // Interpolate between the base color and the sampled color based on the distance
   float c = smoothstep(0.0,.8,d);
   vec4 tColor = texture2D(tDiffuse,tUv);
-  vec4 destColor = mix(vec4(uBackgroundColor.rgb,1.0),tColor,c);
+  vec4 color = mix(vec4(uBackgroundColor.rgb,1.0),tColor,c);
 
   if (uActive) {
-    gl_FragColor = vec4(destColor.rgb ,1.0);
+    gl_FragColor = vec4(color.rgb ,1.0);
   }else{
     gl_FragColor = texture2D(tDiffuse,vUv);
   }

@@ -27,7 +27,7 @@ void main() {
   vec3 color = vec3(rd);
 
   int binIndex = int(rd + cos(elevation));
-  float intensity = float(uData[binIndex])/255.;
+  float intensity = float(uData[binIndex])/MAX_INTENSITY;
 
 
   color = mix(vec3(0.4, 0.1, .8), vec3(.8, 0.1, 0.4), (elevation/waveAmplitude - (rd*step(.8, intensity))/4.));

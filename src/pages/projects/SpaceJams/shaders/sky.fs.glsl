@@ -3,9 +3,9 @@ precision mediump float;
 #endif
 
 #define TAU 6.28318530718
-#define GRID_SCALE 10.
 
 uniform float uStarLayerCount;
+uniform float uGridScale;
 uniform float uTime;
 uniform vec2 uResolution;
 varying float intensity;
@@ -46,8 +46,8 @@ float Hash21(vec2 p) {
 
 vec3 Stars(vec2 uv) {
   // Get cell grid id and offset star
-  vec2 id = floor(uv*GRID_SCALE);
-  vec2 gv = fract(uv * GRID_SCALE)-.5;
+  vec2 id = floor(uv*uGridScale);
+  vec2 gv = fract(uv * uGridScale)-.5;
   vec3 color = vec3(0.);
 
   for (int y = -1; y <=1; y++) {
@@ -56,9 +56,7 @@ vec3 Stars(vec2 uv) {
       float n = Hash21(id + offset);
 
       float intensityScale =  sin(intensity/vAmplitude * 4. - 1.)*.5 + .5;
-
       float size = fract(n*753.34/intensityScale);
-
       float star = Star(gv-offset-vec2(n, fract(n*942.73))+.5, size/2.);
 
       vec3 starColor = mix(vec3(98./255., 37./255., 116./255.), vec3(0.2, .3, .8), fract(n*1354.34));
@@ -81,7 +79,8 @@ void main(){
     scale = mix(10., .5, depth);
 
     float fade = sin(depth * TAU / 2.);
-    color += Stars(uv*scale+i)*fade;
+    float offset = Hash21(vec2(pow(i, 2.), pow(i, 3.)));
+    color += Stars(uv*scale+offset)*fade;
   }
 
   float d = length(uv);
