@@ -2,13 +2,12 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title="FireflyDisco" />
+<SceneLayout title="FireflyDisco" audio />
 
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
   import type { BaseSceneState } from '@lib/types';
-  import { rand } from '@utils/math';
   import SpatialGrid from '@lib/SpatialGrid';
   import { createDebugBounds } from '@lib/helpers';
   import { loadGLTF } from '@lib/textureLoader';
@@ -16,38 +15,32 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import lightVertexShader from './shaders/lightShader.vs.glsl?raw';
   import lightFragmentShader from './shaders/lightShader.fs.glsl?raw';
   import { damp } from 'three/src/math/MathUtils';
+  import Boid, { BoidParams } from '@lib/Boid';
+  import { usePlayer } from '@components/Player';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
+  const BOUNDS = { width: 500, height: 200, depth: 500 };
+  const NUM_BOIDS = 100;
+  const BOID_SPEED = 1.5;
+  const BOID_ACCELERATION = BOID_SPEED / 10;
+  const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
+
+  const SPEED_MIN = 2;
+  const SPEED_MAX = 2.5;
+
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, utils } = BaseScene({
     canvas,
     settings: { cameraPosition: [0, 50, 200], orbitControls: true },
   });
 
-  const { scene, renderer, camera, uniforms } = state;
+  const { scene, uniforms } = state;
   const { gui } = utils;
 
-  const BOUNDS = { width: 500, height: 200, depth: 500 };
-  const BOUNDS_RADIUS = new THREE.Vector3(0, 0, 0).distanceTo(
-    new THREE.Vector3().addScalar(
-      Math.max(BOUNDS.width, BOUNDS.height, BOUNDS.depth) / 2,
-    ),
-  );
-
-  const NUM_BOIDS = 100;
-  const BOID_SPEED = 1.5;
-  const BOID_ACCELERATION = BOID_SPEED / 10;
-  const BOID_FORCE_MAX = BOID_ACCELERATION / 10.0;
-  const BOID_FORCE_SEEK = 2;
-  const BOID_FORCE_ALIGNMENT = 10;
-  const BOID_FORCE_SEPARATION = 30;
-  const BOID_FORCE_COHESION = 10;
-  const BOID_FORCE_WANDER = 3;
-
-  const SPEED_MIN = 2;
-  const SPEED_MAX = 2.5;
+  let player = usePlayer.get();
+  uniforms.uData = { value: player.buffer };
 
   const hashGrid = new SpatialGrid<Boid>({
     bounds: [
@@ -87,6 +80,247 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   let instancedEyes: THREE.InstancedMesh;
 
   const instancedMeshes: THREE.InstancedMesh[] = [];
+
+  interface FireflyParams extends BoidParams {
+    color: THREE.Color;
+  }
+
+  class Firefly extends Boid {
+    public color: THREE.Color;
+    public frequency: number;
+    private lightUniforms: { [key: string]: THREE.IUniform };
+    public nearestLight: LightEntity | null;
+
+    constructor(params: FireflyParams) {
+      super(params);
+      this.color = params.color;
+      this.frequency = Math.random() * 3;
+
+      this.lightUniforms = {
+        ...uniforms,
+        index: { value: this.index },
+        color: {
+          value: this.color,
+        },
+        frequency: {
+          value: this.frequency,
+        },
+      };
+
+      let lightMaterial = new THREE.ShaderMaterial({
+        uniforms: this.lightUniforms,
+        vertexShader: lightVertexShader,
+        fragmentShader: lightFragmentShader,
+      });
+
+      const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
+      lightMesh.material.uniforms.index = { value: this.index };
+      this.group.add(lightMesh);
+
+      this.nearestLight = this.syncNearestLight();
+
+      for (let j = 0; j < instancedMeshes.length; j++) {
+        instancedMeshes[j].setMatrixAt(this.index, this.group.matrix);
+      }
+
+      scene.add(this.group);
+    }
+
+    // loop through lights, sync color and progressively sync frequency
+    syncNearestLight() {
+      let minDistance1 = Infinity;
+      let minDistance2 = Infinity;
+      let closestObject1 = null,
+        closestObject2 = null;
+
+      for (const light of lights) {
+        const distance = light.position.distanceTo(this.position);
+        if (distance < minDistance1) {
+          minDistance2 = minDistance1;
+          closestObject2 = closestObject1;
+          minDistance1 = distance;
+          closestObject1 = light;
+        } else if (distance < minDistance2) {
+          minDistance2 = distance;
+          closestObject2 = light;
+        }
+      }
+
+      if (closestObject1 && this.color !== closestObject1.color) {
+        this.color.lerp(
+          closestObject1.color,
+          minDistance1 / (minDistance1 + minDistance2),
+        );
+        this.lightUniforms.color.value = this.color;
+      }
+
+      if (!closestObject1) return null;
+
+      this.frequency = damp(
+        this.frequency,
+        closestObject1.frequencyIndex,
+        1,
+        state.clock.getElapsedTime(),
+      );
+
+      this.lightUniforms.frequency.value = this.frequency;
+      return closestObject1;
+    }
+
+    step(timeMs: number) {
+      this.syncNearestLight();
+      super.step(timeMs);
+
+      // Update firefly meshes
+      for (let i = 0; i < instancedMeshes.length; i++) {
+        instancedMeshes[i].setMatrixAt(this.index, this.group.matrix);
+        instancedMeshes[i].instanceMatrix.needsUpdate = true;
+      }
+    }
+
+    // Applies firefly specific steering behavior
+    applySteering(localEntities: Boid[]) {
+      let force = new THREE.Vector3();
+      for (let i = 0; i < lights.length; i++) {
+        force.add(this.applySeek(lights[i].position, 0.5));
+      }
+      super.applySteering(localEntities, force);
+    }
+  }
+
+  class LightEntity {
+    public position: THREE.Vector3;
+    public frequencyIndex: number; // index of frequency
+    public color: THREE.Color;
+    public intensity: number;
+    public distance: number;
+    private light: THREE.PointLight;
+
+    constructor(
+      position: THREE.Vector3,
+      frequencyIndex: number,
+      color: THREE.Color,
+    ) {
+      this.position = position;
+      this.frequencyIndex = frequencyIndex;
+      this.color = color;
+      this.intensity = 0.5;
+      this.distance = 1.5 * BOUNDS.height;
+
+      this.light = new THREE.PointLight(
+        this.color,
+        this.intensity,
+        this.distance,
+      );
+      this.light.position.copy(this.position);
+
+      scene.add(this.light);
+      this.debug();
+    }
+
+    setIntensity(intensity: number) {
+      this.intensity = intensity;
+      this.light.intensity = this.intensity;
+    }
+
+    debug() {
+      const lightHelper = new THREE.PointLightHelper(this.light, 2);
+      scene.add(lightHelper);
+    }
+  }
+
+  function createBoids() {
+    for (let i = 0; i < NUM_BOIDS; i++) {
+      const b = new Firefly({
+        index: i,
+        speedMin: SPEED_MIN,
+        speedMax: SPEED_MAX,
+        speed: BOID_SPEED,
+        maxSteeringForce: BOID_FORCE_MAX,
+        acceleration: BOID_ACCELERATION,
+        color: new THREE.Color(1, 1, 1),
+        bounds: BOUNDS,
+        hashGrid,
+      });
+      boids.push(b);
+    }
+  }
+
+  function setupGUI() {
+    gui.addInput(settings, 'timeMultiplier', {
+      min: 0.05,
+      max: 500,
+      step: 0.01,
+    });
+  }
+
+  function animationLoop({ time }: BaseSceneState) {
+    for (let i = 0; i < boids.length; i++) {
+      boids[i].step(time * settings.timeMultiplier);
+    }
+
+    if (player.analyser) {
+      player.analyser.getByteFrequencyData(player.buffer);
+      uniforms.uData.value = player.buffer;
+    }
+
+    // Animate lights
+    let bin = Math.floor(player.buffer.length / (lights.length + 1));
+    for (let i = 0; i < lights.length; i++) {
+      const value = uniforms.uData.value[i * bin] / 255;
+      const targetIntensity = Math.max(1 - value, 0.7);
+      const intensity = damp(lights[i].intensity, targetIntensity, 0.5, time);
+      lights[i].setIntensity(intensity);
+    }
+  }
+
+  function createLights() {
+    const light1 = new LightEntity(
+      new THREE.Vector3(0, BOUNDS.height / 3, -BOUNDS.depth / 4),
+      1,
+      new THREE.Color(1, 0, 0),
+    );
+    const light2 = new LightEntity(
+      new THREE.Vector3(-BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
+      2,
+      new THREE.Color(0, 1, 0),
+    );
+    const light3 = new LightEntity(
+      new THREE.Vector3(BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
+      3,
+      new THREE.Color(0, 0, 1),
+    );
+
+    const hemisphereLight = new THREE.HemisphereLight(0x262626, 0xc4c4c4, 0.55);
+    scene.add(hemisphereLight);
+
+    return { light1, light2, light3, hemisphereLight };
+  }
+
+  function init() {
+    setupGUI();
+
+    const plane = new THREE.PlaneGeometry(BOUNDS.width, BOUNDS.depth, 10, 10);
+    const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xc4c4c4 });
+    const groundMesh = new THREE.Mesh(plane, groundMaterial);
+    groundMesh.rotation.x -= Math.PI / 2;
+    groundMesh.position.y = -BOUNDS.height / 2;
+
+    const boundsHelper = createDebugBounds([
+      BOUNDS.width,
+      BOUNDS.height,
+      BOUNDS.depth,
+    ]);
+
+    const { light1, light2, light3, hemisphereLight } = createLights();
+    lights.push(light1, light2, light3);
+
+    createBoids();
+
+    scene.add(boundsHelper);
+    scene.add(groundMesh);
+    registerRenderCallback(animationLoop);
+  }
 
   function loadAssets() {
     loadGLTF('/assets/models/firefly.glb', function (model) {
@@ -159,528 +393,4 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   }
 
   loadAssets();
-
-  interface BoidParams {
-    index: number;
-    speedMin: number;
-    speedMax: number;
-    speed: number;
-    maxSteeringForce: number;
-    acceleration: number;
-  }
-
-  class Boid {
-    public group: THREE.Group;
-    public position: THREE.Vector3;
-    public direction: THREE.Vector3;
-    public velocity: THREE.Vector3;
-    private maxSteeringForce: number;
-    public maxSpeed: number;
-    public acceleration: number;
-    public radius: number; // (used for collision detection)
-    private wanderAngle: number;
-    public hashPosition: [number, number]; // cur index of hash grid
-    public index: number;
-
-    constructor({
-      speedMin,
-      speedMax,
-      speed,
-      maxSteeringForce,
-      acceleration,
-      index,
-    }: BoidParams) {
-      // Initialize boid, give it a random initial position and direction
-      this.index = index;
-      this.group = new THREE.Group();
-
-      this.position = new THREE.Vector3(
-        rand(-BOUNDS.width / 2, BOUNDS.width / 2),
-        rand(-BOUNDS.height / 4, BOUNDS.height / 4),
-        rand(-BOUNDS.depth / 2, BOUNDS.depth / 2),
-      );
-
-      this.group.position.set(
-        this.position.x,
-        this.position.y,
-        this.position.z,
-      );
-
-      this.direction = new THREE.Vector3(
-        rand(-1, 1),
-        rand(-0.5, 0.5),
-        rand(-1, 1),
-      );
-      this.velocity = this.direction.clone();
-
-      // Calculate the boid's speed and scale based on the provided parameters
-      const speedMultiplier = rand(speedMin, speedMax);
-      this.maxSteeringForce = maxSteeringForce * speedMultiplier;
-      this.maxSpeed = speed * speedMultiplier;
-      this.acceleration = acceleration * speedMultiplier;
-      this.wanderAngle = 0;
-
-      // Scale down based on speed multiplier
-      const scale = 1.0 / speedMultiplier;
-      const radiusMultiplier = 15;
-      this.radius = radiusMultiplier * scale;
-      this.group.scale.setScalar(scale);
-      this.group.updateMatrix();
-
-      // Update instance matrix
-      for (let i = 0; i < instancedMeshes.length; i++) {
-        instancedMeshes[i].setMatrixAt(index, this.group.matrix);
-      }
-
-      // Set hash position
-      this.hashPosition = hashGrid.updateEntityPosition(this.group.uuid, this);
-      scene.add(this.group);
-
-      if (settings.debug.boidRadius) this.debug();
-    }
-
-    // Applies steering behavior and updates direction/velocity
-    step(timeMs: number) {
-      const localEntities = hashGrid.getLocalEntities(
-        this.position,
-        this.radius,
-      );
-      this.applySteering(localEntities);
-
-      const frameVelocity = this.velocity.clone();
-      frameVelocity.multiplyScalar(timeMs / 1000);
-      this.group.position.add(frameVelocity);
-      this.position = this.group.position;
-
-      const direction = this.direction;
-      const m = new THREE.Matrix4();
-      m.lookAt(
-        new THREE.Vector3(0, 0, 0),
-        direction,
-        new THREE.Vector3(0, 1, 0),
-      );
-      this.group.quaternion.setFromRotationMatrix(m);
-
-      // Update hash grid
-      this.hashPosition = hashGrid.updateEntityPosition(
-        this.group.uuid,
-        this,
-        this.hashPosition,
-      );
-
-      // Update instance
-      this.group.rotateY(Math.PI);
-      this.group.updateMatrix();
-
-      for (let i = 0; i < instancedMeshes.length; i++) {
-        instancedMeshes[i].setMatrixAt(this.index, this.group.matrix);
-      }
-    }
-
-    // Apply steering behaviors
-    applySteering(localEntities: Boid[]) {
-      const steeringForce = new THREE.Vector3(0, 0, 0);
-      const forces = [
-        this.applyAlignment(localEntities),
-        this.applySeparation(localEntities),
-        this.applyCohesion(localEntities),
-        this.avoidWalls(true), // smoothly avoid bounds
-        ...lights.map((l) => this.applySeek(l.position)), // seek lights
-      ];
-
-      for (const f of forces) {
-        steeringForce.add(f);
-      }
-
-      // Limit force & velocity
-      if (steeringForce.length() > this.maxSteeringForce) {
-        steeringForce.normalize();
-        steeringForce.multiplyScalar(this.maxSteeringForce);
-      }
-
-      this.velocity.add(steeringForce);
-
-      if (this.velocity.length() > this.maxSpeed) {
-        this.velocity.normalize();
-        this.velocity.multiplyScalar(this.maxSpeed);
-      }
-
-      // Update direction
-      this.direction = this.velocity.clone();
-      this.direction.normalize();
-    }
-
-    // Calculates desired separation, steer it away if it gets too close
-    applySeparation(localEntities: Boid[]) {
-      const force = new THREE.Vector3(0, 0, 0);
-      if (!localEntities.length) return force;
-
-      for (const entity of localEntities) {
-        const distanceToEntity = Math.max(
-          0.001,
-          entity.position.distanceTo(this.position) -
-            1.5 * (this.radius + entity.radius),
-        );
-
-        const multiplier =
-          (BOID_FORCE_SEPARATION / distanceToEntity) *
-          (this.radius + entity.radius);
-        const directionFromEntity = new THREE.Vector3().subVectors(
-          this.position,
-          entity.position,
-        );
-        directionFromEntity.normalize();
-        force.add(directionFromEntity.multiplyScalar(multiplier));
-      }
-
-      return force;
-    }
-
-    // Calculates average heading of neighbors and steer towards it
-    applyAlignment(localEntities: Boid[]) {
-      const force = new THREE.Vector3(0, 0, 0);
-
-      for (let entity of localEntities) {
-        force.add(entity.direction);
-      }
-
-      force.normalize();
-      force.multiplyScalar(BOID_FORCE_ALIGNMENT);
-      return force;
-    }
-
-    // Calculates distance to bounds and avoids them
-    avoidWalls(smooth = false, wallSeparationForce = 20) {
-      const position = this.group.position.clone();
-      const force = new THREE.Vector3(0, 0, 0);
-
-      // Calculate the distance to nearest wall
-      const xDistance = BOUNDS.width / 2 - Math.abs(position.x);
-      const yDistance = BOUNDS.height / 2 - Math.abs(position.y);
-      const zDistance = BOUNDS.depth / 2 - Math.abs(position.z);
-
-      const minDist = 0.5 + this.radius;
-
-      let multiplier = 0;
-      let sign = 1;
-      let wall: THREE.Vector3;
-      let directionFromWall = new THREE.Vector3();
-
-      const calculateMultiplier = (distance: number) =>
-        wallSeparationForce * distance;
-
-      // Avoid width bounds
-      if (xDistance <= minDist) {
-        multiplier = calculateMultiplier(xDistance);
-        sign = position.x >= 0 ? 1 : -1;
-        wall = new THREE.Vector3(
-          (sign * BOUNDS.width) / 2,
-          position.y,
-          position.z,
-        );
-        directionFromWall = new THREE.Vector3().subVectors(position, wall);
-      }
-
-      // Avoid height bounds
-      if (yDistance <= minDist) {
-        multiplier = calculateMultiplier(yDistance);
-        sign = position.y >= 0 ? 1 : -1;
-        wall = new THREE.Vector3(
-          position.x,
-          (sign * BOUNDS.height) / 2,
-          position.z,
-        );
-        directionFromWall = new THREE.Vector3().subVectors(position, wall);
-      }
-
-      // Avoid depth bounds
-      if (zDistance <= minDist) {
-        multiplier = calculateMultiplier(zDistance);
-        sign = position.z >= 0 ? 1 : -1;
-        wall = new THREE.Vector3(
-          position.x,
-          position.y,
-          (sign * BOUNDS.depth) / 2,
-        );
-        directionFromWall = new THREE.Vector3().subVectors(position, wall);
-      }
-
-      directionFromWall.normalize();
-      force.add(directionFromWall.multiplyScalar(multiplier));
-
-      // bonk against bound
-      if (!smooth && directionFromWall.length() > 0) {
-        this.velocity.add(directionFromWall);
-      }
-      return force;
-    }
-
-    // Calculates average position of neighbors and steer towards it
-    applyCohesion(localEntities: Boid[]) {
-      const force = new THREE.Vector3(0, 0, 0);
-      if (!localEntities.length) return force;
-
-      const averagePosition = new THREE.Vector3(0, 0, 0);
-      for (const entity of localEntities) {
-        averagePosition.add(entity.position);
-      }
-      averagePosition.multiplyScalar(1 / localEntities.length);
-
-      const directionToTarget = averagePosition.clone().sub(this.position);
-      directionToTarget.normalize();
-      directionToTarget.multiplyScalar(BOID_FORCE_COHESION);
-
-      return directionToTarget;
-    }
-
-    applySeek(
-      target: THREE.Vector3,
-      seekMinRadius = BOUNDS_RADIUS / 8,
-      seekMaxRadius = BOUNDS_RADIUS / 4,
-    ) {
-      const distance = Math.max(
-        0,
-        (this.position.distanceTo(target) - seekMinRadius) / BOUNDS_RADIUS,
-      );
-
-      // Limit range of seek
-      if (distance > seekMaxRadius / BOUNDS.width)
-        return new THREE.Vector3(0, 0, 0);
-
-      const direction = target.clone().sub(this.position).normalize();
-      const force = direction.multiplyScalar(BOID_FORCE_SEEK * distance);
-
-      return force;
-    }
-
-    applyWander() {}
-
-    debug() {
-      const wireframe = new THREE.WireframeGeometry(
-        new THREE.SphereGeometry(this.radius),
-      );
-
-      const helper = new THREE.LineSegments(wireframe);
-      (helper.material as THREE.Material).depthTest = false;
-      (helper.material as THREE.Material).opacity = 0.25;
-      (helper.material as THREE.Material).transparent = true;
-
-      this.group.add(helper);
-    }
-  }
-
-  interface FireflyParams extends BoidParams {
-    color: THREE.Color;
-  }
-
-  class Firefly extends Boid {
-    public color: THREE.Color;
-    public frequency: number;
-    private lightUniforms: { [key: string]: THREE.IUniform };
-    public nearestLight: LightEntity | null;
-
-    constructor(params: FireflyParams) {
-      super(params);
-      this.color = params.color;
-      this.frequency = Math.random() * 5;
-
-      this.lightUniforms = {
-        ...uniforms,
-        index: { value: this.index },
-        color: {
-          value: this.color,
-        },
-        frequency: {
-          value: this.frequency,
-        },
-      };
-
-      let lightMaterial = new THREE.ShaderMaterial({
-        uniforms: this.lightUniforms,
-        vertexShader: lightVertexShader,
-        fragmentShader: lightFragmentShader,
-      });
-
-      const lightMesh = new THREE.Mesh(lightGeometry, lightMaterial);
-      lightMesh.material.uniforms.index = { value: this.index };
-      this.group.add(lightMesh);
-
-      this.nearestLight = this.syncNearestLight();
-    }
-
-    // loop through lights, sync color and progressively sync frequency
-    syncNearestLight() {
-      let minDistance1 = Infinity;
-      let minDistance2 = Infinity;
-      let closestObject1 = null,
-        closestObject2 = null;
-
-      for (const light of lights) {
-        const distance = light.position.distanceTo(this.position);
-        if (distance < minDistance1) {
-          minDistance2 = minDistance1;
-          closestObject2 = closestObject1;
-          minDistance1 = distance;
-          closestObject1 = light;
-        } else if (distance < minDistance2) {
-          minDistance2 = distance;
-          closestObject2 = light;
-        }
-      }
-
-      if (closestObject1 && this.color !== closestObject1.color) {
-        this.color.lerp(
-          closestObject1.color,
-          minDistance1 / (minDistance1 + minDistance2),
-        );
-        this.lightUniforms.color.value = this.color;
-      }
-
-      if (!closestObject1) return null;
-
-      this.frequency = damp(
-        this.frequency,
-        closestObject1.frequency,
-        0.01,
-        state.clock.getElapsedTime(),
-      );
-
-      this.lightUniforms.frequency.value = this.frequency;
-      return closestObject1;
-    }
-
-    step(timeMs: number) {
-      this.syncNearestLight();
-      super.step(timeMs);
-    }
-  }
-
-  class LightEntity {
-    public position: THREE.Vector3;
-    public frequency: number;
-    public color: THREE.Color;
-    public intensity: number;
-    public distance: number;
-    private light: THREE.PointLight;
-
-    constructor(
-      position: THREE.Vector3,
-      frequency: number,
-      color: THREE.Color,
-    ) {
-      this.position = position;
-      this.frequency = frequency;
-      this.color = color;
-      this.intensity = 0.5;
-      this.distance = 1.5 * BOUNDS.height;
-
-      this.light = new THREE.PointLight(
-        this.color,
-        this.intensity,
-        this.distance,
-      );
-      this.light.position.copy(this.position);
-
-      scene.add(this.light);
-      this.debug();
-    }
-
-    debug() {
-      const lightHelper = new THREE.PointLightHelper(this.light, 2);
-      scene.add(lightHelper);
-    }
-  }
-
-  function createBoids() {
-    for (let i = 0; i < NUM_BOIDS - 1; i++) {
-      const b = new Firefly({
-        index: i,
-        speedMin: SPEED_MIN,
-        speedMax: SPEED_MAX,
-        speed: BOID_SPEED,
-        maxSteeringForce: BOID_FORCE_MAX,
-        acceleration: BOID_ACCELERATION,
-        color: new THREE.Color(1, 1, 1),
-      });
-      boids.push(b);
-    }
-
-    // Create leader
-    const leader = new Firefly({
-      index: NUM_BOIDS - 1,
-      speedMin: SPEED_MIN,
-      speedMax: SPEED_MAX,
-      speed: BOID_SPEED,
-      maxSteeringForce: BOID_FORCE_MAX,
-      acceleration: BOID_ACCELERATION,
-      color: new THREE.Color(1, 1, 1),
-    });
-    boids.push(leader);
-  }
-
-  function setupGUI() {
-    gui.addInput(settings, 'timeMultiplier', {
-      min: 0.05,
-      max: 500,
-      step: 0.01,
-    });
-  }
-
-  function animationLoop({ time }: BaseSceneState) {
-    for (let i = 0; i < boids.length; i++) {
-      boids[i].step(time * settings.timeMultiplier);
-    }
-
-    for (let i = 0; i < instancedMeshes.length; i++) {
-      instancedMeshes[i].instanceMatrix.needsUpdate = true;
-    }
-  }
-
-  function createLights() {
-    const light1 = new LightEntity(
-      new THREE.Vector3(0, BOUNDS.height / 3, -BOUNDS.depth / 4),
-      1,
-      new THREE.Color(1, 0, 0),
-    );
-    const light2 = new LightEntity(
-      new THREE.Vector3(-BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
-      2,
-      new THREE.Color(0, 1, 0),
-    );
-    const light3 = new LightEntity(
-      new THREE.Vector3(BOUNDS.width / 4, BOUNDS.height / 3, BOUNDS.depth / 4),
-      3,
-      new THREE.Color(0, 0, 1),
-    );
-
-    const hemisphereLight = new THREE.HemisphereLight(0x262626, 0xc4c4c4, 0.55);
-    scene.add(hemisphereLight);
-
-    return { light1, light2, light3, hemisphereLight };
-  }
-
-  function init() {
-    setupGUI();
-
-    const plane = new THREE.PlaneGeometry(BOUNDS.width, BOUNDS.depth, 10, 10);
-    const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xc4c4c4 });
-    const groundMesh = new THREE.Mesh(plane, groundMaterial);
-    groundMesh.rotation.x -= Math.PI / 2;
-    groundMesh.position.y = -BOUNDS.height / 2;
-
-    const boundsHelper = createDebugBounds([
-      BOUNDS.width,
-      BOUNDS.height,
-      BOUNDS.depth,
-    ]);
-
-    const { light1, light2, light3, hemisphereLight } = createLights();
-    lights.push(light1, light2, light3);
-
-    createBoids();
-
-    scene.add(boundsHelper);
-    scene.add(groundMesh);
-    registerRenderCallback(animationLoop);
-  }
 </script>
