@@ -5,7 +5,14 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { atom } from 'nanostores';
 import { Pane } from 'tweakpane';
-import type { BaseSceneProps, BaseSceneSettings, BaseSceneState, SceneHook, Uniforms, useFrame } from './types';
+import type {
+  BaseSceneProps,
+  BaseSceneSettings,
+  BaseSceneState,
+  SceneHook,
+  Uniforms,
+  useFrame,
+} from './types';
 
 export const useGUI = atom(
   new Pane({
@@ -184,7 +191,7 @@ const BaseScene = ({
       orbitControls.autoRotate = settings.autoRotate;
     });
 
-    gui
+    debugFolder
       .addInput(settings, 'zoom', { min: 0.1, max: 3, step: 0.001 })
       .on('change', ({ value }) => {
         camera.zoom = value;
