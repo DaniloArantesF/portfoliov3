@@ -9,3 +9,6 @@ tags: ['threejs', 'typescript']
 ---
 
 ### Todos
+
+- improve camera movement
+- color paths

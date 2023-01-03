@@ -105,6 +105,7 @@ const BaseScene = ({
     orbitControls = new OrbitControls(camera, renderer.domElement);
     orbitControls.enabled = settings.orbitControls;
     orbitControls.autoRotateSpeed = 0.5;
+    orbitControls.autoRotate = settings.autoRotate;
 
     if (settings.axesHelper) {
       const axesHelper = new THREE.AxesHelper(5);

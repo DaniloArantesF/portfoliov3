@@ -19,22 +19,29 @@ const title = readme?.frontmatter?.title ?? '';
   /*          Setup & Globals         */
   /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback } = BaseScene({
+  const { state, registerRenderCallback, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: true,
+      orbitControls: false,
       cameraPosition: [0, 0, 3],
+      near: 0.001,
     },
   });
   const { scene, camera, uniforms } = state;
-
-  const monitor = {};
+  const { gui } = utils;
   const settings = {
     scale: 2,
-    dt: 0.005,
-    sigma: 10,
-    beta: 8 / 3,
-    rho: 28,
+    pathLen: 1000,
+    lorenz: {
+      dt: 0.003,
+      sigma: 10,
+      beta: 8 / 3,
+      rho: 28,
+    },
+    thomas: {
+      b: 0.1998,
+      dt: 0.01,
+    },
   };
 
   /* -------------------------------- */
@@ -45,43 +52,86 @@ const title = readme?.frontmatter?.title ?? '';
       material: MeshLineMaterial,
       geometry: MeshLineGeometry;
 
-    const positions: THREE.Vector3[] = [];
-
+    let positions: THREE.Vector3[] = [];
     const rand = () => (Math.random() - 0.5) * settings.scale;
-    let currentPosition = new THREE.Vector3(rand(), rand(), 0);
+    const damp = THREE.MathUtils.damp;
+    let currentPosition = new THREE.Vector3();
+    let attractorFunction = lorenzAttractor;
 
     function animationLoop({ time }: BaseSceneState) {
-      const [x, y, z] = lorenzAttractor(currentPosition.toArray(), settings.dt);
+      const [x, y, z] = attractorFunction(currentPosition.toArray());
 
       // Calculate next position
-      currentPosition = currentPosition.add(new THREE.Vector3(x, y, z));
+      currentPosition.add(new THREE.Vector3(x, y, z));
 
       // Normalize and scale coordinates
       const nextPosition = currentPosition
         .clone()
         .normalize()
         .multiplyScalar(settings.scale);
+
+      // Add new point and remove oldest
       geometry.advance(nextPosition);
+
+      // Update camera
+      if (!state.orbitControls.enabled) {
+        const start = new THREE.Vector3(
+          geometry.points[0],
+          geometry.points[1],
+          geometry.points[2],
+        );
+        const middlePoint = start.add(nextPosition).multiplyScalar(2 / 3);
+        camera.lookAt(middlePoint);
+
+        const targetPosition =
+          0.5 * middlePoint.z +
+          Math.max(middlePoint.z, -0.5) +
+          (settings.scale + 1);
+
+        camera.position.x = damp(
+          camera.position.z,
+          0.25 * middlePoint.x,
+          1,
+          time,
+        );
+
+        camera.position.y = damp(
+          camera.position.y,
+          0.25 * middlePoint.y,
+          1,
+          time,
+        );
+
+        camera.position.z = damp(camera.position.z, targetPosition, 1, time);
+      }
     }
 
     // https://en.wikipedia.org/w/index.php?title=Lorenz_system
-    function lorenzAttractor(
-      position: [number, number, number],
-      delta: number,
-    ) {
+    function lorenzAttractor(position: [number, number, number]) {
       const [x, y, z] = position;
-      const { sigma, beta, rho } = settings;
+      const { sigma, beta, rho, dt } = settings.lorenz;
 
-      const dx = sigma * (y - x) * delta;
-      const dy = (x * (rho - z) - y) * delta;
-      const dz = (x * y - beta * z) * delta;
+      const dx = sigma * (y - x) * dt;
+      const dy = (x * (rho - z) - y) * dt;
+      const dz = (x * y - beta * z) * dt;
+
+      return [dx, dy, dz];
+    }
+
+    // https://en.wikipedia.org/wiki/Thomas%27_cyclically_symmetric_attractor
+    function thomasAttractor(position: [number, number, number]) {
+      const [x, y, z] = position;
+      let { dt, b } = settings.thomas;
+
+      const dx = (Math.sin(y) - b * x) * dt;
+      const dy = (Math.sin(z) - b * y) * dt;
+      const dz = (Math.sin(x) - b * z) * dt;
 
       return [dx, dy, dz];
     }
 
     function init() {
-      // Generate points and make a curve
-      positions.push(currentPosition.clone());
+      state.orbitControls.enablePan = false;
 
       material = new MeshLineMaterial({
         color: 0xff0000,
@@ -89,20 +139,93 @@ const title = readme?.frontmatter?.title ?? '';
         resolution: new THREE.Vector2(window.innerWidth, window.innerHeight),
       });
 
+      // Generate points and create geometry
       geometry = new MeshLineGeometry();
-
-      const len = 1000;
-      for (let i = 0; i < len; i++) {
-        positions.push(currentPosition.clone());
-      }
-
-      geometry.setPoints(positions);
+      resetGeometry();
 
       mesh = new THREE.Mesh(geometry, material);
       scene.add(mesh);
     }
 
+    function resetGeometry() {
+      positions = [];
+      currentPosition = new THREE.Vector3(rand() * 0.5, rand() * 0.5, 0);
+
+      for (let i = 0; i < settings.pathLen; i++) {
+        const [x, y, z] = attractorFunction(currentPosition.toArray());
+
+        // Calculate next position
+        currentPosition.add(new THREE.Vector3(x, y, z));
+
+        // Normalize and scale coordinates
+        const nextPosition = currentPosition
+          .clone()
+          .normalize()
+          .multiplyScalar(settings.scale);
+        positions.push(nextPosition);
+      }
+
+      geometry.setPoints(positions);
+      mesh = new THREE.Mesh(geometry, material);
+      return mesh;
+    }
+
+    function setupGUI() {
+      const folder = gui.addFolder({ title: 'Attractor Settings' });
+
+      (
+        folder.addBlade({
+          view: 'list',
+          label: 'Attractor function',
+          options: [
+            { text: 'Lorenz', value: lorenzAttractor },
+            { text: 'Thomas', value: thomasAttractor },
+          ],
+          value: attractorFunction,
+        }) as any
+      ) /** no clue, fix later */
+        .on('change', (event: any) => {
+          attractorFunction = event.value;
+          resetGeometry();
+        });
+
+      folder
+        .addInput(settings, 'scale', { min: 1, max: 10, step: 1 })
+        .on('change', ({ value }) => {
+          camera.position.z = 1.5 * value;
+        });
+
+      const lorenzFolder = folder.addFolder({ title: 'Lorenz' });
+      lorenzFolder.addInput(settings.lorenz, 'dt', {
+        min: 0.001,
+        max: 0.02,
+        step: 0.001,
+      });
+      lorenzFolder.addInput(settings.lorenz, 'sigma');
+      lorenzFolder.addInput(settings.lorenz, 'beta');
+      lorenzFolder.addInput(settings.lorenz, 'rho');
+
+      const thomasFolder = folder.addFolder({
+        title: 'Thomas',
+      });
+      thomasFolder.addInput(settings.thomas, 'b', {
+        min: 0,
+        max: 1.5,
+        step: 0.001,
+      });
+
+      thomasFolder.addInput(settings.thomas, 'dt', {
+        min: 0.0,
+        max: 0.01,
+        step: 0.001,
+      });
+
+      // lorenzFolder.expanded = false;
+      // thomasFolder.expanded = false;
+    }
+
     init();
+    setupGUI();
     registerRenderCallback(animationLoop);
     isReady.set(true);
   }
