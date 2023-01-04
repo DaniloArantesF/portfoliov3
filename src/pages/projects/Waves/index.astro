@@ -2,27 +2,32 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title={'Waves'} />
+<SceneLayout title={'Waves'} audio />
 
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
-  import basicVertexShader from './shaders/vertex.vs.glsl?raw';
-  import basicFragmentShader from './shaders/fragment.fs.glsl?raw';
+  import vertexShader from './shaders/vertex.vs.glsl?raw';
+  import fragmentShader from './shaders/fragment.fs.glsl?raw';
   import type { BaseSceneState } from '@lib/types';
+  import { usePlayer } from '@components/Player';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
   const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
-  const { state } = BaseScene({
+  const { state, registerRenderCallback } = BaseScene({
     canvas,
     settings: {
-      cameraPosition: [0, 10, 10],
+      cameraPosition: [0, 7, 7],
       orbitControls: true,
+      gridHelper: true,
     },
   });
   const { scene, renderer, camera } = state;
+
+  /* ---------- Audio ---------- */
+  let player = usePlayer.get();
 
   const settings = {
     color1: new THREE.Color(1, 0, 0),
@@ -30,7 +35,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     foldFrequency: 0.03,
     foldsHeight: 5.5,
     waveFrequency: 0.5,
-    waveAmplitude: 0.53,
+    waveAmplitude: 0.1,
     waveDirection: [-0.5, 0.5],
   };
 
@@ -43,26 +48,32 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     waveDirection: { value: settings.waveDirection },
     foldFrequency: { value: settings.foldFrequency },
     foldHeight: { value: settings.foldsHeight },
+    uData: { value: player.buffer },
   };
 
   /* -------------------------------- */
   /*                Scene             */
   /* -------------------------------- */
-  const geometry = new THREE.PlaneGeometry(10, 10, 50, 50);
+  const geometry = new THREE.BoxGeometry(5, 2, 5, 100, 5, 100);
   const material = new THREE.ShaderMaterial({
     uniforms,
-    vertexShader: basicVertexShader,
-    fragmentShader: basicFragmentShader,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
     transparent: true,
     wireframe: true,
-    side: THREE.DoubleSide,
+    side: THREE.FrontSide,
   });
+
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.rotation.x += Math.PI / 2;
   scene.add(mesh);
 
-  function animationLoop(state: BaseSceneState) {}
+  function animationLoop(state: BaseSceneState) {
+    if (player.analyser) {
+      player.analyser.getByteFrequencyData(player.buffer);
+      uniforms.uData.value = player.buffer;
+    }
+  }
 
   isReady.set(true);
-  // registerRenderCallback(animationLoop);
+  registerRenderCallback(animationLoop);
 </script>
