@@ -5,6 +5,7 @@ description: An experiment with game development using React Three Fiber. It's i
 picture: projects/stacks-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
+visibility: visible
 tags: ['reactjs', 'r3f', 'zustand']
 live: https://stacks-two.vercel.app/
 github: https://github.com/DaniloArantesF/Stacks

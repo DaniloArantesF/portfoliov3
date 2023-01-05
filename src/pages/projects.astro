@@ -1,73 +1,74 @@
 ---
 import Card from '../components/Card';
-import CardList from '../components/CardList.astro';
+import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
-import type { ProjectProps } from './projects/[slug].astro';
 
-export async function getProjects() {
+export interface ProjectProps {
+  title: string;
+  subtitle: string;
+  description: string;
+  picture: string;
+  lastUpdated: string;
+  featured: boolean;
+  tags: string[];
+  visibility?: 'visible' | 'hidden' | 'private';
+  live?: string;
+  github?: string;
+  sandbox?: string;
+}
+
+export async function getProjects(all = false) {
+  const visible = (status: string) =>
+    (all || import.meta.env.DEV || status === 'visible') && status !== 'hidden';
   // Offsite projects are included from src/projects
   const projects = (
     await Astro.glob<ProjectProps>('/src/projects/*.md')
-  ).filter(
-    ({ frontmatter }) =>
-      import.meta.env.DEV || frontmatter.visibility !== 'hidden',
-  );
+  ).filter(({ frontmatter }) => visible(frontmatter.visibility ?? ''));
 
   // Demos are included here
   // Note: If a demo does not contain a readme it will not be listed
   const demos = (
     await Astro.glob<ProjectProps>('/src/pages/projects/**/*.md')
-  ).filter(
-    ({ frontmatter }) =>
-      import.meta.env.DEV ||
-      (frontmatter.visibility && frontmatter.visibility !== 'hidden'),
-  );
+  ).filter(({ frontmatter }) => visible(frontmatter.visibility ?? ''));
 
   return { projects, demos };
 }
 
-const { projects, demos } = await getProjects();
+const { projects, demos } = await getProjects(true);
+
+const cards = [
+  ...projects.map((project) => {
+    const slug = project.file.substring(
+      project.file.lastIndexOf('/') + 1,
+      project.file.length - 3,
+    );
+
+    const projectLink = project.frontmatter.live
+      ? project.frontmatter.live
+      : project.frontmatter.sandbox
+      ? project.frontmatter.sandbox
+      : project.frontmatter.github;
+    return {
+      href: projectLink ?? `/projects/${slug}`,
+      ...project.frontmatter,
+    };
+  }),
+  ...demos.map((project) => {
+    const projectLink = project.url!.substring(
+      0,
+      project.url!.lastIndexOf('/'),
+    );
+    return {
+      href: projectLink,
+      ...project.frontmatter,
+    };
+  }),
+];
 ---
 
 <Layout title="Portfolio">
   <main>
-    <CardList name="Projects">
-      {
-        demos.map((project) => {
-          const projectLink = project.url!.substring(
-            0,
-            project.url!.lastIndexOf('/'),
-          );
-          return (
-            <Card
-              client:only="react"
-              href={projectLink}
-              {...project.frontmatter}
-            />
-          );
-        })
-      }
-      {
-        projects.map((project) => {
-          const slug = project.file.substring(
-            project.file.lastIndexOf('/') + 1,
-            project.file.length - 3,
-          );
-          const projectLink = project.frontmatter.live
-            ? project.frontmatter.live
-            : project.frontmatter.sandbox
-            ? project.frontmatter.sandbox
-            : project.frontmatter.github;
-          return (
-            <Card
-              client:only="react"
-              href={projectLink ?? `/projects/${slug}`}
-              {...project.frontmatter}
-            />
-          );
-        })
-      }
-    </CardList>
+    <CardList name="Projects" client:only="react" cards={cards} />
   </main>
 </Layout>
 

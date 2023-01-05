@@ -4,7 +4,7 @@ subtitle: ThreeJS
 description:
 picture: projects/project-desktop-sample.webp
 featured: false
-visibility: hidden
+visibility: private
 tags: ['threejs', 'typescript']
 ---
 

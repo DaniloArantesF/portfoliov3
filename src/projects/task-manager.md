@@ -5,5 +5,6 @@ description: A college project for CS 242 (Systems Programming) in C++. It has a
 picture: projects/task-manager-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
+visibility: visible
 tags: ['qt']
 ---

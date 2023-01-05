@@ -5,6 +5,7 @@ description: A Discord music bot that supports Youtube, Spotify and a Web Dashbo
 picture: projects/benji-demo-1.webp
 lastUpdated: 2022-09-29T15:05:00.000Z
 featured: true
+visibility: visible
 tags: ['reactjs', 'expressjs', 'socketio', 'redux']
 live: https://benji.daarfi.me
 github: https://github.com/DaniloArantesF/BenjaminAFenix

@@ -9,7 +9,7 @@ import tagsMap, { Tag } from '../utils/tags';
 import gsap from 'gsap';
 import '../styles/card.scss';
 
-export interface Props {
+export interface CardProps {
   title: string;
   picture: string;
   subtitle?: string;
@@ -20,6 +20,7 @@ export interface Props {
   live?: string;
   github?: string;
   sandbox?: string;
+  visibility?: 'visible' | 'hidden' | 'private';
 }
 
 export function useGsapContext(scope?: string | object | Element) {
@@ -38,7 +39,7 @@ export default function Card({
   live,
   github,
   sandbox,
-}: Props) {
+}: CardProps) {
   const [tagsData, setTagsData] = useState<Tag[]>(
     tags?.map((t) => {
       return t in tagsMap
@@ -171,6 +172,8 @@ export default function Card({
               Sandbox
             </a>
           )}
+          {/* supress gsap warnings */}
+          <a />
         </div>
       </div>
     </div>

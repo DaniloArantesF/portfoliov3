@@ -1,38 +1,7 @@
----
-import button from '../styles/button.module.css';
-interface Props {
-  viewAll?: string;
-  name: string;
-}
+.cardlist-container {
+  padding-top: 6rem;
 
-const { viewAll, name } = Astro.props;
----
-
-<section>
-  <div class="section-details">
-    <h2>{name}</h2>
-    {
-      viewAll && (
-        <a
-          class={`${button.button} ${button.outlined} ${button.border}`}
-          href={viewAll}
-          aria-label={`View all projects`}
-        >
-          View All
-        </a>
-      )
-    }
-  </div>
-  <div class="cards-container">
-    <slot />
-  </div>
-</section>
-
-<style lang="scss">
-  section {
-    padding-top: 2rem;
-  }
-  section h2 {
+  & h2 {
     font-size: var(--text-xl);
     color: var(--color-accent-2);
     pointer-events: none;
@@ -71,4 +40,4 @@ const { viewAll, name } = Astro.props;
       max-width: 150px;
     }
   }
-</style>
+}
