@@ -14,3 +14,5 @@ tags: ['threejs', 'typescript']
 - Improve shadows
 - Finish resize handler
 - Camera movement for mobile
+
+## Limitations

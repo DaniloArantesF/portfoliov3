@@ -11,7 +11,10 @@ interface Props {
 }
 
 function CardList({ viewAll, name, cards }: Props) {
-  const devMode = useMemo(() => window.location.search === '?dev', []);
+  const devMode = useMemo(
+    () => window.location.search === '?dev' || import.meta.env.DEV,
+    [],
+  );
 
   return (
     <div className="cardlist-container">

@@ -1,9 +1,13 @@
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform float uTest;
+uniform float uTime;
+varying float vTest;
+varying float vTime;
 varying vec2 vUv;
 varying vec3 vNormal;
-uniform float uTime;
-varying float vTime;
-uniform float uTest;
-varying float vTest;
 
 void main() {
   // Pass uv data to fragment shader

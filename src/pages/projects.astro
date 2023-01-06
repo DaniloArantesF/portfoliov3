@@ -4,22 +4,25 @@ import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
 
 export interface ProjectProps {
-  title: string;
-  subtitle: string;
   description: string;
-  picture: string;
-  lastUpdated: string;
   featured: boolean;
-  tags: string[];
-  visibility?: 'visible' | 'hidden' | 'private';
-  live?: string;
   github?: string;
+  lastUpdated: string;
+  live?: string;
+  picture: string;
   sandbox?: string;
+  subtitle: string;
+  tags: string[];
+  title: string;
+  visibility?: 'visible' | 'hidden' | 'private';
 }
 
 export async function getProjects(all = false) {
+  // Hidden projects are only visible in production.
+  // Show all if dev
   const visible = (status: string) =>
     (all || import.meta.env.DEV || status === 'visible') && status !== 'hidden';
+
   // Offsite projects are included from src/projects
   const projects = (
     await Astro.glob<ProjectProps>('/src/projects/*.md')
@@ -36,7 +39,18 @@ export async function getProjects(all = false) {
 
 const { projects, demos } = await getProjects(true);
 
+// Map project data
 const cards = [
+  ...demos.map((project) => {
+    const projectLink = project.url!.substring(
+      0,
+      project.url!.lastIndexOf('/'),
+    );
+    return {
+      href: projectLink,
+      ...project.frontmatter,
+    };
+  }),
   ...projects.map((project) => {
     const slug = project.file.substring(
       project.file.lastIndexOf('/') + 1,
@@ -50,16 +64,6 @@ const cards = [
       : project.frontmatter.github;
     return {
       href: projectLink ?? `/projects/${slug}`,
-      ...project.frontmatter,
-    };
-  }),
-  ...demos.map((project) => {
-    const projectLink = project.url!.substring(
-      0,
-      project.url!.lastIndexOf('/'),
-    );
-    return {
-      href: projectLink,
       ...project.frontmatter,
     };
   }),

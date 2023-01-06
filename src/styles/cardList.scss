@@ -8,7 +8,7 @@
     user-select: none;
   }
 
-  .cards-container {
+  & .cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     row-gap: 2rem;
@@ -17,7 +17,7 @@
     justify-items: center;
   }
 
-  .section-details {
+  & .section-details {
     display: flex;
     flex-direction: column;
     align-items: center;

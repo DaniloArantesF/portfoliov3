@@ -25,8 +25,6 @@ void main() {
   vPosition.z += smoothstep(.01, .99, abs(elevation));
 
   vec4 modelViewPosition = modelViewMatrix * vec4( vPosition, 1.0 );
-  gl_PointSize = 3.5;
-  // gl_PointSize = ( 3.5 / -modelViewPosition.z );
+  gl_PointSize = ( 8. / -modelViewPosition.z );
   gl_Position = projectionMatrix * modelViewPosition;
-
 }

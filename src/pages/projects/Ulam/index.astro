@@ -17,6 +17,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import type { BaseSceneState } from '@lib/types';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
   import { isMobile } from '@utils/utils';
+  import { remap } from '@utils/math';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -45,7 +46,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     uProgress: 1,
     uScale: 1.15,
     uPower: 11,
-    uSize: window.innerWidth < 1000 ? 0.15 : 0.07,
+    uSize: 0.08,
     bloomStrength: 1.5,
     bloomThreshold: 0.05,
     bloomRadius: 0.1,
@@ -193,9 +194,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       camera.lookAt(focusPoint);
     }
 
-    if (player) {
-      let analyser = player.analyser;
-      analyser?.getByteFrequencyData(player.buffer);
+    if (player && player.analyser) {
+      player.analyser.getByteFrequencyData(player.buffer);
       uniforms.uData.value = player.buffer;
       globePass.uniforms.uData.value = uniforms.uData.value;
     }

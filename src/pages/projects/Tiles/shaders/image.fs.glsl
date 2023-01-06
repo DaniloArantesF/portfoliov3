@@ -4,20 +4,20 @@ precision mediump float;
 
 #define TAU 6.28318530718
 
-uniform vec2 uResolution;
-uniform float uTime;
 uniform float uTest;
+uniform float uTime;
+uniform sampler2D map;
+uniform vec2 uResolution;
 varying vec2 vUv;
 varying vec3 vNormal;
-uniform sampler2D map;
 
 // mostly from https://gist.github.com/statico/df64c5d167362ecf7b34fca0b1459a44
-uniform vec2 scale;
-uniform vec2 imageSize;
-uniform vec3 color;
-uniform float zoom;
 uniform float grayscale;
 uniform float opacity;
+uniform float zoom;
+uniform vec2 imageSize;
+uniform vec2 scale;
+uniform vec3 color;
 
 const vec3 luma = vec3(.299, 0.587, 0.114);
 

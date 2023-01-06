@@ -1,5 +1,7 @@
 export function lerp(a: number, b: number, t: number) {
-  return (1 - t) * a + t * b;
+  if (t <= 0) return a;
+  if (t >= 1) return b;
+  return a + t * (b - a);
 }
 
 export function clamp(n: number, min: number, max: number) {
@@ -47,3 +49,17 @@ export const isPrime = (n: number) => {
 export const rand = (a = 0, b = 1) => {
   return Math.random() * (b - a) + a;
 };
+
+export function remap(
+  value: number,
+  fromLow: number,
+  fromHigh: number,
+  toLow: number,
+  toHigh: number,
+): number {
+  return clamp(
+    toLow + ((value - fromLow) * (toHigh - toLow)) / (fromHigh - fromLow),
+    toLow,
+    toHigh,
+  );
+}

@@ -44,15 +44,15 @@ void main() {
     * (TAU/2.)
     ) * -uPower;
 
-  // Scale and offset the texture coordinates based on the distortion
+  // Scale and offset uv baseed on distortion
   vec2 tUv = vUv - .5;
   tUv /= uScale;
   tUv *= (d * fullRadius);
 
   // Adjust for smaller resolutions
-  if (uResolution.x < 1000.) {
-    tUv /= aspect;
-  }
+  // if (uResolution.x < 1200.) {
+  //   tUv /= aspect;
+  // }
   tUv += vec2(0.5);
 
   float c = smoothstep(0.0,.8,d);

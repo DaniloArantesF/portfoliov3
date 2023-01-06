@@ -10,3 +10,5 @@ tags: ['threejs', 'typescript']
 ---
 
 ## Todos
+
+- Improve shader pass for smaller mobile devices
