@@ -7,12 +7,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
-  import vertexShader from './shaders/vertex.vs.glsl?raw';
-  import fragmentShader from './shaders/fragment.fs.glsl?raw';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import fragmentShader from './shaders/fragment.fs.glsl';
   import { inRange, isPrime } from '@utils/math';
   import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-  import globePassVertexShader from './shaders/globePass.vs.glsl?raw';
-  import globePassFragmentShader from './shaders/globePass.fs.glsl?raw';
+  import globePassVertexShader from './shaders/globePass.vs.glsl';
+  import globePassFragmentShader from './shaders/globePass.fs.glsl';
   import { usePlayer } from '@components/Player';
   import type { BaseSceneState } from '@lib/types';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';

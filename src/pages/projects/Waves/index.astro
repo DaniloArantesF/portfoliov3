@@ -7,8 +7,8 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
-  import vertexShader from './shaders/vertex.vs.glsl?raw';
-  import fragmentShader from './shaders/fragment.fs.glsl?raw';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import fragmentShader from './shaders/fragment.fs.glsl';
   import type { BaseSceneState } from '@lib/types';
   import { usePlayer } from '@components/Player';
 
