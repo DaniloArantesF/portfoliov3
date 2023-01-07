@@ -23,7 +23,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   /*          Setup & Globals         */
   /* -------------------------------- */
   let globePass: ShaderPass, bloomPass: UnrealBloomPass;
-  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
 
   const { state, utils, registerRenderCallback, setSceneHook } = BaseScene({
     canvas,

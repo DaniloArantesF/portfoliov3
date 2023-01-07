@@ -39,7 +39,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     starGridSize: mobile ? 4 : 8,
   };
 
-  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, utils, setSceneHook } = BaseScene({
     canvas,
     settings: {

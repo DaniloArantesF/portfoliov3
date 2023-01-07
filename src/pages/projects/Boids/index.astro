@@ -30,7 +30,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const SPEED_MIN = 2;
   const SPEED_MAX = 2.5;
 
-  const canvas = document.getElementById('app_view')! as HTMLCanvasElement;
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, utils } = BaseScene({
     canvas,
     settings: { cameraPosition: [0, 50, 200], orbitControls: true },
