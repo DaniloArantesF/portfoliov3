@@ -107,9 +107,10 @@ const title = readme?.frontmatter?.title ?? '';
     }
 
     // https://en.wikipedia.org/w/index.php?title=Lorenz_system
-    function lorenzAttractor(position: [number, number, number]) {
+    function lorenzAttractor(position: [number, number, number], dt?: number) {
       const [x, y, z] = position;
-      const { sigma, beta, rho, dt } = settings.lorenz;
+      dt = dt ?? settings.lorenz.dt;
+      const { sigma, beta, rho } = settings.lorenz;
 
       const dx = sigma * (y - x) * dt;
       const dy = (x * (rho - z) - y) * dt;
@@ -119,9 +120,10 @@ const title = readme?.frontmatter?.title ?? '';
     }
 
     // https://en.wikipedia.org/wiki/Thomas%27_cyclically_symmetric_attractor
-    function thomasAttractor(position: [number, number, number]) {
+    function thomasAttractor(position: [number, number, number], dt?: number) {
       const [x, y, z] = position;
-      let { dt, b } = settings.thomas;
+      let { b } = settings.thomas;
+      dt = dt ?? settings.thomas.dt;
 
       const dx = (Math.sin(y) - b * x) * dt;
       const dy = (Math.sin(z) - b * y) * dt;
@@ -194,6 +196,10 @@ const title = readme?.frontmatter?.title ?? '';
         .on('change', ({ value }) => {
           camera.position.z = 1.5 * value;
         });
+
+      folder.addButton({ title: 'Restart' }).on('click', () => {
+        resetGeometry();
+      });
 
       const lorenzFolder = folder.addFolder({ title: 'Lorenz' });
       lorenzFolder.addInput(settings.lorenz, 'dt', {

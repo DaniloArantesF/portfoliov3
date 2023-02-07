@@ -1,0 +1,73 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+// import * as readme from './readme.md';
+
+const title = 'RayMarcher'; //readme?.frontmatter?.title ??
+---
+
+<SceneLayout title={title} />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import fragmentShader from './shaders/fragment.fs.glsl';
+  import type { BaseSceneState } from '@lib/types';
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback } = BaseScene({
+    canvas,
+    settings: {
+      orbitControls: true,
+      cameraPosition: [0, 0, 5],
+      far: 5000,
+    },
+  });
+  const { scene, camera, uniforms } = state;
+
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
+  function Scene() {
+    let mesh: THREE.Mesh,
+      material: THREE.ShaderMaterial,
+      geometry: THREE.BufferGeometry;
+
+    function animationLoop(state: BaseSceneState) {
+      material.uniforms.cameraDir.value = camera.getWorldDirection(
+        material.uniforms.cameraDir.value,
+      );
+    }
+
+    function init() {
+      geometry = new THREE.PlaneGeometry(100, 100);
+      material = new THREE.ShaderMaterial({
+        uniforms: {
+          cameraPos: { value: camera.position },
+          // viewMat: { value: camera.matrix },
+          cameraDir: { value: camera.getWorldPosition(new THREE.Vector3()) },
+          fov: { value: camera.fov },
+          spherePos: { value: new THREE.Vector3(0, 0, -5) },
+          sphereRadius: { value: 1.0 },
+          ...uniforms,
+        },
+        vertexShader,
+        fragmentShader,
+        side: THREE.DoubleSide,
+      });
+
+      mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      registerRenderCallback(animationLoop);
+      isReady.set(true);
+    }
+
+    init();
+  }
+
+  Scene();
+</script>
