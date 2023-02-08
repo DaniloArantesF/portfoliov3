@@ -1,12 +1,13 @@
 ---
 import { Canvas } from '@react-three/fiber';
 import Layout from 'src/layouts/Layout.astro';
+import RSceneLayout from 'src/layouts/RSceneLayout.astro';
 import StealthLayout from 'src/layouts/StealthLayout.astro';
 import Scene from './Scene';
 ---
 
-<StealthLayout title={'Runner'}>
+<RSceneLayout title={'Runner'}>
   <Scene client:only="react" />
-</StealthLayout>
+</RSceneLayout>
 
 <style></style>
