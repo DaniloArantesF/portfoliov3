@@ -17,7 +17,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import type { BaseSceneState } from '@lib/types';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
   import { isMobile } from '@utils/utils';
-  import { remap } from '@utils/math';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -59,14 +58,16 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     uData: { value: player.buffer },
   };
 
-  let primeDelta = 0;
-  let primeCount = 0;
+  // debug
+  // let primeDelta = 0;
+  // let primeCount = 0;
+
   // Return a m x n list of booleans indicating whether a cell is prime
   function UlamSpiral(size: number[]): Array<Array<number>> {
-    let start = Date.now();
+    // let start = Date.now();
     const spiral = new Array(size[1])
       .fill(0)
-      .map(() => new Array<number>(size[0]).fill(0));
+      .map(() => new Array(size[0]).fill(0));
 
     let directions = [
       [0, 1],
@@ -88,7 +89,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       while (curDistance < curPathLength) {
         // Write current number
         spiral[y][x] = Number(isPrime(curNumber));
-        primeCount += spiral[y][x];
+        // primeCount += spiral[y][x];
         curNumber++;
         curDistance++;
 
@@ -110,11 +111,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       curDistance = 0;
     }
 
-    const end = Date.now();
-    primeDelta = end - start;
-    console.log(
-      `Generated ${curNumber} numbers, ${primeCount} primes in ${primeDelta}ms`,
-    );
+    // const end = Date.now();
+    // primeDelta = end - start;
+    // console.log(
+    //   `Generated ${curNumber} numbers, ${primeCount} primes in ${primeDelta}ms`,
+    // );
     return spiral;
   }
 
@@ -201,24 +202,24 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     }
   }
 
-  function calculateZ(
-    targetZ: number,
-    targetHeight1 = window.innerHeight / 8,
-    targetHeight2 = window.innerHeight / 2,
-  ) {
-    let vFOV = (camera.fov * Math.PI) / 180;
+  // function calculateZ(
+  //   targetZ: number,
+  //   targetHeight1 = window.innerHeight / 8,
+  //   targetHeight2 = window.innerHeight / 2,
+  // ) {
+  //   let vFOV = (camera.fov * Math.PI) / 180;
 
-    // calculate viewport height from camera position
-    let vHeightPartial = 2 * Math.tan(vFOV / 2);
+  //   // calculate viewport height from camera position
+  //   let vHeightPartial = 2 * Math.tan(vFOV / 2);
 
-    var p1 = targetHeight1 * window.innerHeight;
-    var p2 = targetZ * vHeightPartial;
-    var p3 = targetHeight2 * vHeightPartial;
-    var p4 = targetHeight2 * p2;
-    var p5 = p1 + p4;
-    var z = p5 / p3;
-    return z;
-  }
+  //   var p1 = targetHeight1 * window.innerHeight;
+  //   var p2 = targetZ * vHeightPartial;
+  //   var p3 = targetHeight2 * vHeightPartial;
+  //   var p4 = targetHeight2 * p2;
+  //   var p5 = p1 + p4;
+  //   var z = p5 / p3;
+  //   return z;
+  // }
 
   function handleEvents() {
     // Handle resize
@@ -285,7 +286,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       settings.gridSize.y,
     );
 
-    const pointCount = geometry.attributes.position.array.length / 3;
+    const pointCount = geometry.attributes.position.count;
     const spiralSize = Math.ceil(Math.sqrt(pointCount));
 
     // Calculate number spiral

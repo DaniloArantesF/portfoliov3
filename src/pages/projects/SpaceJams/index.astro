@@ -19,7 +19,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { SSRPass } from 'three/examples/jsm/postprocessing/SSRPass';
   import { fibonacciSphereV3 } from '@utils/geometry';
-  import type { BaseSceneState } from '@lib/types';
   import { isMobile, isSafari } from '@utils/utils';
 
   /* -------------------------------- */
@@ -195,7 +194,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       });
     }
 
-    function animationLoop(state: BaseSceneState) {
+    function animationLoop() {
       let analyser = player.analyser;
       if (analyser) {
         analyser.getByteFrequencyData(player.buffer);
@@ -233,8 +232,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     scene.add(spotLight2);
 
     /* ---------- Geometry ---------- */
-    speaker = assets.model!.scene.children[0];
-    rock = assets.model!.scene.children[1] as THREE.Mesh;
+    speaker = assets.model!.scene.children[1];
+
+    rock = assets.model!.scene.children[0] as THREE.Mesh;
     rock.position.y += 0.02;
     rock.material = new THREE.MeshStandardMaterial({
       map: assets.rockColorMap,

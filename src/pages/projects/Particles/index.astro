@@ -12,9 +12,6 @@ const title = readme?.frontmatter?.title ?? '';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
-  import vertexShader from './shaders/vertex.vs.glsl';
-  import fragmentShader from './shaders/fragment.fs.glsl';
-  import type { BaseSceneState } from '@lib/types';
   import gsap from 'gsap';
   import { Observer } from 'gsap/Observer';
 
@@ -33,7 +30,7 @@ const title = readme?.frontmatter?.title ?? '';
       orbitControls: false,
     },
   });
-  const { scene, camera, uniforms } = state;
+  const { scene } = state;
 
   const settings = {
     text: 'Batata\nFrita',
@@ -43,7 +40,7 @@ const title = readme?.frontmatter?.title ?? '';
   /*                Scene             */
   /* -------------------------------- */
   function Scene() {
-    let mouseActive = false;
+    // let mouseActive = false;
     let mousePosition = { x: -200, y: -200 };
 
     // Setup text canvas
@@ -146,10 +143,10 @@ const title = readme?.frontmatter?.title ?? '';
       Observer.create({
         type: 'touch, pointer',
         onPress: () => {
-          mouseActive = true;
+          // mouseActive = true;
         },
         onRelease: () => {
-          mouseActive = false;
+          // mouseActive = false;
         },
         onMove: ({ x, y }) => {
           if (x === undefined || y === undefined) return;
@@ -160,7 +157,7 @@ const title = readme?.frontmatter?.title ?? '';
       });
     }
 
-    function animationLoop(state: BaseSceneState) {}
+    function animationLoop() {}
 
     function init() {
       const { width, height } = utils.getViewport();
@@ -175,7 +172,7 @@ const title = readme?.frontmatter?.title ?? '';
       createParticles();
 
       handleEvents();
-      // registerRenderCallback(animationLoop);
+      registerRenderCallback(animationLoop);
       isReady.set(true);
     }
 

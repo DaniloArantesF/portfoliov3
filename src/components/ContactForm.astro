@@ -47,7 +47,7 @@ import FormInput from './FormInput.astro';
       btnText.innerText = 'Loading';
       spinner.style.display = 'inline-block';
 
-      const res = await fetch('https://submit-form.com/wKYOt38L', {
+      await fetch('https://submit-form.com/wKYOt38L', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

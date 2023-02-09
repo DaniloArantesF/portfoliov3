@@ -6,7 +6,7 @@ const BOID_FORCE_SEEK = 2;
 const BOID_FORCE_ALIGNMENT = 10;
 const BOID_FORCE_SEPARATION = 30;
 const BOID_FORCE_COHESION = 10;
-const BOID_FORCE_WANDER = 3;
+// const BOID_FORCE_WANDER = 3;
 
 export interface BoidParams {
   acceleration: number;

@@ -12,14 +12,13 @@ const title = ''; //readme?.frontmatter?.title ?? '';
   import BaseScene, { isReady } from '@lib/sceneController';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
-  import type { BaseSceneState } from '@lib/types';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
   const { state, registerRenderCallback } = BaseScene({ canvas });
-  const { scene, camera, uniforms } = state;
+  const { scene, uniforms } = state;
 
   /* -------------------------------- */
   /*                Scene             */
@@ -29,7 +28,7 @@ const title = ''; //readme?.frontmatter?.title ?? '';
       material: THREE.ShaderMaterial,
       geometry: THREE.BufferGeometry;
 
-    function animationLoop(state: BaseSceneState) {
+    function animationLoop() {
       mesh.position.y = Math.sin(state.time * 2) / 2;
     }
 

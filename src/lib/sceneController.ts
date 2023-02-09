@@ -288,7 +288,7 @@ const BaseScene = ({
 
   function updateSetting<
     S extends keyof typeof settings,
-    V extends typeof settings[S],
+    V extends (typeof settings)[S],
   >(key: S, value: V) {
     settings[key] = value;
   }

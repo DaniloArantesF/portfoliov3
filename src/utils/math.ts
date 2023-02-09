@@ -12,7 +12,7 @@ export function clamp(n: number, min: number, max: number) {
 export const curve = (
   from: number,
   distance: number,
-  margin: number = 0,
+  margin = 0,
   offset: number,
 ) => {
   return Math.sin(range(from, distance, margin, offset) * Math.PI);
@@ -22,7 +22,7 @@ export const curve = (
 export const range = (
   from: number,
   distance: number,
-  margin: number = 0,
+  margin = 0,
   offset = 0,
 ) => {
   const start = from - margin;

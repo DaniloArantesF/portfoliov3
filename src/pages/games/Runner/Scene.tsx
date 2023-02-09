@@ -1,4 +1,3 @@
-/// <reference path="types.d.ts" />
 import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Sky, KeyboardControls } from '@react-three/drei';
 import { Suspense, useMemo, useRef } from 'react';

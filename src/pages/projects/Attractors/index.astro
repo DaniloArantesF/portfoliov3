@@ -10,8 +10,6 @@ const title = readme?.frontmatter?.title ?? '';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
-  import vertexShader from './shaders/vertex.vs.glsl';
-  import fragmentShader from './shaders/fragment.fs.glsl';
   import type { BaseSceneState } from '@lib/types';
   import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
 
@@ -27,7 +25,7 @@ const title = readme?.frontmatter?.title ?? '';
       near: 0.001,
     },
   });
-  const { scene, camera, uniforms } = state;
+  const { scene, camera } = state;
   const { gui } = utils;
   const settings = {
     scale: 2,

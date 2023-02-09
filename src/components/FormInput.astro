@@ -8,14 +8,7 @@ export interface Props {
   type: astroHTML.JSX.HTMLInputTypeAttribute;
 }
 
-const {
-  label,
-  name,
-  id,
-  placeholder = '',
-  required = false,
-  type = 'text',
-} = Astro.props;
+const { label, id, required = false } = Astro.props;
 ---
 
 <div class="form-field">

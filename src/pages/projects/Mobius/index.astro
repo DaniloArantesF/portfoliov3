@@ -12,7 +12,6 @@ const title = 'MobiusStrip'; //readme?.frontmatter?.title ??
   import BaseScene, { isReady } from '@lib/sceneController';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
-  import type { BaseSceneState } from '@lib/types';
   import { ParametricGeometry } from 'three/examples/jsm/geometries/ParametricGeometry';
   import { ParametricGeometries } from 'three/examples/jsm/geometries/ParametricGeometries';
 
@@ -27,7 +26,7 @@ const title = 'MobiusStrip'; //readme?.frontmatter?.title ??
       cameraPosition: [0, 0, 5],
     },
   });
-  const { scene, camera, uniforms } = state;
+  const { scene, uniforms } = state;
 
   /* -------------------------------- */
   /*                Scene             */
@@ -37,7 +36,7 @@ const title = 'MobiusStrip'; //readme?.frontmatter?.title ??
       material: THREE.ShaderMaterial,
       geometry: THREE.BufferGeometry;
 
-    function animationLoop(state: BaseSceneState) {
+    function animationLoop() {
       mesh.rotation.x -= 0.01;
       mesh.rotation.y += 0.01;
     }

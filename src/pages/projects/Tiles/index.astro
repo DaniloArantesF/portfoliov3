@@ -14,18 +14,17 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import Minimap from '@lib/components/Minimap';
   import PickHelper from '@lib/pickHelper';
   import { clamp, curve } from '@utils/math';
-
   import type { BaseSceneState, Uniforms } from '@lib/types';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback, utils } = BaseScene({
+  const { state, registerRenderCallback } = BaseScene({
     canvas,
     settings: { cameraPosition: [0, 0, 1.25] },
   });
-  const { scene, renderer, camera, uniforms } = state;
+  const { scene, camera, uniforms } = state;
 
   let scrollPosition = 0;
   let clicked: null | number = null;
@@ -111,10 +110,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     const galleryGroup = new THREE.Group();
     const tiles: { scale: THREE.Vector3 }[] = [];
     const totalTileWidth = tileWidth + gap;
-    const { width: viewWidth } = utils.getViewport();
-    const pages =
-      (viewWidth - totalTileWidth + pictures.length * totalTileWidth) /
-      viewWidth;
     const pickHelper = PickHelper({ canvas });
     const minimap = Minimap({ count: pictures.length });
 

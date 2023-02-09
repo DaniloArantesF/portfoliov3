@@ -9,7 +9,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import BaseScene, { isReady } from '@lib/sceneController';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
-  import type { BaseSceneState } from '@lib/types';
   import { usePlayer } from '@components/Player';
 
   /* -------------------------------- */
@@ -24,7 +23,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       gridHelper: true,
     },
   });
-  const { scene, renderer, camera } = state;
+  const { scene } = state;
 
   /* ---------- Audio ---------- */
   let player = usePlayer.get();
@@ -67,7 +66,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
-  function animationLoop(state: BaseSceneState) {
+  function animationLoop() {
     if (player.analyser) {
       player.analyser.getByteFrequencyData(player.buffer);
       uniforms.uData.value = player.buffer;

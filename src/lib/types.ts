@@ -1,7 +1,7 @@
-import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import type Stats from "three/examples/jsm/libs/stats.module";
-import type { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
-import type { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import type Stats from 'three/examples/jsm/libs/stats.module';
+import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
+import type { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 
 export type useFrame = (state: BaseSceneState) => void;
 

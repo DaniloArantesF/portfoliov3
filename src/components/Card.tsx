@@ -125,18 +125,18 @@ export default function Card({
         <div className="tags">
           {tagsData &&
             tagsData.map(
-              ({ title, href }) =>
+              ({ title: tagTitle, href: tagHref }) =>
                 title && (
                   <a
-                    key={title}
+                    key={tagTitle}
                     target="_blank"
                     role="link"
-                    href={href}
-                    aria-label={`${title}`}
+                    href={tagHref}
+                    aria-label={`${tagTitle}`}
                     rel="noopener"
                     className="tag"
                   >
-                    {title}
+                    {tagTitle}
                   </a>
                 ),
             )}

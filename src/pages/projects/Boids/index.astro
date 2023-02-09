@@ -117,7 +117,12 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       lightMesh.material.uniforms.index = { value: this.index };
       this.group.add(lightMesh);
 
-      this.nearestLight = this.syncNearestLight();
+      let lights = this.syncNearestLight();
+      if (lights[0]) {
+        this.nearestLight = lights[0];
+      } else {
+        this.nearestLight = null;
+      }
 
       for (let j = 0; j < instancedMeshes.length; j++) {
         instancedMeshes[j].setMatrixAt(this.index, this.group.matrix);
@@ -154,7 +159,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         this.lightUniforms.color.value = this.color;
       }
 
-      if (!closestObject1) return null;
+      if (!closestObject1) return [null, null];
 
       this.frequency = damp(
         this.frequency,
@@ -164,7 +169,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       );
 
       this.lightUniforms.frequency.value = this.frequency;
-      return closestObject1;
+      return [closestObject1, closestObject2];
     }
 
     step(timeMs: number) {
@@ -312,7 +317,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       BOUNDS.depth,
     ]);
 
-    const { light1, light2, light3, hemisphereLight } = createLights();
+    const { light1, light2, light3 } = createLights();
     lights.push(light1, light2, light3);
 
     createBoids();

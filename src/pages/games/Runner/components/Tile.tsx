@@ -45,7 +45,7 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
       args: obstacleArgs,
       isTrigger: true,
       onCollide: (e) => {
-        console.log(e);
+        // console.log(e);
       },
       position: colliderPosition.current.toArray(),
     }),

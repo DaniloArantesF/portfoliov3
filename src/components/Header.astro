@@ -79,7 +79,7 @@ const getLinkClasses = (path: string) => {
   const tolerance = Math.min(300, window.innerHeight / 3);
   Observer.create({
     type: 'scroll',
-    onDown: (event) => {
+    onDown: () => {
       if (layout.get().isNavVisible) {
         gsap.fromTo(
           'header',

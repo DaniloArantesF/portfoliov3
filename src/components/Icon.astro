@@ -6,13 +6,13 @@ export interface Props {
   width?: string;
 }
 
-const { icon: filename, width = '1.5rem', color } = Astro.props as Props;
+const { icon: filename, width = '1.5rem' } = Astro.props;
 const { default: icon } = await import(`../svg/${filename}.svg?raw`);
 ---
 
 <span class="icon"><Fragment set:html={icon} /></span>
 
-<style define:vars={{ color, width }} is:global>
+<style define:vars={{ width }} is:global>
   span.icon {
     display: inline-flex;
     align-items: center;
@@ -23,7 +23,6 @@ const { default: icon } = await import(`../svg/${filename}.svg?raw`);
   span svg {
     width: var(--width);
     height: auto;
-    /* color: var(--color); */
     color: inherit;
   }
 
