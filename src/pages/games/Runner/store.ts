@@ -1,13 +1,17 @@
 import { create } from 'zustand';
 import { createRef, RefObject } from 'react';
 // import shallow from 'zustand/shallow';
-import type { Object3D } from 'three/src/Three';
+import type { Mesh } from 'three/src/Three';
 import { useTweaks, makeButton } from 'use-tweaks';
 
-interface StoreState {
-  player: RefObject<Object3D>;
+export interface StoreState {
+  player: RefObject<Mesh>;
   score: number;
+  status: 'idle' | 'running' | 'finished' | 'gameover';
   debug: boolean;
+
+  orbitControls: boolean;
+
   get: () => StoreState;
   set: (newState: Partial<StoreState>) => void;
   // Actions
@@ -16,14 +20,20 @@ interface StoreState {
   onCheckpoint: () => void;
   onFinish: () => void;
   onReset: () => void;
+  gameOver: () => void;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
-  player: createRef<Object3D>(),
+  player: createRef<Mesh>(),
+  status: 'running',
   score: 0,
   debug: true,
+  orbitControls: true,
   incScore: () => {
     set((state) => ({ score: state.score + 1 }));
+  },
+  gameOver: () => {
+    set((state) => ({ score: 0, status: 'finished' }));
   },
   onStart: () => {},
   onCheckpoint: () => {},

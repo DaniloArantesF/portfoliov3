@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Mesh } from 'three';
 import { track1, track2, track3 } from '../Scene';
 import * as THREE from 'three';
+import { useStore } from '../store';
 
 const SPEED = 0.1;
 const PLAYER_BOUNDS = {
@@ -14,6 +15,7 @@ const PLAYER_BOUNDS = {
 };
 
 export function Player() {
+  const { set } = useStore();
   const [sub, get] = useKeyboardControls();
   const tracks = useMemo(() => [track1, track2, track3], []);
   const curTrack = useRef(1);
@@ -36,6 +38,8 @@ export function Player() {
   useEffect(() => api.velocity.subscribe((v) => (velocity.current = v)), []);
 
   useEffect(() => {
+    set({ player: ref });
+
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
         curTrack.current = clamp(curTrack.current + 1, 0, tracks.length - 1);
@@ -57,7 +61,7 @@ export function Player() {
   });
 
   return (
-    <mesh ref={ref}>
+    <mesh ref={ref} name={'player'}>
       <boxGeometry args={[1, 2, 1]} />
       <meshStandardMaterial color="hotpink" />
     </mesh>

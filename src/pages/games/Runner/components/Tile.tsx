@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Group, Mesh } from 'three';
 import { useBox } from '@react-three/cannon';
@@ -15,6 +15,7 @@ import {
   track2,
   track3,
 } from '../Scene';
+import { useStore } from '../store';
 
 function getRandomObstacle() {
   return [track1, track2, track3][Math.floor(Math.random() * 3)]
@@ -23,11 +24,18 @@ function getRandomObstacle() {
 }
 
 export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
+  const { gameOver, status, incScore } = useStore();
   const position = useRef<TScene.Vec3>(props.position ?? [0, 0, 0]);
   const args = useMemo<TScene.Vec3>(
     () => [TILE_WIDTH, TILE_HEIGHT, TILE_LENGTH],
     [],
   );
+
+  // Obstacles & Collision
+  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
+  const colliderPosition = useRef(getRandomObstacle());
+
+  /* Tile */
   const [ref, api] = useBox(
     () => ({
       ...props,
@@ -37,30 +45,41 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
     useRef<Group>(null),
   );
 
-  const colliderPosition = useRef(getRandomObstacle());
-
-  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
-  const [_, colliderApi] = useBox(
+  const [, checkpointApi] = useBox(
     () => ({
-      args: obstacleArgs,
-      isTrigger: true,
-      onCollide: (e) => {
-        // console.log(e);
-      },
+      args: [10, 5, 1],
       position: colliderPosition.current.toArray(),
+      isTrigger: true,
+      onCollideBegin: () => {
+        if (status === 'running' && spawnObstacle.current) incScore();
+      },
     }),
     useRef<Mesh>(null),
   );
+
+  /* Obstacle */
+  const spawnObstacle = useRef(false);
   const [obstacleRef, obstacleApi] = useBox(
     () => ({
       args: obstacleArgs,
       position: colliderPosition.current.toArray(),
+      isTrigger: true,
+      onCollideBegin: () => {
+        if (spawnObstacle.current) gameOver();
+      },
     }),
     useRef<Mesh>(null),
   );
 
+  useEffect(() => {
+    if (obstacleRef.current) {
+      obstacleRef.current.visible = false;
+      updateTile();
+    }
+  }, []);
+
   useFrame((state) => {
-    if (!position.current) return;
+    if (!position.current || status !== 'running') return;
 
     if (position.current[2] > BOUNDS.z * -1) {
       // Scroll tiles
@@ -71,8 +90,14 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
 
       // Randomize collider position
       colliderPosition.current = getRandomObstacle();
+      spawnObstacle.current = true;
+      obstacleRef.current!.visible = true;
     }
 
+    updateTile();
+  });
+
+  function updateTile() {
     // Update collider position
     colliderPosition.current.z = position.current[2];
 
@@ -82,22 +107,24 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
       position.current[1],
       position.current[2],
     );
-    colliderApi.position.set(
-      colliderPosition.current.x,
-      colliderPosition.current.y,
-      colliderPosition.current.z,
-    );
+
     obstacleApi.position.set(
       colliderPosition.current.x,
       colliderPosition.current.y,
       colliderPosition.current.z,
     );
-  });
+
+    checkpointApi.position.set(
+      0,
+      colliderPosition.current.y,
+      colliderPosition.current.z,
+    );
+  }
 
   return (
     <>
       {/* Tile */}
-      <group ref={ref}>
+      <group ref={ref} name={'tile'}>
         <mesh>
           <boxGeometry attach="geometry" args={args} />
           <meshPhongMaterial
@@ -109,11 +136,11 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
       </group>
 
       {/* Obstacle */}
-      <mesh ref={obstacleRef}>
+      <mesh ref={obstacleRef} name={'obstacle'}>
         <boxGeometry attach="geometry" args={obstacleArgs} />
         <meshPhongMaterial
           attach="material"
-          color="red"
+          color="yellow"
           side={THREE.DoubleSide}
         />
       </mesh>

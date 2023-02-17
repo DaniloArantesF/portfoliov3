@@ -2,12 +2,13 @@ import { Canvas } from '@react-three/fiber';
 import { PerspectiveCamera, Sky, KeyboardControls } from '@react-three/drei';
 import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import type { Group, Mesh } from 'three';
 import { Physics, Debug } from '@react-three/cannon';
 import { Player } from './components/Player';
 import { GUI, SceneUtils } from './utils';
 import { useStore } from './store';
 import { Track } from './components/Track';
+import Score from './components/Score';
+import Lights from './components/Lights';
 
 export const SCROLLING_SPEED = 0.1;
 export const TILE_LENGTH = 10;
@@ -34,10 +35,12 @@ export const keyboardControlsMap = [
 ];
 
 function Scene() {
-  const { debug } = useStore();
+  const { debug, status, set } = useStore();
+
   const scene = useMemo(
     () => (
       <>
+        <Score />
         <Player />
         <Track />
       </>
@@ -54,7 +57,7 @@ function Scene() {
             <PerspectiveCamera
               makeDefault
               fov={75}
-              position={[0, 3.5, -5]}
+              position={[0, 8, -10]}
               rotation={[0, Math.PI, 0]}
             />
             <Suspense fallback={null}>
@@ -65,10 +68,10 @@ function Scene() {
                 {debug ? <Debug>{scene}</Debug> : scene}
               </Physics>
             </Suspense>
-            <ambientLight args={[0xffffff]} intensity={0.3} />
+            <Lights />
             <fog attach="fog" args={['white', 0, 500]} />
-            <Sky sunPosition={[100, 50, 100]} distance={1000} />
             <SceneUtils />
+            {/* <Effects /> */}
           </Canvas>
         </KeyboardControls>
       </div>

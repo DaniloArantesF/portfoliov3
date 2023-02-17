@@ -1,5 +1,10 @@
-import { OrbitControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useRef } from 'react';
+import {
+  OrbitControls,
+  GizmoHelper,
+  GizmoViewport,
+  Stats,
+} from '@react-three/drei';
+import { useEffect, useRef } from 'react';
 import { useTweaks, makeButton } from 'use-tweaks';
 import { useStore } from './store';
 
@@ -30,9 +35,12 @@ export function GUI() {
 }
 
 export function SceneUtils() {
+  const { orbitControls } = useStore();
+
   return (
     <>
-      <OrbitControls target={[0, 0, 0]} />
+      <Stats />
+      <OrbitControls target={[0, 6, 0]} enabled={orbitControls} />
       <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
         <GizmoViewport
           axisColors={['red', 'green', 'blue']}
