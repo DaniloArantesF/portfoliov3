@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import type { Group, Mesh } from 'three';
 import { useBox } from '@react-three/cannon';
@@ -14,8 +14,9 @@ import {
   track1,
   track2,
   track3,
-} from '../Scene';
+} from '../config';
 import { useStore } from '../store';
+import { useGameStateManager } from '../hooks/gameStateManager';
 
 function getRandomObstacle() {
   return [track1, track2, track3][Math.floor(Math.random() * 3)]
@@ -24,7 +25,9 @@ function getRandomObstacle() {
 }
 
 export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
-  const { gameOver, status, incScore } = useStore();
+  const { incScore } = useStore();
+  const { endGame, status } = useGameStateManager();
+
   const position = useRef<TScene.Vec3>(props.position ?? [0, 0, 0]);
   const args = useMemo<TScene.Vec3>(
     () => [TILE_WIDTH, TILE_HEIGHT, TILE_LENGTH],
@@ -51,7 +54,7 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
       position: colliderPosition.current.toArray(),
       isTrigger: true,
       onCollideBegin: () => {
-        if (status === 'running' && spawnObstacle.current) incScore();
+        if (spawnObstacle.current) incScore();
       },
     }),
     useRef<Mesh>(null),
@@ -65,7 +68,7 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
       position: colliderPosition.current.toArray(),
       isTrigger: true,
       onCollideBegin: () => {
-        if (spawnObstacle.current) gameOver();
+        if (spawnObstacle.current) endGame();
       },
     }),
     useRef<Mesh>(null),
@@ -78,12 +81,12 @@ export const Tile = ({ color, ...props }: BoxProps & { color: string }) => {
     }
   }, []);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!position.current || status !== 'running') return;
 
     if (position.current[2] > BOUNDS.z * -1) {
       // Scroll tiles
-      position.current[2] -= SCROLLING_SPEED;
+      position.current[2] -= delta * SCROLLING_SPEED;
     } else {
       // Wrap tiles back to start
       position.current[2] = BOUNDS.z;

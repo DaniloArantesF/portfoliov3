@@ -4,15 +4,11 @@ import { useFrame } from '@react-three/fiber';
 import { clamp } from '@utils/math';
 import { useEffect, useMemo, useRef } from 'react';
 import type { Mesh } from 'three';
-import { track1, track2, track3 } from '../Scene';
+import { track1, track2, track3 } from '../config';
 import * as THREE from 'three';
 import { useStore } from '../store';
 
-const SPEED = 0.1;
-const PLAYER_BOUNDS = {
-  x: 3,
-  y: 5,
-};
+const SPEED = 5;
 
 export function Player() {
   const { set } = useStore();
@@ -55,8 +51,8 @@ export function Player() {
     };
   }, []);
 
-  useFrame((state) => {
-    position.current.lerp(tracks[curTrack.current], 0.05);
+  useFrame((state, delta) => {
+    position.current.lerp(tracks[curTrack.current], SPEED * delta);
     api.position.set(...position.current.toArray());
   });
 

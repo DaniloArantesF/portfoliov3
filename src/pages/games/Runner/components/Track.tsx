@@ -1,6 +1,7 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { Group } from 'three';
-import { TILE_COUNT, TILE_LENGTH } from '../Scene';
+import { TILE_COUNT, TILE_LENGTH } from '../config';
+import { useGameStateManager } from '../hooks/gameStateManager';
 import { Tile } from './Tile';
 
 export function Track() {
