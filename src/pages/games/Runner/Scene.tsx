@@ -13,6 +13,7 @@ import Menu from './components/Menu';
 import GameOver from './components/GameOver';
 import Overlay from './components/Overlay';
 import { useGameStateManager } from './hooks/gameStateManager';
+import CameraRig from './components/CameraRig';
 
 function Scene() {
   const { debug } = useStore();
@@ -45,12 +46,7 @@ function Scene() {
       <div id="r3f-canvas-container" style={{ height: '100%' }}>
         <KeyboardControls map={keyboardControlsMap}>
           <Canvas>
-            <PerspectiveCamera
-              makeDefault
-              fov={75}
-              position={[0, 8, -10]}
-              rotation={[0, Math.PI, 0]}
-            />
+            <CameraRig />
             <Suspense fallback={null} key={run}>
               <Physics
                 broadphase="SAP"

@@ -8,7 +8,7 @@ import { track1, track2, track3 } from '../config';
 import * as THREE from 'three';
 import { useStore } from '../store';
 
-const SPEED = 5;
+const SPEED = 10;
 
 export function Player() {
   const { set } = useStore();
@@ -39,8 +39,10 @@ export function Player() {
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
         curTrack.current = clamp(curTrack.current + 1, 0, tracks.length - 1);
+        set({ curTrack: tracks[curTrack.current] });
       } else if (event.key === 'ArrowRight') {
         curTrack.current = clamp(curTrack.current - 1, 0, tracks.length - 1);
+        set({ curTrack: tracks[curTrack.current] });
       }
     };
 
@@ -52,7 +54,10 @@ export function Player() {
   }, []);
 
   useFrame((state, delta) => {
-    position.current.lerp(tracks[curTrack.current], SPEED * delta);
+    const distance = tracks[curTrack.current].clone().sub(position.current);
+    const easedDistance = distance.clone().multiplyScalar(SPEED * delta);
+
+    position.current.add(easedDistance);
     api.position.set(...position.current.toArray());
   });
 

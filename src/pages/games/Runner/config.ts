@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const SCROLLING_SPEED = 10;
+export const SCROLLING_SPEED = 15;
 export const TILE_LENGTH = 10;
 export const TILE_WIDTH = 15;
 export const TILE_HEIGHT = 2;

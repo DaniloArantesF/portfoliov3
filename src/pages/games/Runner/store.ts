@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createRef, RefObject } from 'react';
 // import shallow from 'zustand/shallow';
 import type { Mesh } from 'three/src/Three';
+import * as THREE from 'three';
 
 export interface StoreState {
   player: RefObject<Mesh>;
@@ -10,7 +11,7 @@ export interface StoreState {
   debug: boolean;
   run: number;
   orbitControls: boolean;
-
+  curTrack: THREE.Vector3;
   get: () => StoreState;
   set: (
     partial:
@@ -33,8 +34,9 @@ export const useStore = create<StoreState>((set, get) => ({
   status: 'idle',
   score: 0,
   debug: true,
-  orbitControls: true,
+  orbitControls: false,
   run: 0,
+  curTrack: new THREE.Vector3(0, 0, 0),
   incScore: () => {
     set((state) => ({ score: state.score + 1 }));
   },
@@ -54,6 +56,3 @@ export const useStore = create<StoreState>((set, get) => ({
   get,
   set,
 }));
-
-// const actionNames = ['onStart', 'onCheckpoint', 'onFinish', 'onReset'] as const;
-// export type ActionNames = typeof actionNames[number];
