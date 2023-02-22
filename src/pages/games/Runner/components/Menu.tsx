@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useGameStateManager } from '../hooks/gameStateManager';
-import { useStore } from '../store';
+import { useStore } from '../lib/store';
 import classes from '../styles/Menu.module.css';
 import Overlay from './Overlay';
 

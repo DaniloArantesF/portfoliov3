@@ -22,11 +22,6 @@ export interface StoreState {
   ) => void;
   // Actions
   incScore: () => void;
-  onStart: () => void;
-  onCheckpoint: () => void;
-  onFinish: () => void;
-  onReset: () => void;
-  gameOver: () => void;
 }
 
 export const useStore = create<StoreState>((set, get) => ({
@@ -49,10 +44,6 @@ export const useStore = create<StoreState>((set, get) => ({
       score: 0,
     }));
   },
-  onStart: () => {},
-  onCheckpoint: () => {},
-  onFinish: () => {},
-  onReset: () => {},
   get,
   set,
 }));

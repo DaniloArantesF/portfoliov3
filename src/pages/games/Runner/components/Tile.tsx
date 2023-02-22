@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef, useEffect, useState } from 'react';
+import { useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
-import type { Group, Mesh } from 'three';
+import type { Group } from 'three';
 import { useBox } from '@react-three/cannon';
 import type { BoxProps } from '@react-three/cannon';
 import {
@@ -17,6 +17,8 @@ import {
 } from '../config';
 import { useGameStateManager } from '../hooks/gameStateManager';
 import Obstacle from './Obstacle';
+import useTiles from '../lib/tileManager';
+import { Text } from '@react-three/drei';
 
 function getRandomObstacle() {
   return [track1, track2, track3][Math.floor(Math.random() * 3)]
@@ -44,12 +46,27 @@ export const Tile = ({ color, ...props }: TileProps) => {
     useRef<Group>(null),
   );
   const position = ref.current?.position;
-  const [obstaclePositions, setObstaclePositions] = useState([
-    getRandomObstacle(),
-  ]);
+
+  const { tiles, addTile, setObstacles, updateTile } = useTiles();
+  const [index, setIndex] = useState(-1);
+  const [run, setRun] = useState(0);
+  const tileData = useMemo(
+    () => (index > -1 ? tiles[index] : null),
+    [index, tiles, run],
+  );
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const tileData = addTile(ref);
+    const obstaclePositions = [getRandomObstacle()];
+
+    setIndex(tileData.index);
+    setObstacles(tileData.index, obstaclePositions);
+  }, []);
 
   useFrame((state, delta) => {
-    if (!position || status !== 'running') return;
+    if (!tileData || tileData.index < 0 || !position || status !== 'running')
+      return;
 
     if (position.z > BOUNDS.z * -1) {
       // Scroll tiles
@@ -57,12 +74,19 @@ export const Tile = ({ color, ...props }: TileProps) => {
     } else {
       // Wrap tiles back to start
       position.z = BOUNDS.z;
+
+      updateTile(tileData.index, {
+        ...tileData,
+        run: tileData.run + 1,
+        obstacles: [getRandomObstacle()],
+      });
+      setRun(tileData.run + 1);
     }
 
-    updateTile();
+    updateTilePosition();
   });
 
-  function updateTile() {
+  function updateTilePosition() {
     if (!position) return;
     api.position.set(position.x, position.y, position.z);
   }
@@ -80,9 +104,24 @@ export const Tile = ({ color, ...props }: TileProps) => {
           />
         </mesh>
 
-        {obstaclePositions.map((obstaclePosition, index) => (
-          <Obstacle key={index} position={obstaclePosition} visible={true} />
-        ))}
+        {tileData &&
+          tileData.obstacles.map((obstaclePosition, i) => (
+            <Obstacle
+              tileIndex={index}
+              run={run}
+              key={`${index}-${i}`}
+              position={obstaclePosition}
+              visible={true}
+            />
+          ))}
+
+        <Text
+          rotation={[Math.PI / 2, Math.PI, 0]}
+          position={[0, TILE_HEIGHT / 2 + 0.01, 0]}
+          fontSize={3}
+          children={index.toString()}
+          color={'white'}
+        />
       </group>
     </>
   );

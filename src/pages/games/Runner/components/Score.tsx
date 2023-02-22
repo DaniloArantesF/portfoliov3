@@ -1,5 +1,5 @@
 import { Text } from '@react-three/drei';
-import { useStore } from '../store';
+import { useStore } from '../lib/store';
 
 function Score() {
   const { score } = useStore();

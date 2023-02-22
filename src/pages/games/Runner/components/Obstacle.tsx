@@ -6,8 +6,10 @@ import { COLLIDER_HEIGHT } from '../config';
 import { useGameStateManager } from '../hooks/gameStateManager';
 
 interface ObstacleProps {
+  tileIndex: number;
   position: THREE.Vector3;
   visible: boolean;
+  run: number;
 }
 
 function Obstacle(props: ObstacleProps) {
@@ -23,6 +25,7 @@ function Obstacle(props: ObstacleProps) {
       endGame();
     },
   }));
+  const run = useRef(props.run);
 
   useLayoutEffect(() => {
     obstacleRef.current!.visible = props.visible;
@@ -30,19 +33,21 @@ function Obstacle(props: ObstacleProps) {
 
   useFrame(() => {
     if (!obstacleRef.current) return;
+
+    if (run.current !== props.run) {
+      position.current.x = props.position.x;
+      run.current = props.run;
+    }
+
     position.current.z = obstacleRef.current.parent!.position.z;
     updateColliders();
   });
 
+  // Update collider position
   function updateColliders() {
     if (!obstacleRef.current) return;
-
-    // Update collider position
-    obstacleApi.position.set(
-      position.current.x,
-      position.current.y,
-      position.current.z,
-    );
+    obstacleApi.position.copy(position.current);
+    obstacleRef.current.position.x = position.current.x;
   }
 
   return (

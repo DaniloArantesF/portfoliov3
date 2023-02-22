@@ -6,17 +6,22 @@ import { useEffect, useMemo, useRef } from 'react';
 import type { Mesh } from 'three';
 import { track1, track2, track3 } from '../config';
 import * as THREE from 'three';
-import { useStore } from '../store';
+import { useStore } from '../lib/store';
 
-const SPEED = 10;
+const HORIZONTAL_SPEED = 10;
+const JUMP_VELOCITY = 20;
+const DOWN_VELOCITY = -JUMP_VELOCITY / 4;
+const GRAVITY = 80;
+const initialPosition = new THREE.Vector3(0, 3, 0);
 
 export function Player() {
   const { set } = useStore();
-  const [sub, get] = useKeyboardControls();
+  const [sub, getKeyboard] = useKeyboardControls();
   const tracks = useMemo(() => [track1, track2, track3], []);
   const curTrack = useRef(1);
-  const position = useRef<THREE.Vector3>(new THREE.Vector3(0, 3, 0));
+  const position = useRef<THREE.Vector3>(initialPosition.clone());
   const velocity = useRef<TScene.Vec3>([0, 0, 0]);
+  const isJumping = useRef(false);
   const [ref, api] = useBox(
     () => ({
       mass: 1,
@@ -43,6 +48,11 @@ export function Player() {
       } else if (event.key === 'ArrowRight') {
         curTrack.current = clamp(curTrack.current - 1, 0, tracks.length - 1);
         set({ curTrack: tracks[curTrack.current] });
+      } else if (event.code === 'Space' && !isJumping.current) {
+        velocity.current[1] = JUMP_VELOCITY;
+        isJumping.current = true;
+      } else if (event.key === 'ArrowDown' && isJumping.current) {
+        velocity.current[1] = DOWN_VELOCITY;
       }
     };
 
@@ -54,11 +64,37 @@ export function Player() {
   }, []);
 
   useFrame((state, delta) => {
-    const distance = tracks[curTrack.current].clone().sub(position.current);
-    const easedDistance = distance.clone().multiplyScalar(SPEED * delta);
+    const { up, down } = getKeyboard();
 
-    position.current.add(easedDistance);
+    if (isJumping.current) {
+      velocity.current[1] -= GRAVITY * delta;
+
+      if (position.current.y < initialPosition.y) {
+        position.current.y = initialPosition.y;
+        velocity.current[1] = 0;
+        isJumping.current = false;
+      }
+    }
+
+    if (up && !isJumping.current) {
+      velocity.current[1] = JUMP_VELOCITY;
+      isJumping.current = true;
+    }
+
+    if (down && isJumping.current && velocity.current[1] > 0) {
+      velocity.current[1] = DOWN_VELOCITY;
+    }
+
+    const distance = tracks[curTrack.current].clone().sub(position.current);
+    const easedDistance = distance
+      .clone()
+      .multiplyScalar(HORIZONTAL_SPEED * delta);
+
+    position.current.x += easedDistance.x;
+    position.current.z += easedDistance.z;
+
     api.position.set(...position.current.toArray());
+    api.velocity.set(...velocity.current);
   });
 
   return (

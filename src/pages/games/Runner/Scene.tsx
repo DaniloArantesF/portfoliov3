@@ -4,7 +4,7 @@ import { Suspense, useMemo } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
 import { Player } from './components/Player';
 import { GUI, SceneUtils } from './utils';
-import { useStore } from './store';
+import { useStore } from './lib/store';
 import { Track } from './components/Track';
 import Score from './components/Score';
 import Lights from './components/Lights';

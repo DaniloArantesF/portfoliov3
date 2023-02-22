@@ -6,7 +6,7 @@ import {
 } from '@react-three/drei';
 import { useEffect, useRef } from 'react';
 import { useTweaks, makeButton } from 'use-tweaks';
-import { useStore } from './store';
+import { useStore } from './lib/store';
 
 export function GUI() {
   const ref = useRef<HTMLDivElement>(null);

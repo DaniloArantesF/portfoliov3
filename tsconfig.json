@@ -8,6 +8,7 @@
       "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
       "@styles/*": ["src/styles/*"]
-    }
+    },
+    "ignoreDeprecations": "5.0"
   }
 }
