@@ -27,6 +27,7 @@
     "astro-seo": "^0.7.0",
     "dat.gui": "^0.7.9",
     "gsap": "^3.11.4",
+    "immer": "^9.0.19",
     "meshline": "^3.1.6",
     "nanostores": "^0.7.3",
     "three": "^0.149.0",

@@ -1,31 +1,53 @@
-import { useFrame } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  RefObject,
+  createRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { Group } from 'three';
-import { BOUNDS, TILE_COUNT, TILE_LENGTH } from '../config';
-import { useGameStateManager } from '../hooks/gameStateManager';
+import {
+  COLLIDER_HEIGHT,
+  TILE_COUNT,
+  TILE_HEIGHT,
+  TILE_LENGTH,
+  TRACK_COUNT,
+} from '../config';
 import { Tile } from './Tile';
+import useTiles, { getRandomObstacle } from '../lib/tileManager';
+// import * as THREE from 'three';
+import { useFrame } from '@react-three/fiber';
+import { useStore } from '../lib/store';
 
 export function Track() {
   const trackRef = useRef<Group>(null);
-  const [tiles, setTiles] = useState(
-    [...new Array(TILE_COUNT)].map((_, i) => ({
-      key: i,
-      position: [0, 0, i * TILE_LENGTH - TILE_COUNT / 2] as TScene.Vec3,
-      children: null,
-      color: ['red', 'green', 'blue'][i % 3],
-    })),
-  );
+  const { tiles, updateTile } = useTiles();
 
   return (
     <group ref={trackRef}>
-      {tiles.map((tile) => (
-        <Tile
-          key={tile.key}
-          position={[...tile.position]}
-          color={tile.color}
-          rotation={[0, 0, 0]}
-        />
-      ))}
+      {tiles &&
+        tiles.map((tile, i) => (
+          <Tile
+            key={`${i}`}
+            position={tile.position}
+            color={tile.color}
+            index={i}
+            obstacles={tile.obstacles}
+            ref={null}
+            coins={tile.coins}
+            run={0}
+            onWrap={(index) => {
+              updateTile(index, {
+                ...tiles[index],
+                run: tiles[index].run + 1,
+                obstacles: [
+                  getRandomObstacle(tile.ref?.current?.position.z ?? 0),
+                ],
+              });
+            }}
+          />
+        ))}
     </group>
   );
 }

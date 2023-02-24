@@ -2,22 +2,20 @@ import { useBox } from '@react-three/cannon';
 import { useKeyboardControls } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { clamp } from '@utils/math';
-import { useEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import type { Mesh } from 'three';
-import { track1, track2, track3 } from '../config';
 import * as THREE from 'three';
 import { useStore } from '../lib/store';
 
 const HORIZONTAL_SPEED = 10;
 const JUMP_VELOCITY = 20;
-const DOWN_VELOCITY = -JUMP_VELOCITY / 4;
-const GRAVITY = 80;
+const DOWN_VELOCITY = -JUMP_VELOCITY / 2;
+const GRAVITY = 70;
 const initialPosition = new THREE.Vector3(0, 3, 0);
 
 export function Player() {
-  const { set } = useStore();
+  const { set, tracks } = useStore();
   const [sub, getKeyboard] = useKeyboardControls();
-  const tracks = useMemo(() => [track1, track2, track3], []);
   const curTrack = useRef(1);
   const position = useRef<THREE.Vector3>(initialPosition.clone());
   const velocity = useRef<TScene.Vec3>([0, 0, 0]);
@@ -32,22 +30,25 @@ export function Player() {
     useRef<Mesh>(null),
   );
 
-  useEffect(
+  useLayoutEffect(
     () => api.position.subscribe((p) => position.current.set(...p)),
     [],
   );
-  useEffect(() => api.velocity.subscribe((v) => (velocity.current = v)), []);
+  useLayoutEffect(
+    () => api.velocity.subscribe((v) => (velocity.current = v)),
+    [],
+  );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     set({ player: ref });
 
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
         curTrack.current = clamp(curTrack.current + 1, 0, tracks.length - 1);
-        set({ curTrack: tracks[curTrack.current] });
+        set({ curTrack: curTrack.current });
       } else if (event.key === 'ArrowRight') {
         curTrack.current = clamp(curTrack.current - 1, 0, tracks.length - 1);
-        set({ curTrack: tracks[curTrack.current] });
+        set({ curTrack: curTrack.current });
       } else if (event.code === 'Space' && !isJumping.current) {
         velocity.current[1] = JUMP_VELOCITY;
         isJumping.current = true;

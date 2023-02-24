@@ -1,6 +1,6 @@
 import { Canvas } from '@react-three/fiber';
-import { PerspectiveCamera, KeyboardControls } from '@react-three/drei';
-import { Suspense, useMemo } from 'react';
+import { KeyboardControls } from '@react-three/drei';
+import React, { Suspense, useMemo } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
 import { Player } from './components/Player';
 import { GUI, SceneUtils } from './utils';
@@ -31,7 +31,7 @@ function Scene() {
   );
 
   return (
-    <>
+    <React.StrictMode>
       <GUI />
       <Menu />
       <GameOver />
@@ -62,7 +62,7 @@ function Scene() {
           </Canvas>
         </KeyboardControls>
       </div>
-    </>
+    </React.StrictMode>
   );
 }
 

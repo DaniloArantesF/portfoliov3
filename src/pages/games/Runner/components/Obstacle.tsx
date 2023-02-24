@@ -1,9 +1,11 @@
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { COLLIDER_HEIGHT } from '../config';
 import { useGameStateManager } from '../hooks/gameStateManager';
+import { useStore } from '../lib/store';
+import useTiles from '../lib/tileManager';
 
 interface ObstacleProps {
   tileIndex: number;
@@ -12,33 +14,43 @@ interface ObstacleProps {
   run: number;
 }
 
+export const SAFE_ZONE = 5;
+
 function Obstacle(props: ObstacleProps) {
   const position = useRef(props.position);
-  const { endGame, status } = useGameStateManager();
-  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
   const obstacleRef = useRef<THREE.Mesh>(null);
+  const { endGame } = useGameStateManager();
+  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
+
+  const [isVisible, setIsVisible] = useState(props.visible);
+  const { tiles } = useTiles();
+  const tile = tiles[props.tileIndex];
+
   const [_, obstacleApi] = useBox(() => ({
     args: obstacleArgs,
     position: position.current.toArray(),
     isTrigger: true,
     onCollideBegin: () => {
+      const { run, index } = useTiles.getState().tiles[props.tileIndex];
+      const status = useStore.getState().status;
+      if (status !== 'running' || (run === 0 && index <= SAFE_ZONE)) return;
       endGame();
     },
   }));
-  const run = useRef(props.run);
 
   useLayoutEffect(() => {
-    obstacleRef.current!.visible = props.visible;
-  }, [props.visible]);
+    if (tile.run > 0 && tile.index <= SAFE_ZONE) {
+      setIsVisible(true);
+    }
+  }, [tile]);
+
+  useLayoutEffect(() => {
+    obstacleRef.current!.visible = isVisible;
+  }, [isVisible]);
 
   useFrame(() => {
     if (!obstacleRef.current) return;
-
-    if (run.current !== props.run) {
-      position.current.x = props.position.x;
-      run.current = props.run;
-    }
-
+    position.current.x = props.position.x;
     position.current.z = obstacleRef.current.parent!.position.z;
     updateColliders();
   });

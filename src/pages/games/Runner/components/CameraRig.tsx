@@ -4,23 +4,24 @@ import { PerspectiveCamera } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../lib/store';
 
-const SPEED = 8;
+const CAMERA_SPEED = 8;
 
 function CameraRig() {
-  const { curTrack, status } = useStore();
+  const { tracks, curTrack, status } = useStore();
   const ref = useRef<THREE.PerspectiveCamera>(null);
+  const track = tracks[curTrack];
 
   useFrame((state, delta) => {
     if (!ref.current) return;
-    let target = curTrack;
+    let target = track;
     if (status === 'ended') {
-      target = curTrack.clone().setX(0);
+      target = track.clone().setX(0);
     }
 
     if (Math.abs(ref.current.position.x - target.x) < 0.05) return;
 
     const distance = target.clone().sub(ref.current.position);
-    const easedDistance = distance.clone().multiplyScalar(SPEED * delta);
+    const easedDistance = distance.clone().multiplyScalar(CAMERA_SPEED * delta);
     ref.current.position.x += easedDistance.x;
   });
 

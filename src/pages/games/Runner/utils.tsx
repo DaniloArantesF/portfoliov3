@@ -4,7 +4,7 @@ import {
   GizmoViewport,
   Stats,
 } from '@react-three/drei';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useTweaks, makeButton } from 'use-tweaks';
 import { useStore } from './lib/store';
 

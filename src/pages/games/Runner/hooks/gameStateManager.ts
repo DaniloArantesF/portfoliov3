@@ -1,14 +1,13 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import { useStore } from '../lib/store';
 import useTiles from '../lib/tileManager';
-import { track2 } from '../config';
 
 /**
  * Contains all game logic related to the game state
  */
 export const useGameStateManager = () => {
   const { status, run, set } = useStore();
-  const { setTiles } = useTiles();
+  const { setTiles, resetTiles } = useTiles();
   const startGame = () => set({ status: 'running' });
   const pauseGame = () => set({ status: 'paused' });
   const endGame = () => set({ status: 'ended' });
@@ -17,9 +16,9 @@ export const useGameStateManager = () => {
       status: 'running',
       score: 0,
       run: state.run + 1,
-      curTrack: track2,
+      curTrack: 1,
     }));
-    setTiles([]);
+    resetTiles();
   };
 
   // Show and hide game menu
@@ -31,7 +30,7 @@ export const useGameStateManager = () => {
     }
   }, [status]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         handleMenuToggle();

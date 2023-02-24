@@ -1,58 +1,93 @@
 import { create } from 'zustand';
 import type { RefObject } from 'react';
+import {
+  COLLIDER_HEIGHT,
+  TILE_COUNT,
+  TILE_HEIGHT,
+  TILE_LENGTH,
+  TRACK_COUNT,
+} from '../config';
+import * as THREE from 'three';
+import { useStore } from './store';
 
 // Minimum distance between coins
 const COIN_SPACE = 0.5;
 
-type TileRef = RefObject<THREE.Mesh | THREE.Group>;
+type TileRef = RefObject<THREE.Mesh | THREE.Group> | null;
 
-interface TileData {
+export interface TileData {
   ref: TileRef;
+  position: THREE.Vector3;
   index: number;
   obstacles: THREE.Vector3[];
   coins: THREE.Vector3[];
   run: number;
+  color: string;
 }
 
 interface TileStoreState {
   tiles: TileData[];
-  addTile: (ref: TileRef) => TileData;
+  addTile: (data: TileData) => void;
   setTiles: (tiles: TileData[]) => void;
-  setObstacles: (index: number, obstacles: THREE.Vector3[]) => void;
+  updateTile: (index: number, update: TileData) => void;
   set: (
     partial:
       | TileStoreState
       | Partial<TileStoreState>
       | ((state: TileStoreState) => TileStoreState | Partial<TileStoreState>),
   ) => void;
-  updateTile: (index: number, update: TileData) => void;
+  get: () => TileStoreState;
+
+  resetTiles: () => void;
+}
+
+export function getRandomObstacle(z: number) {
+  const tracks = useStore.getState().tracks;
+  return tracks[Math.floor(Math.random() * TRACK_COUNT)]
+    .clone()
+    .setComponent(1, COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2);
 }
 
 const useTiles = create<TileStoreState>((set, get) => ({
-  tiles: [],
-  addTile: (ref: TileRef) => {
-    const index = get().tiles.length;
-    const tile = { ref, index, obstacles: [], coins: [], run: 0 };
-    set((state) => ({ tiles: [...state.tiles, tile] }));
-    return tile;
-  },
-  setObstacles: (index: number, obstacles: THREE.Vector3[]) => {
-    set((state) => {
-      const tiles = [...state.tiles];
-      tiles[index].obstacles = obstacles;
-      return { tiles };
-    });
-  },
-  setTiles: (tiles: TileData[]) => {
-    set(() => ({ tiles }));
+  tiles: [
+    ...new Array(TILE_COUNT).fill(0).map((_, i) => ({
+      index: i,
+      run: 0,
+      obstacles: [getRandomObstacle(i * TILE_LENGTH)],
+      coins: [],
+      color: 'red',
+      position: new THREE.Vector3(0, 0, i * TILE_LENGTH),
+      ref: null,
+    })),
+  ],
+  addTile: (tile: TileData) => {
+    set((state) => ({
+      tiles: [...state.tiles, tile],
+    }));
   },
   updateTile: (index: number, update: TileData) => {
     set((state) => {
-      state.tiles[index] = update;
-      return { tiles: state.tiles };
+      const tiles = [...state.tiles];
+      tiles[index] = update;
+      return { tiles };
+    });
+  },
+  setObstacles: (index: number, obstacles: THREE.Vector3[]) => {},
+  setTiles: (tiles: TileData[]) => {},
+  resetTiles: () => {
+    set((state) => {
+      const tiles = [...state.tiles];
+      tiles.forEach((tile, i) => {
+        tile.position.set(0, 0, i * TILE_LENGTH);
+        tile.run = 0;
+        tile.obstacles = [getRandomObstacle(i * TILE_LENGTH)];
+        tile.coins = [];
+      });
+      return { tiles };
     });
   },
   set,
+  get,
 }));
 
 export default useTiles;
