@@ -1,8 +1,7 @@
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { COLLIDER_HEIGHT, TILE_LENGTH } from '../config';
 import { useStore } from '../lib/store';
 
 interface ObstacleProps {
@@ -15,12 +14,12 @@ interface ObstacleProps {
 export const SAFE_ZONE = 5;
 
 function Obstacle(props: ObstacleProps) {
+  const { tiles, endGame, colliderHeight, tileLength } = useStore();
   const position = useRef(props.position);
   const obstacleRef = useRef<THREE.Mesh>(null);
-  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
+  const obstacleArgs = useMemo<TScene.Vec3>(() => [3, colliderHeight, 1], []);
 
   const [isVisible, setIsVisible] = useState(props.visible);
-  const { tiles, endGame } = useStore();
   const tile = tiles[props.tileIndex];
 
   const [_, obstacleApi] = useBox(() => ({
@@ -28,7 +27,7 @@ function Obstacle(props: ObstacleProps) {
     position: [
       position.current.x,
       position.current.y,
-      props.tileIndex * TILE_LENGTH,
+      props.tileIndex * tileLength,
     ],
     isTrigger: true,
     onCollideBegin: () => {

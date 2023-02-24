@@ -3,26 +3,29 @@ import { useMemo, useRef, useLayoutEffect } from 'react';
 import * as THREE from 'three';
 import type { Group } from 'three';
 import { useBox } from '@react-three/cannon';
-import {
-  SCROLLING_SPEED,
-  TILE_LENGTH,
-  TILE_WIDTH,
-  TILE_HEIGHT,
-  TILE_COUNT,
-} from '../config';
 import Obstacle, { SAFE_ZONE } from './Obstacle';
 import { Text } from '@react-three/drei';
-import { useStore, TileData } from '../lib/store';
+import { useStore } from '../lib/store';
+import type { TileData } from '../lib/tileSlice';
 
 type TileProps = TileData & {
   onWrap: (index: number, z: number) => void;
 };
 
 export const Tile = ({ onWrap, color, ...props }: TileProps) => {
-  const { status, tracks, updateTile } = useStore();
+  const {
+    scrollingSpeed,
+    status,
+    tileCount,
+    tileHeight,
+    tileLength,
+    tileWidth,
+    tracks,
+    updateTile,
+  } = useStore();
 
   const args = useMemo<TScene.Vec3>(
-    () => [TILE_WIDTH, TILE_HEIGHT, TILE_LENGTH],
+    () => [tileWidth, tileHeight, tileLength],
     [],
   );
   const [ref, api] = useBox(
@@ -47,12 +50,12 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
   useFrame((state, delta) => {
     if (!position || status !== 'running') return;
 
-    if (position.z >= (TILE_LENGTH / 2) * -1) {
+    if (position.z >= (tileLength / 2) * -1) {
       // Scroll tiles
-      position.z -= delta * SCROLLING_SPEED;
+      position.z -= delta * scrollingSpeed;
     } else {
       // Wrap tiles back to start
-      position.z += TILE_LENGTH * TILE_COUNT;
+      position.z += tileLength * tileCount;
       onWrap(props.index, position.z);
     }
 
@@ -88,7 +91,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
         ))}
         <Text
           rotation={[Math.PI / 2, Math.PI, 0]}
-          position={[0, TILE_HEIGHT / 2 + 0.01, 0]}
+          position={[0, tileHeight / 2 + 0.01, 0]}
           fontSize={3}
           children={props.index.toString()}
           color={'white'}

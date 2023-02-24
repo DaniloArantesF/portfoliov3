@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import type { Group } from 'three';
 import { Tile } from './Tile';
-import { useStore, getRandomObstacle } from '../lib/store';
+import { useStore } from '../lib/store';
+import { getRandomObstacle } from '../lib/tileSlice';
 
 export function Track() {
   const trackRef = useRef<Group>(null);
