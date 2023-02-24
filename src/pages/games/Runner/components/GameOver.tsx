@@ -1,8 +1,8 @@
-import { useGameStateManager } from '../hooks/gameStateManager';
+import { useStore } from '../lib/store';
 import classes from '../styles/Menu.module.css';
 
 function GameOver() {
-  const { status, reset } = useGameStateManager();
+  const { status, reset } = useStore();
 
   return status === 'ended' ? (
     <div className={classes.container}>

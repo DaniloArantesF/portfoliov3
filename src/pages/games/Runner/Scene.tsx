@@ -12,13 +12,10 @@ import { keyboardControlsMap } from './config';
 import Menu from './components/Menu';
 import GameOver from './components/GameOver';
 import Overlay from './components/Overlay';
-import { useGameStateManager } from './hooks/gameStateManager';
 import CameraRig from './components/CameraRig';
 
 function Scene() {
-  const { debug } = useStore();
-  const { status, run, startGame } = useGameStateManager();
-
+  const { status, run, startGame, debug } = useStore();
   const scene = useMemo(
     () => (
       <>

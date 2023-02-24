@@ -3,29 +3,24 @@ import { useMemo, useRef, useLayoutEffect } from 'react';
 import * as THREE from 'three';
 import type { Group } from 'three';
 import { useBox } from '@react-three/cannon';
-import type { BoxProps } from '@react-three/cannon';
 import {
   SCROLLING_SPEED,
   TILE_LENGTH,
   TILE_WIDTH,
   TILE_HEIGHT,
   TILE_COUNT,
-  COLLIDER_HEIGHT,
-  TRACK_COUNT,
 } from '../config';
-import { useGameStateManager } from '../hooks/gameStateManager';
 import Obstacle, { SAFE_ZONE } from './Obstacle';
-import useTiles, { TileData } from '../lib/tileManager';
 import { Text } from '@react-three/drei';
-import { useStore } from '../lib/store';
+import { useStore, TileData } from '../lib/store';
 
 type TileProps = TileData & {
-  onWrap: (index: number) => void;
+  onWrap: (index: number, z: number) => void;
 };
 
 export const Tile = ({ onWrap, color, ...props }: TileProps) => {
-  const { tracks } = useStore();
-  const { status } = useGameStateManager();
+  const { status, tracks, updateTile } = useStore();
+
   const args = useMemo<TScene.Vec3>(
     () => [TILE_WIDTH, TILE_HEIGHT, TILE_LENGTH],
     [],
@@ -40,7 +35,6 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     useRef<Group>(null),
   );
   const position = ref.current?.position;
-  const { updateTile } = useTiles();
 
   useLayoutEffect(() => {
     updateTile(props.index, {
@@ -59,7 +53,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     } else {
       // Wrap tiles back to start
       position.z += TILE_LENGTH * TILE_COUNT;
-      onWrap(props.index);
+      onWrap(props.index, position.z);
     }
 
     updateTilePosition();

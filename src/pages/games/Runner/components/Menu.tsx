@@ -1,7 +1,7 @@
-import { useMemo, useState, useCallback } from 'react';
-import { useGameStateManager } from '../hooks/gameStateManager';
+import { useMemo, useState, useCallback, useLayoutEffect } from 'react';
 import classes from '../styles/Menu.module.css';
 import Overlay from './Overlay';
+import { useStore } from '../lib/store';
 
 interface MenuButtonProps {
   children: React.ReactNode;
@@ -23,7 +23,7 @@ function MenuButton({ children, onClick }: MenuButtonProps) {
 }
 
 function MenuRoot({ setView }: MenuViewProps) {
-  const { status, startGame } = useGameStateManager();
+  const { status, startGame } = useStore();
 
   const menuOptions = useMemo(
     () => [
@@ -55,13 +55,33 @@ function MenuOptions({ setView }: MenuViewProps) {
 }
 
 function Menu() {
-  const { status, startGame } = useGameStateManager();
+  const { status, startGame, pauseGame } = useStore();
   const [view, setView] = useState('');
   const viewProps = useMemo(() => ({ view, setView }), [view, setView]);
   const handleClickAway = useCallback<React.MouseEventHandler>((event) => {
     startGame();
   }, []);
 
+  // Show and hide game menu
+  const handleMenuToggle = useCallback(() => {
+    if (status === 'running') {
+      pauseGame();
+    } else if (status === 'paused' || status === 'idle') {
+      startGame();
+    }
+  }, [status]);
+
+  useLayoutEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        handleMenuToggle();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [handleMenuToggle]);
   return status === 'paused' ? (
     <div className={classes.container}>
       <div className={classes.body}>

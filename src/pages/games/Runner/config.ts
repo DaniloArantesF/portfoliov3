@@ -1,3 +1,5 @@
+// Minimum distance between coins
+export const COIN_SPACE = 0.5;
 export const SCROLLING_SPEED = 15;
 export const TILE_LENGTH = 10;
 export const TILE_WIDTH = 15;

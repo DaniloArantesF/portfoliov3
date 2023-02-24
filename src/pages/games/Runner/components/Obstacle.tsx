@@ -2,10 +2,8 @@ import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { COLLIDER_HEIGHT } from '../config';
-import { useGameStateManager } from '../hooks/gameStateManager';
+import { COLLIDER_HEIGHT, TILE_LENGTH } from '../config';
 import { useStore } from '../lib/store';
-import useTiles from '../lib/tileManager';
 
 interface ObstacleProps {
   tileIndex: number;
@@ -19,19 +17,22 @@ export const SAFE_ZONE = 5;
 function Obstacle(props: ObstacleProps) {
   const position = useRef(props.position);
   const obstacleRef = useRef<THREE.Mesh>(null);
-  const { endGame } = useGameStateManager();
   const obstacleArgs = useMemo<TScene.Vec3>(() => [3, COLLIDER_HEIGHT, 1], []);
 
   const [isVisible, setIsVisible] = useState(props.visible);
-  const { tiles } = useTiles();
+  const { tiles, endGame } = useStore();
   const tile = tiles[props.tileIndex];
 
   const [_, obstacleApi] = useBox(() => ({
     args: obstacleArgs,
-    position: position.current.toArray(),
+    position: [
+      position.current.x,
+      position.current.y,
+      props.tileIndex * TILE_LENGTH,
+    ],
     isTrigger: true,
     onCollideBegin: () => {
-      const { run, index } = useTiles.getState().tiles[props.tileIndex];
+      const { run, index } = useStore.getState().tiles[props.tileIndex];
       const status = useStore.getState().status;
       if (status !== 'running' || (run === 0 && index <= SAFE_ZONE)) return;
       endGame();
