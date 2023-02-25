@@ -2,7 +2,9 @@ import {
   OrbitControls,
   GizmoHelper,
   GizmoViewport,
+  FlyControls,
   Stats,
+  Grid,
 } from '@react-three/drei';
 import { useRef } from 'react';
 import { useTweaks, makeButton } from 'use-tweaks';
@@ -35,18 +37,21 @@ export function GUI() {
 }
 
 export function SceneUtils() {
-  const { orbitControls } = useStore();
+  const { orbitControls, flyControls } = useStore();
 
   return (
     <>
       <Stats />
-      <OrbitControls target={[0, 6, 0]} enabled={orbitControls} />
+      {orbitControls && (
+        <OrbitControls target={[0, 2, 0]} enabled={orbitControls} />
+      )}
       <GizmoHelper alignment="bottom-right" margin={[60, 60]}>
         <GizmoViewport
           axisColors={['red', 'green', 'blue']}
           labelColor="black"
         />
       </GizmoHelper>
+      <Grid args={[100, 100, 100]} />
     </>
   );
 }

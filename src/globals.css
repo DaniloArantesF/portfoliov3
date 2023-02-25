@@ -57,6 +57,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* z-index layers */
+  --ui-layer: 100;
+  --foreground-layer: 75;
+  --midground-layer: 50;
+  --background-layer: -50;
 }
 
 html {

@@ -21,6 +21,8 @@ export interface TileData {
   position: THREE.Vector3;
   ref: TileRef;
   run: number; // TODO: rename this
+
+  // available spots
 }
 
 export interface TileSlice {
@@ -33,6 +35,12 @@ export interface TileSlice {
 }
 
 export function getRandomObstacle(tracks: THREE.Vector3[]) {
+  return tracks[Math.floor(Math.random() * TRACK_COUNT)]
+    .clone()
+    .setComponent(1, COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2);
+}
+
+export function getRandomCoin(tracks: THREE.Vector3[]) {
   return tracks[Math.floor(Math.random() * TRACK_COUNT)]
     .clone()
     .setComponent(1, COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2);
@@ -61,7 +69,7 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
         index: i,
         run: 0,
         obstacles: [getRandomObstacle(tracks)],
-        coins: [],
+        coins: [getRandomCoin(tracks)],
         color: 'red',
         position: new THREE.Vector3(0, 0, i * TILE_LENGTH),
         ref: null,
@@ -86,7 +94,7 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
           tile.position.set(0, 0, i * TILE_LENGTH);
           tile.run = 0;
           tile.obstacles = [getRandomObstacle(tracks)];
-          tile.coins = [];
+          tile.coins = [getRandomCoin(tracks)];
         });
         return { tiles };
       });

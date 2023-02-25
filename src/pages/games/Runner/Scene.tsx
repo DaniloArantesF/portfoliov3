@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { KeyboardControls } from '@react-three/drei';
+import { KeyboardControls, Stars } from '@react-three/drei';
 import React, { Suspense, useMemo } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
 import { Player } from './components/Player';
@@ -12,15 +12,20 @@ import Menu from './components/Menu';
 import GameOver from './components/GameOver';
 import Overlay from './components/Overlay';
 import CameraRig from './components/CameraRig';
+import UI from './components/ui';
+import Speed from './components/Speed';
+import Clock from './components/Clock';
+// import Buildings from './components/Buildings';
 
 function Scene() {
   const { status, run, startGame, debug } = useStore();
   const scene = useMemo(
     () => (
       <>
-        <Score />
         <Player />
         <Track />
+        {/* <Buildings /> */}
+        <Stars />
       </>
     ),
     [],
@@ -28,9 +33,15 @@ function Scene() {
 
   return (
     <React.StrictMode>
+      <GameOver />
+      <UI>
+        <Clock />
+        <Score />
+        <Speed />
+      </UI>
       <GUI />
       <Menu />
-      <GameOver />
+
       {status === 'idle' && (
         <Overlay
           onClick={() => startGame()}

@@ -14,9 +14,9 @@ const GRAVITY = 70;
 const initialPosition = new THREE.Vector3(0, 3, 0);
 
 export function Player() {
-  const { set, tracks } = useStore();
+  const { set, tracks, trackCount } = useStore();
   const [sub, getKeyboard] = useKeyboardControls();
-  const curTrack = useRef(1);
+  const curTrack = useRef(Math.floor(trackCount / 2));
   const position = useRef<THREE.Vector3>(initialPosition.clone());
   const velocity = useRef<TScene.Vec3>([0, 0, 0]);
   const isJumping = useRef(false);
@@ -26,6 +26,7 @@ export function Player() {
       position: position.current.toArray(),
       type: 'Kinematic',
       args: [1, 2, 1],
+      rotation: [0, Math.PI, 0],
     }),
     useRef<Mesh>(null),
   );

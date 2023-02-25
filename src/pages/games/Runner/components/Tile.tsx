@@ -7,6 +7,7 @@ import Obstacle, { SAFE_ZONE } from './Obstacle';
 import { Text } from '@react-three/drei';
 import { useStore } from '../lib/store';
 import type { TileData } from '../lib/tileSlice';
+import Coin from './Coin';
 
 type TileProps = TileData & {
   onWrap: (index: number, z: number) => void;
@@ -20,7 +21,6 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     tileHeight,
     tileLength,
     tileWidth,
-    tracks,
     updateTile,
   } = useStore();
 
@@ -43,7 +43,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     updateTile(props.index, {
       ...props,
       ref,
-      color: 'green',
+      color: 'purple',
     });
   }, []);
 
@@ -79,6 +79,15 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
             side={THREE.DoubleSide}
           />
         </mesh>
+        {props.coins?.map((coin, i) => (
+          <Coin
+            key={`${i}:${props.run}`}
+            position={coin}
+            tileIndex={props.index}
+            tile={ref}
+            run={props.run}
+          />
+        ))}
 
         {props.obstacles?.map((obstacle, i) => (
           <Obstacle
@@ -89,6 +98,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
             run={props.run}
           />
         ))}
+
         <Text
           rotation={[Math.PI / 2, Math.PI, 0]}
           position={[0, tileHeight / 2 + 0.01, 0]}

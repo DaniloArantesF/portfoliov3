@@ -13,6 +13,7 @@ import {
 export interface ConfigSlice {
   debug: boolean;
   orbitControls: boolean;
+  flyControls: boolean;
   coinSpace: number;
   scrollingSpeed: number;
   tileLength: number;
@@ -32,6 +33,7 @@ export const createConfigSlice: StateCreator<
 > = (set) => ({
   debug: true,
   orbitControls: false,
+  flyControls: false,
   coinSpace: COIN_SPACE,
   scrollingSpeed: SCROLLING_SPEED,
   tileLength: TILE_LENGTH,

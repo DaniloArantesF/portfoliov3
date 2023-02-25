@@ -1,17 +1,13 @@
-import { Text } from '@react-three/drei';
 import { useStore } from '../lib/store';
+import classes from '../styles/ui.module.css';
 
 function Score() {
   const { score } = useStore();
 
   return (
-    <Text
-      rotation={[0, Math.PI, 0]}
-      position={[0, 10, 0]}
-      fontSize={3}
-      children={score}
-      color={'red'}
-    />
+    <div className={classes.score}>
+      <span>{score}</span>
+    </div>
   );
 }
 
