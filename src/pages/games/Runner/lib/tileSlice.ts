@@ -21,8 +21,6 @@ export interface TileData {
   position: THREE.Vector3;
   ref: TileRef;
   run: number; // TODO: rename this
-
-  // available spots
 }
 
 export interface TileSlice {
@@ -32,27 +30,35 @@ export interface TileSlice {
   addTile: (data: TileData) => void;
   updateTile: (index: number, update: TileData) => void;
   resetTiles: () => void;
+  setTileRef: (index: number, ref: TileRef) => void;
+  randomizeTile: (index: number, run: number) => void;
 }
 
-export function getRandomObstacle(tracks: THREE.Vector3[]) {
-  return tracks[Math.floor(Math.random() * TRACK_COUNT)]
-    .clone()
-    .setComponent(1, COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2);
+export function getRandomObstacle(availableSpots: THREE.Vector3[]) {
+  const index = Math.floor(Math.random() * availableSpots.length);
+  const position = availableSpots[index].clone();
+  availableSpots.splice(index, 1);
+  return position;
 }
 
-export function getRandomCoin(tracks: THREE.Vector3[]) {
-  return tracks[Math.floor(Math.random() * TRACK_COUNT)]
-    .clone()
-    .setComponent(1, COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2);
+export function getRandomCoin(availableSpots: THREE.Vector3[]) {
+  const index = Math.floor(Math.random() * availableSpots.length);
+  const position = availableSpots[index].clone();
+  availableSpots.splice(index, 1);
+  return position;
 }
+
+const TILE_ROWS = 3;
+const TILE_COLS = TRACK_COUNT;
 
 export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
   set,
   get,
 ) => {
+  const trackWidth = TILE_WIDTH / TRACK_COUNT;
+
   const tracks = [
     ...new Array(TRACK_COUNT).fill(0).map((_, i) => {
-      const trackWidth = TILE_WIDTH / TRACK_COUNT;
       return new THREE.Vector3(
         trackWidth * (i - Math.floor(TRACK_COUNT / 2)),
         3,
@@ -61,20 +67,44 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     }),
   ];
 
+  const availableSpots: THREE.Vector3[] = [];
+  for (let i = 0; i < TILE_ROWS; i++) {
+    for (let j = 0; j < TILE_COLS; j++) {
+      availableSpots.push(
+        new THREE.Vector3(
+          (TILE_WIDTH / TILE_COLS) * (j - Math.floor(TILE_COLS / 2)),
+          COLLIDER_HEIGHT / 2 + TILE_HEIGHT / 2,
+          (TILE_LENGTH / TILE_ROWS) * (i - Math.floor(TILE_ROWS / 2)),
+        ),
+      );
+    }
+  }
+
+  const tiles = [];
+  for (let i = 0; i < TILE_COUNT; i++) {
+    const curAvailableSpots = [...availableSpots];
+    tiles.push({
+      index: i,
+      run: 0,
+      obstacles: [getRandomObstacle(curAvailableSpots)],
+      coins: [getRandomCoin(curAvailableSpots)],
+      color: 'purple',
+      position: new THREE.Vector3(0, 0, i * TILE_LENGTH),
+      ref: null,
+    });
+
+    if (Math.random() > 0.5) {
+      tiles[i].obstacles = [
+        ...tiles[i].obstacles,
+        getRandomObstacle(curAvailableSpots),
+      ];
+    }
+  }
+
   return {
     trackCount: TRACK_COUNT,
     tracks,
-    tiles: [
-      ...new Array(TILE_COUNT).fill(0).map((_, i) => ({
-        index: i,
-        run: 0,
-        obstacles: [getRandomObstacle(tracks)],
-        coins: [getRandomCoin(tracks)],
-        color: 'red',
-        position: new THREE.Vector3(0, 0, i * TILE_LENGTH),
-        ref: null,
-      })),
-    ],
+    tiles: [...tiles],
     addTile: (tile: TileData) => {
       set((state) => ({
         tiles: [...state.tiles, tile],
@@ -87,15 +117,50 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
         return { tiles };
       });
     },
+    setTileRef: (index: number, ref: TileRef) => {
+      set((state) => {
+        const tiles = [...state.tiles];
+        tiles[index].ref = ref;
+        return { tiles };
+      });
+    },
+    randomizeTile: (index: number, run: number) => {
+      set((state) => {
+        const tiles = [...state.tiles];
+        const tile = tiles[index];
+        const curAvailableSpots = [...availableSpots];
+        tile.run = run;
+        tile.coins = [getRandomCoin(curAvailableSpots)];
+
+        if (Math.random() > 0.5) {
+          tile.obstacles = [
+            ...tile.obstacles,
+            getRandomObstacle(curAvailableSpots),
+          ];
+        } else {
+          tile.obstacles = [getRandomObstacle(curAvailableSpots)];
+        }
+
+        return { tiles };
+      });
+    },
     resetTiles: () => {
       set((state) => {
         const tiles = [...state.tiles];
         tiles.forEach((tile, i) => {
+          const curAvailableSpots = [...availableSpots];
           tile.position.set(0, 0, i * TILE_LENGTH);
           tile.run = 0;
-          tile.obstacles = [getRandomObstacle(tracks)];
-          tile.coins = [getRandomCoin(tracks)];
+          tile.obstacles = [getRandomObstacle(curAvailableSpots)];
+          tile.coins = [getRandomCoin(curAvailableSpots)];
+          if (Math.random() > 0.5) {
+            tiles[i].obstacles = [
+              ...tiles[i].obstacles,
+              getRandomObstacle(curAvailableSpots),
+            ];
+          }
         });
+
         return { tiles };
       });
     },

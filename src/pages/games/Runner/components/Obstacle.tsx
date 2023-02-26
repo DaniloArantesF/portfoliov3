@@ -1,6 +1,6 @@
 import { useBox } from '@react-three/cannon';
 import { useFrame } from '@react-three/fiber';
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useStore } from '../lib/store';
 
@@ -15,7 +15,7 @@ export const SAFE_ZONE = 5;
 
 function Obstacle(props: ObstacleProps) {
   const { tiles, endGame, colliderHeight, tileLength } = useStore();
-  const position = useRef(props.position);
+  const position = useRef(props.position.clone());
   const obstacleRef = useRef<THREE.Mesh>(null);
   const obstacleArgs = useMemo<TScene.Vec3>(() => [3, colliderHeight, 1], []);
 
@@ -27,7 +27,7 @@ function Obstacle(props: ObstacleProps) {
     position: [
       position.current.x,
       position.current.y,
-      props.tileIndex * tileLength,
+      props.tileIndex * tileLength + props.position.z,
     ],
     isTrigger: true,
     onCollideBegin: () => {
@@ -51,7 +51,9 @@ function Obstacle(props: ObstacleProps) {
   useFrame(() => {
     if (!obstacleRef.current) return;
     position.current.x = props.position.x;
-    position.current.z = obstacleRef.current.parent!.position.z;
+    position.current.z =
+      obstacleRef.current.parent!.position.z + props.position.z;
+
     updateColliders();
   });
 
@@ -67,7 +69,7 @@ function Obstacle(props: ObstacleProps) {
       <boxGeometry attach="geometry" args={obstacleArgs} />
       <meshPhongMaterial
         attach="material"
-        color="yellow"
+        color="cyan"
         side={THREE.DoubleSide}
       />
     </mesh>

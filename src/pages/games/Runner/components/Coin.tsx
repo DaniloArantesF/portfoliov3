@@ -1,5 +1,12 @@
 import * as THREE from 'three';
-import { useRef, RefObject, useState, useLayoutEffect } from 'react';
+import {
+  useRef,
+  RefObject,
+  useState,
+  useLayoutEffect,
+  useEffect,
+  useMemo,
+} from 'react';
 import { useSphere } from '@react-three/cannon';
 import { useStore } from '../lib/store';
 import { useFrame } from '@react-three/fiber';
@@ -19,10 +26,8 @@ function Coin({
 }: CoinProps) {
   const tileLength = useStore((state) => state.tileLength);
   const incScore = useStore((state) => state.incScore);
-  const args: TScene.Vec3 = [0.5, 10, 10];
-  const position = useRef(
-    new THREE.Vector3(initialPosition.x, initialPosition.y, initialPosition.z),
-  );
+  const args: TScene.Vec3 = useMemo(() => [0.5, 10, 10], []);
+  const position = useRef(initialPosition.clone());
 
   const [visible, setVisible] = useState(true);
   const curRun = useRef(props.run);
@@ -30,10 +35,14 @@ function Coin({
 
   const ref = useRef<THREE.Mesh>(null);
   const [_, api] = useSphere(() => ({
-    position: [position.current.x, position.current.y, tileIndex * tileLength],
+    position: [
+      position.current.x,
+      position.current.y,
+      tileIndex * tileLength + initialPosition.z,
+    ],
     mass: 0,
     isTrigger: true,
-    args: [args[0] + 0.1],
+    args: [args[0] - 0.1],
     onCollideBegin: () => {
       if (!visible) return;
       incScore();
@@ -49,12 +58,13 @@ function Coin({
   useFrame(() => {
     if (!ref.current) return;
     position.current.x = initialPosition.x;
-    position.current.z = ref.current.parent!.position.z;
+    position.current.z = ref.current.parent!.position.z + initialPosition.z;
 
     if (curRun.current !== tileData.run) {
       setVisible(true);
       curRun.current = tileData.run;
     }
+
     updateColliders();
   });
 

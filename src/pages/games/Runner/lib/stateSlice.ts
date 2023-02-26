@@ -1,8 +1,6 @@
 import type { StateCreator } from 'zustand';
 import type { StoreState } from './store';
-import * as THREE from 'three';
-import { TRACK_COUNT, getRandomObstacle } from './tileSlice';
-import { addEffect } from '@react-three/fiber';
+import { TRACK_COUNT } from './tileSlice';
 
 export interface StateSlice {
   run: number;
@@ -14,7 +12,7 @@ export interface StateSlice {
   startGame: () => void;
   pauseGame: () => void;
   endGame: () => void;
-  reset: () => void;
+  resetState: () => void;
 }
 
 // TODO: target for camera
@@ -25,13 +23,13 @@ export const createStateSlice: StateCreator<StoreState, [], [], StateSlice> = (
   get,
 ) => {
   // Update game time
-  addEffect(() => {
-    const state = get();
-    if (state.status === 'running') {
-      // set((state) => ({ time: state.time + 1 }));
-      // console.log(state.time)
-    }
-  });
+  // addEffect(() => {
+  //   const state = get();
+  //   if (state.status === 'running') {
+  //     // set((state) => ({ time: state.time + 1 }));
+  //     // console.log(state.time)
+  //   }
+  // });
 
   return {
     run: 0,
@@ -51,23 +49,12 @@ export const createStateSlice: StateCreator<StoreState, [], [], StateSlice> = (
     endGame: () => {
       set(() => ({ status: 'ended' }));
     },
-    reset: () => {
+    resetState: () => {
       set((state) => ({
         status: 'running',
         score: 0,
         run: state.run + 1,
         curTrack: Math.floor(TRACK_COUNT / 2),
-        tiles: [
-          ...new Array(state.tileCount).fill(0).map((_, i) => ({
-            index: i,
-            run: 0,
-            obstacles: [getRandomObstacle(state.tracks)],
-            coins: [],
-            color: 'red',
-            position: new THREE.Vector3(0, 0, i * state.tileLength),
-            ref: null,
-          })),
-        ],
       }));
     },
   };

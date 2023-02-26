@@ -2,7 +2,6 @@ import {
   OrbitControls,
   GizmoHelper,
   GizmoViewport,
-  FlyControls,
   Stats,
   Grid,
 } from '@react-three/drei';
@@ -37,7 +36,7 @@ export function GUI() {
 }
 
 export function SceneUtils() {
-  const { orbitControls, flyControls } = useStore();
+  const { orbitControls } = useStore();
 
   return (
     <>
@@ -51,7 +50,7 @@ export function SceneUtils() {
           labelColor="black"
         />
       </GizmoHelper>
-      <Grid args={[100, 100, 100]} />
+      {/* <Grid args={[100, 100, 100]} /> */}
     </>
   );
 }

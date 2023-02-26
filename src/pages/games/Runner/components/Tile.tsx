@@ -6,14 +6,15 @@ import { useBox } from '@react-three/cannon';
 import Obstacle, { SAFE_ZONE } from './Obstacle';
 import { Text } from '@react-three/drei';
 import { useStore } from '../lib/store';
-import type { TileData } from '../lib/tileSlice';
+import useDebug from '../lib/useDebug';
 import Coin from './Coin';
+import type { TileData } from '../lib/tileSlice';
 
-type TileProps = TileData & {
-  onWrap: (index: number, z: number) => void;
+type TileProps = {
+  index: number;
 };
 
-export const Tile = ({ onWrap, color, ...props }: TileProps) => {
+export const Tile = (props: TileProps) => {
   const {
     scrollingSpeed,
     status,
@@ -21,8 +22,19 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     tileHeight,
     tileLength,
     tileWidth,
-    updateTile,
+    setTileRef,
+    randomizeTile,
   } = useStore();
+  const debug = useDebug(props.index === 0);
+  const tiles = useRef<TileData[]>(useStore.getState().tiles);
+  const {
+    position: tPosition,
+    run,
+    color,
+  } = useMemo(
+    () => tiles.current[props.index],
+    [useStore.getState().tiles[props.index].run],
+  );
 
   const args = useMemo<TScene.Vec3>(
     () => [tileWidth, tileHeight, tileLength],
@@ -30,7 +42,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
   );
   const [ref, api] = useBox(
     () => ({
-      position: [props.position.x ?? 0, 0, props.position.z ?? 0],
+      position: [tPosition.x, 0, tPosition.z],
       rotation: [0, 0, 0],
       args,
       type: 'Static',
@@ -40,10 +52,9 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
   const position = ref.current?.position;
 
   useLayoutEffect(() => {
-    updateTile(props.index, {
-      ...props,
-      ref,
-      color: 'purple',
+    setTileRef(props.index, ref);
+    useStore.subscribe((state) => {
+      tiles.current = state.tiles;
     });
   }, []);
 
@@ -56,7 +67,7 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
     } else {
       // Wrap tiles back to start
       position.z += tileLength * tileCount;
-      onWrap(props.index, position.z);
+      randomizeTile(props.index, run + 1);
     }
 
     updateTilePosition();
@@ -79,23 +90,24 @@ export const Tile = ({ onWrap, color, ...props }: TileProps) => {
             side={THREE.DoubleSide}
           />
         </mesh>
-        {props.coins?.map((coin, i) => (
+
+        {tiles.current[props.index].coins.map((coin, i) => (
           <Coin
-            key={`${i}:${props.run}`}
+            key={`${i}-${run}`}
             position={coin}
             tileIndex={props.index}
             tile={ref}
-            run={props.run}
+            run={tiles.current[props.index].run}
           />
         ))}
 
-        {props.obstacles?.map((obstacle, i) => (
+        {tiles.current[props.index].obstacles.map((obstacle, i) => (
           <Obstacle
-            key={`${i}${props.run}`}
+            key={`${i}-${run}`}
             position={obstacle}
             tileIndex={props.index}
-            visible={props.run > 0 || props.index > SAFE_ZONE}
-            run={props.run}
+            visible={run > 0 || props.index > SAFE_ZONE}
+            run={tiles.current[props.index].run}
           />
         ))}
 

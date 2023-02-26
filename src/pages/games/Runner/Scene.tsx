@@ -52,7 +52,7 @@ function Scene() {
       )}
       <div id="r3f-canvas-container" style={{ height: '100%' }}>
         <KeyboardControls map={keyboardControlsMap}>
-          <Canvas>
+          <Canvas frameloop="demand">
             <CameraRig />
             <Suspense fallback={null} key={run}>
               <Physics
