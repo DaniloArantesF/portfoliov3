@@ -6,7 +6,8 @@ import { useStore } from '../lib/store';
 const CAMERA_SPEED = 8;
 
 function CameraRig() {
-  const { player, tracks, curTrack, status, tileLength } = useStore();
+  const { orbitControls, player, tracks, curTrack, status, tileLength } =
+    useStore();
   const ref = useRef<THREE.PerspectiveCamera>(null);
   const track = tracks[curTrack];
 
@@ -20,12 +21,11 @@ function CameraRig() {
   }, [player]);
 
   useFrame((state, delta) => {
-    if (!ref.current) return;
+    if (!ref.current || orbitControls) return;
     let target = track;
     if (status === 'ended') {
       target = track.clone().setX(0);
     }
-
     if (Math.abs(ref.current.position.x - target.x) < 0.05) return;
     const distance = target.clone().sub(ref.current.position);
     const easedDistance = distance.clone().multiplyScalar(CAMERA_SPEED * delta);

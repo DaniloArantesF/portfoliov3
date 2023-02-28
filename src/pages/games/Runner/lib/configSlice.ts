@@ -1,5 +1,7 @@
 import type { StateCreator } from 'zustand';
-import { COIN_SPACE, COLLIDER_HEIGHT, StoreState } from './store';
+import { COIN_SPACE, StoreState } from './store';
+import { COLLIDER_HEIGHT } from './tileSlice';
+
 import {
   SCROLLING_SPEED,
   TILE_COUNT,

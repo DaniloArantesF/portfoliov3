@@ -6,9 +6,9 @@ import { ConfigSlice, createConfigSlice } from './configSlice';
 import { createStateSlice, StateSlice } from './stateSlice';
 import {
   createTileSlice,
+  TileSlice,
   TILE_COUNT,
   TILE_LENGTH,
-  TileSlice,
 } from './tileSlice';
 
 export type StoreState = ConfigSlice &
@@ -33,7 +33,7 @@ export const BOUNDS = {
   x: (TILE_COUNT * TILE_LENGTH) / 2,
   z: (TILE_COUNT * TILE_LENGTH) / 2,
 };
-export const COLLIDER_HEIGHT = 2;
+
 export const keyboardControlsMap = [
   { name: 'left', keys: ['ArrowLeft', 'a'] },
   { name: 'right', keys: ['ArrowRight', 'd'] },

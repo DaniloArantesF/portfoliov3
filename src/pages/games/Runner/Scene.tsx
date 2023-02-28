@@ -5,7 +5,7 @@ import { Physics, Debug } from '@react-three/cannon';
 import { Player } from './components/Player';
 import { GUI, SceneUtils } from './utils';
 import { useStore, keyboardControlsMap } from './lib/store';
-import { Track } from './components/Track';
+import Track from './components/Track';
 import Score from './components/Score';
 import Lights from './components/Lights';
 import Menu from './components/Menu';
@@ -15,7 +15,6 @@ import CameraRig from './components/CameraRig';
 import UI from './components/ui';
 import Speed from './components/Speed';
 import Clock from './components/Clock';
-// import Buildings from './components/Buildings';
 
 function Scene() {
   const { status, run, startGame, debug } = useStore();
@@ -24,7 +23,6 @@ function Scene() {
       <>
         <Player />
         <Track />
-        {/* <Buildings /> */}
         <Stars />
       </>
     ),
