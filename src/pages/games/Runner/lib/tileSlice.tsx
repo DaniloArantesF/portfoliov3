@@ -11,7 +11,7 @@ export const TILE_LENGTH = 10;
 export const TILE_WIDTH = 15;
 export const TILE_HEIGHT = 2;
 export const TILE_COUNT = 20;
-export const TRACK_COUNT = 5;
+export const TRACK_COUNT = 3;
 export const TRACK_WIDTH = TILE_WIDTH / TRACK_COUNT;
 export const COLLIDER_HEIGHT = 2;
 const o = new THREE.Object3D();
@@ -22,7 +22,7 @@ const tileGeometry = new THREE.BoxGeometry(
   TILE_LENGTH,
 );
 const tileMaterial = new THREE.MeshLambertMaterial({
-  color: 0xdd33ff,
+  color: '#2a0c3a',
 });
 
 interface ObstacleData {
@@ -196,7 +196,11 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
 ) => {
   const ref = createRef<THREE.InstancedMesh>();
   const Tiles = (
-    <instancedMesh ref={ref} args={[tileGeometry, tileMaterial, TILE_COUNT]} />
+    <instancedMesh
+      ref={ref}
+      args={[tileGeometry, tileMaterial, TILE_COUNT]}
+      receiveShadow
+    />
   );
 
   // Create tracks based on track count
@@ -252,8 +256,6 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     tracks: tracks,
     randomizeTile: (i: number, run: number) =>
       set((state: StoreState) => {
-        // state.tiles[i] = getTile(i, [...availableSpots]);
-        state.tiles[i].obstacles = [...getRandomObstacles()];
         state.tiles[i].wrapCount = run;
         return {
           tiles: state.tiles,

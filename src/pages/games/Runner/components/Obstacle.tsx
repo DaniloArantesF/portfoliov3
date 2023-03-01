@@ -54,7 +54,7 @@ function Obstacle(props: ObstacleProps) {
       <boxGeometry attach="geometry" args={props.args} />
       <meshPhongMaterial
         attach="material"
-        color="cyan"
+        color="hsl(350, 60%, 55%)"
         side={THREE.DoubleSide}
       />
     </mesh>

@@ -8,9 +8,9 @@ import * as THREE from 'three';
 import { useStore } from '../lib/store';
 
 const HORIZONTAL_SPEED = 10;
-const JUMP_VELOCITY = 20;
+const JUMP_VELOCITY = 15;
 const DOWN_VELOCITY = -JUMP_VELOCITY / 2;
-const GRAVITY = 70;
+const GRAVITY = 40;
 const initialPosition = new THREE.Vector3(0, 3, 0);
 
 export function Player() {
@@ -102,7 +102,7 @@ export function Player() {
   return (
     <mesh ref={ref} name={'player'}>
       <boxGeometry args={[1, 2, 1]} />
-      <meshStandardMaterial color="hotpink" />
+      <meshStandardMaterial color="#620fc7" />
     </mesh>
   );
 }
