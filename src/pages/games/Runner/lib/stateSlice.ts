@@ -1,6 +1,8 @@
+import { addEffect } from '@react-three/fiber';
 import type { StateCreator } from 'zustand';
 import type { StoreState } from './store';
-import { TRACK_COUNT } from './tileSlice';
+import { SCROLLING_SPEED, TRACK_COUNT } from './tileSlice';
+
 
 export interface StateSlice {
   run: number;
@@ -21,15 +23,8 @@ export interface StateSlice {
 export const createStateSlice: StateCreator<StoreState, [], [], StateSlice> = (
   set,
   get,
+  store
 ) => {
-  // Update game time
-  // addEffect(() => {
-  //   const state = get();
-  //   if (state.status === 'running') {
-  //     // set((state) => ({ time: state.time + 1 }));
-  //     // console.log(state.time)
-  //   }
-  // });
 
   return {
     run: 0,

@@ -5,8 +5,10 @@ import { createRef, RefObject } from 'react';
 import * as THREE from 'three';
 import Obstacle from '../components/Obstacle';
 import Coin from '../components/Coin';
+import { lerp } from '@utils/math';
 
 export const SCROLLING_SPEED = 15;
+export const MAX_SCROLLING_SPEED = 45;
 export const TILE_LENGTH = 10;
 export const TILE_WIDTH = 15;
 export const TILE_HEIGHT = 2;
@@ -26,8 +28,9 @@ const tileMaterial = new THREE.MeshLambertMaterial({
 });
 
 interface ObstacleData {
-  position: THREE.Vector3;
   args: [number, number, number];
+  index: number;
+  position: THREE.Vector3;
   type: (...args: any) => JSX.Element;
 }
 
@@ -47,11 +50,18 @@ export interface TileSlice {
   resetTiles: () => void;
 }
 
+const OBSTACLE_ARGS: [number, number, number][] = [
+  [4, 3, 1],
+  [TRACK_WIDTH, 3, 1],
+  [4, 6, 1],
+];
+
 const TILE_ROWS = 3;
 const TILE_COLS = TRACK_COUNT;
+
 // Create list of available spots for obstacles and coins in one tile
 // This list is cloned every time a tile is created or randomized
-const availableSpots: THREE.Vector3[] = [];
+export const availableSpots: THREE.Vector3[] = [];
 for (let i = 0; i < TILE_ROWS; i++) {
   for (let j = 0; j < TILE_COLS; j++) {
     availableSpots.push(
@@ -65,37 +75,10 @@ for (let i = 0; i < TILE_ROWS; i++) {
 }
 
 function getTile(i = 0, curSpots: THREE.Vector3[]) {
-  // Create obstacles
-  const obstacles = [] as ObstacleData[];
-  const obstacleCount = 1 + Math.floor(Math.random() * 2);
-  for (let i = 0; i < obstacleCount; i++) {
-    obstacles.push({
-      position: getRandomObstacle(curSpots),
-      args: [
-        2 + 2 * Math.random(),
-        2 + 3 * Math.random(),
-        1 + 1 * Math.random(),
-      ],
-      type: Obstacle,
-    });
-  }
-
-  // Create coins
-  const coins = [] as ObstacleData[];
-  const coinCount = 1; //+ Math.floor(Math.random() * 2);
-  for (let i = 0; i < coinCount; i++) {
-    coins.push({
-      position: getRandomCoin(curSpots),
-      args: [0.5, 0.5, 0.5],
-      type: Coin,
-    });
-  }
-
   return {
     index: i,
     group: createRef<THREE.Group>(),
-    obstacles: [...obstacles, ...coins],
-    coins,
+    obstacles: [...getRandomObstacles()],
     wrapCount: 0,
   };
 }
@@ -105,27 +88,25 @@ function getRandomObstacles() {
 
   // Create obstacles
   const obstacles = [] as ObstacleData[];
-  const obstacleCount = 2; //+ Math.floor(Math.random() * 2);
+  const obstacleCount = 1 //+ Math.floor(Math.random() * 2);
   for (let i = 0; i < obstacleCount; i++) {
     obstacles.push({
       position: getRandomObstacle(curSpots),
-      args: [
-        2 + 2 * Math.random(),
-        2 + 3 * Math.random(),
-        1 + 1 * Math.random(),
-      ],
+      args: OBSTACLE_ARGS[Math.floor(Math.random() * OBSTACLE_ARGS.length)],
       type: Obstacle,
+      index: i,
     });
   }
 
   // Create coins
   const coins = [] as ObstacleData[];
-  const coinCount = 2; //+ Math.floor(Math.random() * 2);
+  const coinCount = 1 + Math.floor(Math.random() * 2);
   for (let i = 0; i < coinCount; i++) {
     coins.push({
       position: getRandomCoin(curSpots),
       args: [0.5, 0.5, 0.5],
       type: Coin,
+      index: (obstacleCount - 1) + i,
     });
   }
 
@@ -135,39 +116,10 @@ function getRandomObstacles() {
 function getTiles() {
   return [
     ...new Array(TILE_COUNT).fill(0).map((_, i) => {
-      const curSpots = [...availableSpots];
-
-      // Create obstacles
-      const obstacles = [] as ObstacleData[];
-      const obstacleCount = 1; //+ Math.floor(Math.random() * 2);
-      for (let i = 0; i < obstacleCount; i++) {
-        obstacles.push({
-          position: getRandomObstacle(curSpots),
-          args: [
-            2 + 2 * Math.random(),
-            2 + 3 * Math.random(),
-            1 + 1 * Math.random(),
-          ],
-          type: Obstacle,
-        });
-      }
-
-      // Create coins
-      const coins = [] as ObstacleData[];
-      const coinCount = 1; //+ Math.floor(Math.random() * 2);
-      for (let i = 0; i < coinCount; i++) {
-        coins.push({
-          position: getRandomCoin(curSpots),
-          args: [0.5, 0.5, 0.5],
-          type: Coin,
-        });
-      }
-
       return {
         index: i,
         group: createRef<THREE.Group>(),
-        obstacles: [...obstacles, ...coins],
-        coins,
+        obstacles: [...getRandomObstacles()],
         wrapCount: 0,
       };
     }),
@@ -193,6 +145,7 @@ export function getRandomCoin(availableSpots: THREE.Vector3[]) {
 export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
   set,
   get,
+  store,
 ) => {
   const ref = createRef<THREE.InstancedMesh>();
   const Tiles = (
@@ -217,11 +170,17 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
 
   // Move tiles based on game state
   const clock = new THREE.Clock();
+  let scrollingSpeed = SCROLLING_SPEED || 0;
+
   addEffect(() => {
     const state = useStore.getState();
-    const delta = clock.getDelta();
+    if (!ref.current || state.status !== 'running') {
+      clock.stop();
+      return
+    };
 
-    if (!ref.current || state.status !== 'running') return;
+    if (!clock.running) clock.start();
+    const delta = clock.getDelta();
 
     for (let i = 0; i < TILE_COUNT; i++) {
       ref.current.getMatrixAt(i, o.matrix);
@@ -229,7 +188,7 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
 
       if (o.position.z >= (state.tileLength / 2) * -1) {
         // Scroll tiles
-        o.position.z -= delta * state.scrollingSpeed;
+        o.position.z -= delta * scrollingSpeed;
       } else {
         // Wrap tiles back to start
         o.position.z += state.tileLength * state.tileCount;
@@ -247,6 +206,14 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
       }
     }
     ref.current.instanceMatrix.needsUpdate = true;
+
+    // Update scrolling speed
+    scrollingSpeed = THREE.MathUtils.damp(scrollingSpeed, MAX_SCROLLING_SPEED, .01, delta);
+
+    // Updates the state once every second
+    if ((clock.elapsedTime * 1000) % 1000 <= (delta * 1000)) {
+      store.setState({ scrollingSpeed })
+    }
   });
 
   return {
@@ -257,6 +224,7 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     randomizeTile: (i: number, run: number) =>
       set((state: StoreState) => {
         state.tiles[i].wrapCount = run;
+        state.tiles[i].obstacles = [...getRandomObstacles()];
         return {
           tiles: state.tiles,
         };
@@ -264,6 +232,8 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     resetTiles: () =>
       set((state: StoreState) => {
         state.tiles = getTiles();
+        scrollingSpeed = SCROLLING_SPEED;
+        state.scrollingSpeed = scrollingSpeed;
         return state;
       }),
   };

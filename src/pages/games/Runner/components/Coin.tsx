@@ -1,13 +1,12 @@
 import * as THREE from 'three';
 import {
   useRef,
-  RefObject,
   useState,
   useLayoutEffect,
   useEffect,
   useMemo,
 } from 'react';
-import { useBox, useSphere } from '@react-three/cannon';
+import { useSphere } from '@react-three/cannon';
 import { useStore } from '../lib/store';
 import { useFrame } from '@react-three/fiber';
 
@@ -15,6 +14,7 @@ interface CoinProps {
   position: THREE.Vector3;
   tileIndex: number;
   wrapCount: number;
+  index: number;
 }
 
 const args: [number] = [0.5];
@@ -22,9 +22,14 @@ const args: [number] = [0.5];
 function Coin(props: CoinProps) {
   const ref = useRef<THREE.Mesh>(null);
   const position = useRef<THREE.Vector3>(props.position.clone());
-  const { tiles, tileLength, incScore } = useStore();
-  const groupRef = tiles[props.tileIndex].group;
-  const curIteration = tiles[props.tileIndex].wrapCount;
+  const { tileLength, incScore } = useStore();
+  const tilesRef = useRef(useStore.getState().tiles);
+  const wrapCount = useRef(
+    useStore.getState().tiles[props.tileIndex].wrapCount,
+  );
+  const tiles = useMemo(() => tilesRef.current, []);
+  const groupRef = useMemo(() => tiles[props.tileIndex].group, [tiles]);
+
   const [isVisible, setVisible] = useState(true);
   const [_, api] = useSphere(() => ({
     type: 'Static',
@@ -53,18 +58,27 @@ function Coin(props: CoinProps) {
   }, [isVisible]);
 
   useLayoutEffect(() => {
-    if (props.tileIndex === 0) {
-      console.log(props.position);
-    }
-    // console.log(`${props.tileIndex}-${curIteration}`)
-    resetCoin();
-  }, [curIteration]);
+    useStore.subscribe(() => {
+      tilesRef.current = useStore.getState().tiles;
+
+      // Update to new coin position and reset visibility
+      if (tilesRef.current[props.tileIndex].wrapCount !== wrapCount.current) {
+        const coin = tilesRef.current[props.tileIndex].obstacles[props.index];
+        wrapCount.current = tilesRef.current[props.tileIndex].wrapCount;
+        position.current.x = coin.position.x;
+        position.current.z = coin.position.z;
+        ref.current?.position.copy(position.current);
+        updateColliderPosition();
+        resetCoinVisibility();
+      }
+    });
+  }, []);
 
   useFrame(() => {
     updateColliderPosition();
   });
 
-  function resetCoin() {
+  function resetCoinVisibility() {
     position.current = props.position.clone();
     setVisible(true);
   }
@@ -73,9 +87,9 @@ function Coin(props: CoinProps) {
     const groupPosition =
       groupRef.current?.position.clone() || new THREE.Vector3();
     api.position.set(
-      props.position.x,
-      props.position.y,
-      groupPosition.z + props.position.z,
+      position.current.x,
+      position.current.y,
+      groupPosition.z + position.current.z,
     );
   }
 

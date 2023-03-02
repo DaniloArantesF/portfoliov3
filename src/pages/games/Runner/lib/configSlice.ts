@@ -34,7 +34,7 @@ export const createConfigSlice: StateCreator<
   ConfigSlice
 > = (set) => ({
   debug: false,
-  orbitControls: false,
+  orbitControls:false,
   flyControls: false,
   coinSpace: COIN_SPACE,
   scrollingSpeed: SCROLLING_SPEED,

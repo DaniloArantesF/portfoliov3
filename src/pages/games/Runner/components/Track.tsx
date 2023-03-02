@@ -1,22 +1,33 @@
 import * as THREE from 'three';
-import { useLayoutEffect, createRef, useMemo, RefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useStore } from '../lib/store';
 import { TILE_COUNT, TILE_LENGTH } from '../lib/tileSlice';
+import useDebug from '../lib/useDebug';
 
 const o = new THREE.Object3D();
 
 function Track() {
-  const { Tiles, ref, tiles, run } = useStore();
-  const obstacles = tiles
-    .map((tile) => ({
-      groupRef: tile.group,
-      tileIndex: tile.index,
-      obstacles: tile.obstacles,
-      wrapCount: tile.wrapCount,
-    }))
-    .flat();
+  const { Tiles, ref } = useStore();
+  const tilesRef = useRef(useStore.getState().tiles);
+  const tiles = tilesRef.current;
+  const obstacles = useMemo(
+    () =>
+      tiles
+        .map((tile) => ({
+          groupRef: tile.group,
+          tileIndex: tile.index,
+          obstacles: tile.obstacles,
+          wrapCount: tile.wrapCount,
+        }))
+        .flat(),
+    [],
+  );
 
   useLayoutEffect(() => {
+    useStore.subscribe(() => {
+      tilesRef.current = useStore.getState().tiles;
+    });
+
     if (!ref.current) return;
     ref.current.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
@@ -41,13 +52,14 @@ function Track() {
       {obstacles.map(({ tileIndex, obstacles, wrapCount, groupRef }, i) => {
         return (
           <group key={`${i}${wrapCount}`} ref={groupRef}>
-            {obstacles.map(({ position, args, type: Obstacle }, j) => (
+            {obstacles.map(({ position, args, type: Obstacle, index }, j) => (
               <Obstacle
-                key={`${j}${wrapCount}`}
+                key={`${j}`}
                 position={position}
                 tileIndex={tileIndex}
                 wrapCount={wrapCount}
                 args={args}
+                index={index}
               />
             ))}
           </group>
