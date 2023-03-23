@@ -88,7 +88,7 @@ function getRandomObstacles() {
 
   // Create obstacles
   const obstacles = [] as ObstacleData[];
-  const obstacleCount = 1 //+ Math.floor(Math.random() * 2);
+  const obstacleCount = 1 + Math.floor(Math.random() * 2);
   for (let i = 0; i < obstacleCount; i++) {
     obstacles.push({
       position: getRandomObstacle(curSpots),
@@ -106,7 +106,7 @@ function getRandomObstacles() {
       position: getRandomCoin(curSpots),
       args: [0.5, 0.5, 0.5],
       type: Coin,
-      index: (obstacleCount - 1) + i,
+      index: obstacleCount - 1 + i,
     });
   }
 
@@ -176,8 +176,8 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     const state = useStore.getState();
     if (!ref.current || state.status !== 'running') {
       clock.stop();
-      return
-    };
+      return;
+    }
 
     if (!clock.running) clock.start();
     const delta = clock.getDelta();
@@ -208,11 +208,16 @@ export const createTileSlice: StateCreator<StoreState, [], [], TileSlice> = (
     ref.current.instanceMatrix.needsUpdate = true;
 
     // Update scrolling speed
-    scrollingSpeed = THREE.MathUtils.damp(scrollingSpeed, MAX_SCROLLING_SPEED, .01, delta);
+    scrollingSpeed = THREE.MathUtils.damp(
+      scrollingSpeed,
+      MAX_SCROLLING_SPEED,
+      0.01,
+      delta,
+    );
 
     // Updates the state once every second
-    if ((clock.elapsedTime * 1000) % 1000 <= (delta * 1000)) {
-      store.setState({ scrollingSpeed })
+    if ((clock.elapsedTime * 1000) % 1000 <= delta * 1000) {
+      store.setState({ scrollingSpeed });
     }
   });
 
