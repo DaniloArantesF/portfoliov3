@@ -13,7 +13,7 @@ function Speed() {
         ref.current.innerText = `Speed: ${scrollingSpeed.current.toFixed(2)}`;
       }
     });
-  }, [])
+  }, []);
 
   return (
     <div className={classes.speed}>

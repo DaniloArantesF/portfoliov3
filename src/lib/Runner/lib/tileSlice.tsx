@@ -5,7 +5,6 @@ import { createRef, RefObject } from 'react';
 import * as THREE from 'three';
 import Obstacle from '../components/Obstacle';
 import Coin from '../components/Coin';
-import { lerp } from '@utils/math';
 
 export const SCROLLING_SPEED = 15;
 export const MAX_SCROLLING_SPEED = 45;

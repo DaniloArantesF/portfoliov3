@@ -3,7 +3,6 @@ import type { StateCreator } from 'zustand';
 import type { StoreState } from './store';
 import { SCROLLING_SPEED, TRACK_COUNT } from './tileSlice';
 
-
 export interface StateSlice {
   run: number;
   score: number;
@@ -23,9 +22,8 @@ export interface StateSlice {
 export const createStateSlice: StateCreator<StoreState, [], [], StateSlice> = (
   set,
   get,
-  store
+  store,
 ) => {
-
   return {
     run: 0,
     score: 0,

@@ -2,19 +2,19 @@ import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, Stars } from '@react-three/drei';
 import React, { Suspense, useMemo } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
-import { Player } from './components/Player';
-import { GUI, SceneUtils } from './utils';
-import { useStore, keyboardControlsMap } from './lib/store';
-import Track from './components/Track';
-import Score from './components/Score';
-import Lights from './components/Lights';
-import Menu from './components/Menu';
-import GameOver from './components/GameOver';
-import Overlay from './components/Overlay';
-import CameraRig from './components/CameraRig';
-import UI from './components/ui';
-import Speed from './components/Speed';
-import Clock from './components/Clock';
+import { Player } from '@lib/Runner/components/Player';
+import { GUI, SceneUtils } from '@lib/Runner/lib/utils';
+import { useStore, keyboardControlsMap } from '@lib/Runner/lib/store';
+import Track from '@lib/Runner/components/Track';
+import Score from '@lib/Runner/components/Score';
+import Lights from '@lib/Runner/components/Lights';
+import Menu from '@lib/Runner/components/Menu';
+import GameOver from '@lib/Runner/components/GameOver';
+import Overlay from '@lib/Runner/components/Overlay';
+import CameraRig from '@lib/Runner/components/CameraRig';
+import UI from '@lib/Runner/components/ui';
+import Speed from '@lib/Runner/components/Speed';
+import Clock from '@lib/Runner/components/Clock';
 
 function Scene() {
   const { status, run, startGame, debug } = useStore();
@@ -30,7 +30,7 @@ function Scene() {
   );
 
   return (
-    <React.StrictMode>
+    <>
       <GameOver />
       <UI>
         <Clock />
@@ -61,13 +61,13 @@ function Scene() {
               </Physics>
             </Suspense>
             <Lights />
-            {/* <fog attach="fog" args={['white', 0, 500]} /> */}
             <SceneUtils />
+            {/* <fog attach="fog" args={['white', 0, 500]} /> */}
             {/* <Effects /> */}
           </Canvas>
         </KeyboardControls>
       </div>
-    </React.StrictMode>
+    </>
   );
 }
 

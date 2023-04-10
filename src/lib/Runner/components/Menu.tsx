@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useLayoutEffect } from 'react';
-import classes from '../styles/Menu.module.css';
+import classes from '@lib/Runner/styles/Menu.module.css';
 import Overlay from './Overlay';
 import { useStore } from '../lib/store';
 
