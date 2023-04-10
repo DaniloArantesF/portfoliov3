@@ -53,6 +53,7 @@ import FormInput from './FormInput.astro';
           'Content-Type': 'application/json',
           Accept: 'application/json',
         },
+        mode: 'cors',
         body: JSON.stringify({
           Name: nameEl.value,
           Email: emailEl.value,
@@ -80,7 +81,7 @@ import FormInput from './FormInput.astro';
       formStatusIndicator.classList.add('error');
       formStatusIndicator.innerText =
         'There was an error submitting your message. Please try again.';
-      btnText.innerText = 'Submit';
+      if (btnText) btnText.innerText = 'Submit';
       spinner.style.display = 'none';
       IS_DIRTY = false;
     }
