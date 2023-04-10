@@ -44,7 +44,6 @@ function Buildings() {
     //   dummy.updateMatrix();
     //   ref.current.setMatrixAt(i, dummy.matrix);
     // }
-    console.log('rogekmolgjroij');
     ref.current.instanceMatrix.needsUpdate = true;
   }, []);
 

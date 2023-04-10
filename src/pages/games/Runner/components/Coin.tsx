@@ -1,11 +1,5 @@
 import * as THREE from 'three';
-import {
-  useRef,
-  useState,
-  useLayoutEffect,
-  useEffect,
-  useMemo,
-} from 'react';
+import { useRef, useState, useLayoutEffect, useEffect, useMemo } from 'react';
 import { useSphere } from '@react-three/cannon';
 import { useStore } from '../lib/store';
 import { useFrame } from '@react-three/fiber';
@@ -64,7 +58,9 @@ function Coin(props: CoinProps) {
       // Update to new coin position and reset visibility
       if (tilesRef.current[props.tileIndex].wrapCount !== wrapCount.current) {
         const coin = tilesRef.current[props.tileIndex].obstacles[props.index];
-        wrapCount.current = tilesRef.current[props.tileIndex].wrapCount;
+        // FIXME: coin is sometimes undefined
+        if (!coin) return;
+        wrapCount.current = tilesRef.current[props.tileIndex]?.wrapCount;
         position.current.x = coin.position.x;
         position.current.z = coin.position.z;
         ref.current?.position.copy(position.current);

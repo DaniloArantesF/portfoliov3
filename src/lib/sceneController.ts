@@ -117,7 +117,7 @@ const BaseScene = ({
       scene.add(gridHelper);
     }
 
-    stats = Stats();
+    stats = new Stats();
     stats.dom.style.display = 'inline-block';
     document.querySelector('#gui_container')!.appendChild(stats.dom);
 

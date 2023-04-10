@@ -11,12 +11,15 @@ interface PickHelperProps {
 
 const PickHelper = ({ canvas }: PickHelperProps) => {
   let raycaster: THREE.Raycaster;
-  let pickPosition: Position;
+  let pickPosition: THREE.Vector2;
   let pickedObject: THREE.Object3D | null;
 
   function init() {
     raycaster = new THREE.Raycaster();
-    pickPosition = { x: Number.NEGATIVE_INFINITY, y: Number.NEGATIVE_INFINITY };
+    pickPosition = new THREE.Vector2(
+      Number.NEGATIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+    );
 
     window.addEventListener('mousemove', setPickPosition);
     window.addEventListener('mouseout', clearPickPosition);
@@ -56,7 +59,10 @@ const PickHelper = ({ canvas }: PickHelperProps) => {
   }
 
   function clearPickPosition() {
-    pickPosition = { x: Number.NEGATIVE_INFINITY, y: Number.NEGATIVE_INFINITY };
+    pickPosition = new THREE.Vector2(
+      Number.NEGATIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+    );
   }
 
   function getCanvasRelativePosition({ clientX, clientY }: MouseEvent) {
