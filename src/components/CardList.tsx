@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import cardList from '@styles/cardList.scss';
 import button from '@styles/button.module.css';
 import type { CardProps } from './Card';
@@ -11,11 +10,6 @@ interface Props {
 }
 
 function CardList({ viewAll, name, cards }: Props) {
-  const devMode = useMemo(
-    () => window.location.search === '?dev' || import.meta.env.DEV,
-    [],
-  );
-
   return (
     <div className="cardlist-container">
       <div className="section-details">
@@ -32,7 +26,7 @@ function CardList({ viewAll, name, cards }: Props) {
       </div>
       <div className="cards-container">
         {cards
-          .filter((card) => devMode || card.visibility === 'visible')
+          .filter((card) => true || card.visibility === 'visible')
           .map((props) => (
             <Card key={props.href} {...props} />
           ))}

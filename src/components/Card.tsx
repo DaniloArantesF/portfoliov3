@@ -8,14 +8,16 @@ import {
 import tagsMap, { Tag } from '../utils/tags';
 import gsap from 'gsap';
 import '../styles/card.scss';
+import type { Project } from 'src/payload-types';
+// import RichText from './RichText';
 
 export interface CardProps {
   title: string;
-  picture: string;
+  image: string | Pick<Project, 'image'>['image'];
   subtitle?: string;
   href: string;
   date?: string | number;
-  description?: string;
+  description?: string | Pick<Project, 'description'>['description'];
   tags: string[];
   live?: string;
   github?: string;
@@ -32,7 +34,7 @@ export default function Card({
   title,
   subtitle,
   href,
-  picture,
+  image,
   date,
   description,
   tags,
@@ -80,6 +82,7 @@ export default function Card({
     });
   }
 
+  console.log(image);
   return (
     <div
       ref={cardRef}
@@ -99,16 +102,22 @@ export default function Card({
             <source
               height="1200"
               width="1600"
-              srcSet={`/assets/${picture} `}
+              srcSet={
+                typeof image === 'string' ? `/assets/${image}` : `${image.url}`
+              }
               media="(min-width: 800px)"
             />
             <img
               height="450"
               width="600"
               alt={`${title} demo`}
-              src={`/assets/${
-                picture.split('.')[0] + '-sm.' + picture.split('.')[1]
-              }`}
+              src={
+                typeof image === 'string'
+                  ? `/assets/${
+                      image.split('.')[0] + '-sm.' + image.split('.')[1]
+                    }`
+                  : `${image.url}`
+              }
             />
           </picture>
         </div>
@@ -120,7 +129,16 @@ export default function Card({
           <span>{subtitle ?? ''}</span>
         </div>
       </a>
-      <div className="description">{description && <p>{description}</p>}</div>
+      <div className="description">
+        {description && (
+          <p>
+            {typeof description === 'string'
+              ? description
+              : // <RichText content={description} client:only="react" />
+                null}
+          </p>
+        )}
+      </div>
       <div className="card_footer">
         <div className="tags">
           {tagsData &&

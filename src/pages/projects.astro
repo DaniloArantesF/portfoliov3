@@ -1,4 +1,6 @@
 ---
+import type { CardProps } from '@components/Card';
+import { getProjects } from 'src/api';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
 
@@ -8,7 +10,7 @@ export interface ProjectProps {
   github?: string;
   lastUpdated: string;
   live?: string;
-  picture: string;
+  image: string;
   sandbox?: string;
   subtitle: string;
   tags: string[];
@@ -16,7 +18,7 @@ export interface ProjectProps {
   visibility?: 'visible' | 'hidden' | 'private';
 }
 
-export async function getProjects(all = false) {
+export async function getLocalProjects(all = false) {
   // Hidden projects are only visible in production.
   // Show all if dev
   const visible = (status: string) =>
@@ -36,37 +38,36 @@ export async function getProjects(all = false) {
   return { projects, demos };
 }
 
-const { projects, demos } = await getProjects(true);
+const { docs: projects } = await getProjects(true);
 
 // Map project data
 const cards = [
-  ...demos.map((project) => {
-    const projectLink = project.url!.substring(
-      0,
-      project.url!.lastIndexOf('/'),
-    );
-    return {
-      href: projectLink,
-      ...project.frontmatter,
-    };
-  }),
-  ...projects.map((project) => {
-    const slug = project.file.substring(
-      project.file.lastIndexOf('/') + 1,
-      project.file.length - 3,
-    );
+  ...projects.map((project): CardProps => {
+    const href = project.live
+      ? project.live
+      : project.codesandbox
+      ? project.codesandbox
+      : project.github ||
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 
-    const projectLink = project.frontmatter.live
-      ? project.frontmatter.live
-      : project.frontmatter.sandbox
-      ? project.frontmatter.sandbox
-      : project.frontmatter.github;
     return {
-      href: projectLink ?? `/projects/${slug}`,
-      ...project.frontmatter,
+      title: project.title,
+      subtitle: '',
+      tags: [],
+      image: project.image,
+      github: project.github,
+      live: project.live,
+      sandbox: project?.codesandbox,
+      href,
     };
   }),
 ];
+
+cards.forEach((card) => {
+  if (typeof card.image === 'object') {
+    card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
+  }
+});
 ---
 
 <Layout title="Portfolio">
