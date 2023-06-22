@@ -16,7 +16,7 @@ export function GUI() {
   const {} = useTweaks(
     'Scene',
     {
-      ...makeButton('Debug', () => set({ debug: !get().debug })),
+      // ...makeButton('Debug', () => set({ debug: !get().debug })),
     },
     { container: ref },
   );

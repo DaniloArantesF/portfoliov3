@@ -1,14 +1,10 @@
-import {
-  BaseSyntheticEvent,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import tagsMap, { Tag } from '../utils/tags';
 import gsap from 'gsap';
 import '../styles/card.scss';
 import type { Project } from 'src/payload-types';
+import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
+
 // import RichText from './RichText';
 
 export interface CardProps {
@@ -52,7 +48,7 @@ export default function Card({
   const cardRef = useRef(null);
   const ctx = useGsapContext(cardRef);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     return () => ctx.current.revert(); // cleanup
   }, []);
 
@@ -82,7 +78,6 @@ export default function Card({
     });
   }
 
-  console.log(image);
   return (
     <div
       ref={cardRef}

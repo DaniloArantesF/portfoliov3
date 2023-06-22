@@ -1,44 +1,41 @@
 ---
+import type { CardProps } from '@components/Card';
+import { getProjects } from 'src/api';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
-import { getLocalProjects } from './projects.astro';
 
-const { projects, demos } = await getLocalProjects();
+let { docs: projects } = await getProjects(true);
 
+projects = projects.filter((project) => project.featured);
 const featuredCards = [
-  ...projects
-    .filter((p) => p.frontmatter.featured)
-    .map((project) => {
-      const slug = project.file.substring(
-        project.file.lastIndexOf('/') + 1,
-        project.file.length - 3,
-      );
+  ...projects.map((project): CardProps => {
+    const href = project.live
+      ? project.live
+      : project.codesandbox
+      ? project.codesandbox
+      : project.github ||
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 
-      const projectLink = project.frontmatter.live
-        ? project.frontmatter.live
-        : project.frontmatter.sandbox
-        ? project.frontmatter.sandbox
-        : project.frontmatter.github;
-      return {
-        href: projectLink ?? `/projects/${slug}`,
-        ...project.frontmatter,
-      };
-    }),
-  ...demos
-    .filter((i) => i.frontmatter.featured)
-    .map((project) => {
-      const projectLink = project.url!.substring(
-        0,
-        project.url!.lastIndexOf('/'),
-      );
-      return {
-        href: projectLink,
-        ...project.frontmatter,
-      };
-    }),
+    return {
+      title: project.title,
+      subtitle: '',
+      tags: [],
+      image: project.image,
+      github: project.github,
+      live: project.live,
+      sandbox: project?.codesandbox,
+      href,
+    };
+  }),
 ];
+
+featuredCards.forEach((card) => {
+  if (typeof card.image === 'object') {
+    card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
+  }
+});
 ---
 
 <Layout title="DaniloArantesF">
@@ -49,7 +46,7 @@ const featuredCards = [
         name="Projects and Experiments"
         viewAll="/projects"
         cards={featuredCards}
-        client:only="react"
+        client:load
       />
     </section>
     <ContactPrompt text="Let's get in touch!" />
@@ -69,5 +66,6 @@ const featuredCards = [
 
   main > section {
     margin: 0 var(--main-margin-x);
+    margin-bottom: 2rem;
   }
 </style>
