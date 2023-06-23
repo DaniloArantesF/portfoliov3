@@ -1,14 +1,15 @@
 ---
 import type { CardProps } from '@components/Card';
 import { getProjects } from 'src/api';
+import type { Tag } from 'src/payload-types';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
 
-let { docs: projects } = await getProjects(true);
+let { docs: projects } = await getProjects();
 
-projects = projects.filter((project) => project.featured);
+projects = projects.filter((project) => project.featured && project.visible);
 const featuredCards = [
   ...projects.map((project): CardProps => {
     const href = project.live
@@ -17,11 +18,14 @@ const featuredCards = [
       ? project.codesandbox
       : project.github ||
         `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-
+    let tags: Tag[] = [];
+    if (project.tags) {
+      tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
+    }
     return {
       title: project.title,
       subtitle: '',
-      tags: [],
+      tags,
       image: project.image,
       github: project.github,
       live: project.live,
@@ -30,7 +34,6 @@ const featuredCards = [
     };
   }),
 ];
-
 featuredCards.forEach((card) => {
   if (typeof card.image === 'object') {
     card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;

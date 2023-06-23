@@ -1,8 +1,7 @@
 import { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
-import tagsMap, { Tag } from '../utils/tags';
 import gsap from 'gsap';
 import '../styles/card.scss';
-import type { Project } from 'src/payload-types';
+import type { Project, Tag } from 'src/payload-types';
 import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
 
 // import RichText from './RichText';
@@ -14,7 +13,7 @@ export interface CardProps {
   href: string;
   date?: string | number;
   description?: string | Pick<Project, 'description'>['description'];
-  tags: string[];
+  tags: Tag[];
   live?: string;
   github?: string;
   sandbox?: string;
@@ -22,7 +21,10 @@ export interface CardProps {
 }
 
 export function useGsapContext(scope?: string | object | Element) {
-  const ctx = useMemo(() => gsap.context(() => {}, scope), [scope]);
+  const ctx = useMemo(
+    () => (gsap.context ? gsap.context(() => {}, scope) : null),
+    [scope],
+  );
   return ctx;
 }
 
@@ -38,24 +40,18 @@ export default function Card({
   github,
   sandbox,
 }: CardProps) {
-  const [tagsData, setTagsData] = useState<Tag[]>(
-    tags?.map((t) => {
-      return t in tagsMap
-        ? tagsMap[t as keyof typeof tagsMap]
-        : { title: '', href: '' };
-    }),
-  );
+  const [tagsData, setTagsData] = useState<Tag[]>(tags);
   const cardRef = useRef(null);
   const ctx = useGsapContext(cardRef);
 
   useIsomorphicLayoutEffect(() => {
-    return () => ctx.current.revert(); // cleanup
+    return () => ctx?.current.revert(); // cleanup
   }, []);
 
   function onHover({ currentTarget }: BaseSyntheticEvent) {
     const footerHeight =
       currentTarget.querySelector('.card_footer').clientHeight;
-    ctx.add(() => {
+    ctx?.add(() => {
       gsap.to(currentTarget, { y: -8, duration: 0.1 });
       gsap.to('.tag', { y: footerHeight, opacity: 0, duration: 0.1 });
       gsap.fromTo(
@@ -70,7 +66,7 @@ export default function Card({
     const footerHeight =
       currentTarget.querySelector('.card_footer').clientHeight;
 
-    ctx.add(() => {
+    ctx?.add(() => {
       if (!document.querySelectorAll('.links').length) return;
       gsap.to(currentTarget, { y: 0, duration: 0.1 });
       gsap.to('.tag', { y: 0, opacity: 1, duration: 0.1 });
@@ -88,7 +84,7 @@ export default function Card({
       <a
         role="link"
         href={href}
-        // target="_blank"
+        target="_blank"
         aria-label={`${title}`}
         rel="noopener"
       >
@@ -138,7 +134,7 @@ export default function Card({
         <div className="tags">
           {tagsData &&
             tagsData.map(
-              ({ title: tagTitle, href: tagHref }) =>
+              ({ label: tagTitle, url: tagHref }) =>
                 title && (
                   <a
                     key={tagTitle}

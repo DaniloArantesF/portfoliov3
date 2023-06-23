@@ -3,6 +3,7 @@ import type { CardProps } from '@components/Card';
 import { getProjects } from 'src/api';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
+import type { Tag } from '../payload-types';
 
 export interface ProjectProps {
   description: string;
@@ -13,7 +14,7 @@ export interface ProjectProps {
   image: string;
   sandbox?: string;
   subtitle: string;
-  tags: string[];
+  tags: Tag[];
   title: string;
   visibility?: 'visible' | 'hidden' | 'private';
 }
@@ -38,7 +39,8 @@ export async function getLocalProjects(all = false) {
   return { projects, demos };
 }
 
-const { docs: projects } = await getProjects(true);
+let { docs: projects } = await getProjects(true);
+projects = projects.filter((p) => p.visible);
 
 // Map project data
 const cards = [
@@ -50,10 +52,16 @@ const cards = [
       : project.github ||
         `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 
+    // fix this sin
+    let tags: Tag[] = [];
+    if (project.tags) {
+      tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
+    }
+
     return {
       title: project.title,
       subtitle: '',
-      tags: [],
+      tags,
       image: project.image,
       github: project.github,
       live: project.live,

@@ -11,6 +11,7 @@ export interface Config {
     pages: Page;
     projects: Project;
     'reusable-content': ReusableContent;
+    tags: Tag;
     users: User;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -717,26 +718,7 @@ export interface Project {
   github?: string;
   codesandbox?: string;
   codepen?: string;
-  tags?: {
-    tag?: string;
-    link: {
-      type?: 'reference' | 'custom';
-      newTab?: boolean;
-      reference:
-        | {
-            value: string | Page;
-            relationTo: 'pages';
-          }
-        | {
-            value: string | Project;
-            relationTo: 'projects';
-          };
-      url: string;
-      label: string;
-      appearance?: 'default' | 'primary' | 'secondary';
-    };
-    id?: string;
-  }[];
+  tags?: string[] | Tag[];
   meta?: {
     title?: string;
     description?: string;
@@ -1400,6 +1382,14 @@ export interface Form {
     [k: string]: unknown;
   }[];
   hubSpotFormID?: string;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Tag {
+  id: string;
+  label?: string;
+  value?: string;
+  url?: string;
   updatedAt: string;
   createdAt: string;
 }

@@ -27,7 +27,10 @@ function apiFetch(url: string, options: any = {}) {
 export async function getProjects(
   query: any = null,
 ): Promise<PayloadCollection<Project>> {
-  const stringifiedQuery = qs.stringify(query, { addQueryPrefix: true });
+  const stringifiedQuery = qs.stringify(
+    { limit: 99, ...query },
+    { addQueryPrefix: true },
+  );
   const data = await apiFetch(
     `${import.meta.env.PAYLOAD_URL}/api/projects${stringifiedQuery}`,
   );
