@@ -1,8 +1,10 @@
 import type { PayloadCollection } from './types';
 import qs from 'qs';
 import type { Project } from './payload-types';
+import dotenv from 'dotenv';
+dotenv.config();
 
-function apiFetch(url: string, options: any = {}) {
+async function apiFetch(url: string, options: any = {}) {
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
@@ -31,8 +33,10 @@ export async function getProjects(
     { limit: 99, ...query },
     { addQueryPrefix: true },
   );
-  const data = await apiFetch(
-    `${import.meta.env.PAYLOAD_URL}/api/projects${stringifiedQuery}`,
-  );
+
+  const url = import.meta?.env
+    ? import.meta.env.PAYLOAD_URL
+    : process.env.PAYLOAD_URL;
+  const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
   return data;
 }
