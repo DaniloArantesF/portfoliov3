@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import type { AstroIntegration } from 'astro';
 import * as Puppeteer from 'puppeteer';
-import { getProjects } from '../src/api';
+import { getProjects, uploadMedia } from '../src/api';
 import type { Project } from '~/payload-types';
+import { sleep } from '~/utils/utils';
 
 export function getProjectLink(project: Project, href = true) {
   return project.live
@@ -26,10 +27,6 @@ const createIntegration = (): AstroIntegration => ({
       console.log({ dir, routes, pages });
       // Cleanup old screenshots
       // cleanup();
-
-      // TODO: Get all page urls
-      // TODO: For each page, get the screenshot
-      // TODO: Update cms media
     },
   },
 });
@@ -60,6 +57,10 @@ class MediaCaptureManager {
 
     try {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+      // Wait a few seconds
+      await sleep(3000);
+
       await page.screenshot({ path: filePath });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -88,14 +89,23 @@ function cleanup() {
 }
 
 // integration is being used as CLI
-
-/**
- * Usage:
- *
- */
 if (process.argv.length >= 2) {
   switch (process.argv[2]) {
-    case 'capture':
+    case 'update':
+      (async () => {
+        const manager = new MediaCaptureManager();
+        const filePath = path.resolve(
+          'public',
+          'assets',
+          'projects',
+          `runner.png`,
+        );
+
+        const { docs: projects } = await getProjects();
+        for (const project of projects) {
+          const data = await uploadMedia(filePath);
+        }
+      })();
       break;
     case 'clean':
       cleanup();
