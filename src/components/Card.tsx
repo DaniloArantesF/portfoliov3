@@ -4,7 +4,7 @@ import '../styles/card.scss';
 import type { Project, Tag } from 'src/payload-types';
 import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
 
-// import RichText from './RichText';
+import RichText from './RichText';
 
 export interface CardProps {
   title: string;
@@ -122,12 +122,13 @@ export default function Card({
       </a>
       <div className="description">
         {description && (
-          <p>
-            {typeof description === 'string'
-              ? description
-              : // <RichText content={description} client:only="react" />
-                null}
-          </p>
+          <>
+            {typeof description === 'string' ? (
+              description
+            ) : (
+              <RichText content={description} />
+            )}
+          </>
         )}
       </div>
       <div className="card_footer">

@@ -18,13 +18,17 @@ const featuredCards = [
       ? project.codesandbox
       : project.github ||
         `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+
+    // fix this sin
     let tags: Tag[] = [];
     if (project.tags) {
       tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
     }
+
     return {
       title: project.title,
       subtitle: '',
+      description: project.description,
       tags,
       image: project.image,
       github: project.github,
