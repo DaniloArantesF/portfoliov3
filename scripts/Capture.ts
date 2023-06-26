@@ -24,7 +24,7 @@ const createIntegration = (): AstroIntegration => ({
   name: 'thumbnail',
   hooks: {
     'astro:build:done': async ({ dir, routes, pages }) => {
-      console.log({ dir, routes, pages });
+      // console.log({ dir, routes, pages });
       // Cleanup old screenshots
       // cleanup();
     },
@@ -113,8 +113,12 @@ if (process.argv.length >= 2) {
     default:
       (async () => {
         const manager = new MediaCaptureManager();
+        let { docs: projects } = await getProjects();
 
-        const { docs: projects } = await getProjects();
+        const projectSlug = process.argv[2];
+        if (projectSlug) {
+          projects = projects.filter((p) => p.slug === projectSlug);
+        }
 
         for (const project of projects) {
           const url = getProjectLink(project, false);

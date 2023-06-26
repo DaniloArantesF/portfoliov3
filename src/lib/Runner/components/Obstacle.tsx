@@ -13,7 +13,7 @@ interface ObstacleProps {
   index: number;
 }
 
-export const SAFE_ZONE = 5;
+export const SAFE_ZONE = 2;
 
 function Obstacle(props: ObstacleProps) {
   const obstacleRef = useRef<THREE.Mesh>(null);
@@ -23,7 +23,7 @@ function Obstacle(props: ObstacleProps) {
     useStore.getState().tiles[props.tileIndex].wrapCount,
   );
   const tiles = useMemo(() => tilesRef.current, []);
-
+  const isVisible = useRef(props.tileIndex > SAFE_ZONE);
   const { tileLength } = useStore();
   const groupRef = tiles[props.tileIndex].group;
   const [_, api] = useBox(() => ({
@@ -37,10 +37,23 @@ function Obstacle(props: ObstacleProps) {
     ],
     // TODO: define collide end or fix onCollide
     onCollideBegin: () => {
+      if (!isVisible.current) return;
+      const { status, endGame } = useStore.getState();
+      if (status === 'running') endGame();
+    },
+    onCollideEnd: () => {
+      if (!isVisible.current) return;
       const { status, endGame } = useStore.getState();
       if (status === 'running') endGame();
     },
   }));
+
+  // If this is one of the first tiles, hide it until it wraps
+  function updateObstacleVisibility() {
+    if (!obstacleRef.current) return;
+    obstacleRef.current!.visible = true;
+    isVisible.current = true;
+  }
 
   useLayoutEffect(() => {
     useStore.subscribe(() => {
@@ -55,6 +68,11 @@ function Obstacle(props: ObstacleProps) {
         position.current.z = obstacle.position.z;
         obstacleRef.current?.position.copy(position.current);
         updateColliderPosition();
+
+        // Update obstacle visibility
+        if (wrapCount.current == 1 && !isVisible.current) {
+          updateObstacleVisibility();
+        }
       }
     });
   }, []);
@@ -74,7 +92,12 @@ function Obstacle(props: ObstacleProps) {
   }
 
   return (
-    <mesh ref={obstacleRef} name={'obstacle'} position={position.current}>
+    <mesh
+      ref={obstacleRef}
+      name={'obstacle'}
+      position={position.current}
+      visible={isVisible.current}
+    >
       <boxGeometry attach="geometry" args={props.args} />
       <meshPhongMaterial
         attach="material"

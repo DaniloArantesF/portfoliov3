@@ -62,7 +62,7 @@ function Scene() {
             </Suspense>
             <Lights />
             <SceneUtils />
-            {/* <fog attach="fog" args={['white', 0, 500]} /> */}
+            {/* <fog attach="fog" args={['#4c4c9f', 0, 500]} /> */}
             {/* <Effects /> */}
           </Canvas>
         </KeyboardControls>
