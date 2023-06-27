@@ -1,6 +1,5 @@
 ---
-import type { CardProps } from '@components/Card';
-import { getProjects } from 'src/api';
+import { getCardData, getProjects } from 'src/api';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
 import type { Project, Tag } from '../payload-types';
@@ -54,40 +53,7 @@ let { docs: projects } = await getProjects(true);
 projects = projects.filter((p) => p.visible);
 
 // Map project data
-const cards = [
-  ...projects.map((project): CardProps => {
-    const href = project.live
-      ? project.live
-      : project.codesandbox
-      ? project.codesandbox
-      : project.github ||
-        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-
-    // fix this sin
-    let tags: Tag[] = [];
-    if (project.tags) {
-      tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
-    }
-
-    return {
-      title: project.title,
-      subtitle: '',
-      description: project.description,
-      tags,
-      image: project.image,
-      github: project.github,
-      live: project.live,
-      sandbox: project?.codesandbox,
-      href,
-    };
-  }),
-];
-
-cards.forEach((card) => {
-  if (typeof card.image === 'object') {
-    card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
-  }
-});
+const cards = getCardData(projects);
 ---
 
 <Layout title="Portfolio">

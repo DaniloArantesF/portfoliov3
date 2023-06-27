@@ -153,10 +153,12 @@ import Icon from './Icon.astro';
     }
   }
 
-  #quick-links li:hover {
+  #quick-links li:hover a {
     position: relative;
     left: 0.25rem;
     text-decoration: underline;
+    text-underline-offset: 0.25rem;
+    color: var(--color-accent-2);
     cursor: pointer;
   }
 </style>

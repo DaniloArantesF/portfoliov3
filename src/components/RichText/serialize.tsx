@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 import escapeHTML from 'escape-html';
 import { Text } from 'slate';
+// import classes from './RichText.module.css';
 
 // eslint-disable-next-line no-use-before-define
 type Children = Leaf[];
