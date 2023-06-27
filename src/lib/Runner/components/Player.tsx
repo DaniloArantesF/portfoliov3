@@ -43,6 +43,12 @@ export function Player() {
   useLayoutEffect(() => {
     set({ player: ref });
 
+    useStore.subscribe((state) => {
+      if (state.curTrack !== curTrack.current) {
+        curTrack.current = state.curTrack;
+      }
+    });
+
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
         curTrack.current = clamp(curTrack.current + 1, 0, tracks.length - 1);

@@ -1,4 +1,3 @@
-'use client';
 import React, { Fragment } from 'react';
 import escapeHTML from 'escape-html';
 import { Text } from 'slate';
@@ -84,7 +83,7 @@ const serialize = (
         return <li key={i}>{serialize(node.children)}</li>;
       case 'link':
         return (
-          <a href={escapeHTML(node.url)} key={i}>
+          <a href={escapeHTML(node.url)} target="_blank" key={i}>
             {serialize(node.children)}
           </a>
         );
