@@ -7,10 +7,10 @@ import type { Mesh } from 'three';
 import * as THREE from 'three';
 import { useStore } from '../lib/store';
 
-const HORIZONTAL_SPEED = 10;
-const JUMP_VELOCITY = 15;
-const DOWN_VELOCITY = -JUMP_VELOCITY / 2;
-const GRAVITY = 40;
+export const HORIZONTAL_SPEED = 10;
+export const JUMP_VELOCITY = 15;
+export const DOWN_VELOCITY = -JUMP_VELOCITY / 2;
+export const GRAVITY = 40;
 const initialPosition = new THREE.Vector3(0, 3, 0);
 
 export function Player() {
@@ -42,6 +42,20 @@ export function Player() {
 
   useLayoutEffect(() => {
     set({ player: ref });
+    set({ playerVelocity: velocity });
+    // set({ playerJumping: isJumping });
+
+    useStore.subscribe((state) => {
+      if (state.curTrack !== curTrack.current) {
+        curTrack.current = state.curTrack;
+      }
+    });
+
+    useStore.subscribe((state) => {
+      if (state.playerJumping !== isJumping.current) {
+        isJumping.current = state.playerJumping;
+      }
+    });
 
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'ArrowLeft') {
@@ -75,12 +89,14 @@ export function Player() {
         position.current.y = initialPosition.y;
         velocity.current[1] = 0;
         isJumping.current = false;
+        set({ playerJumping: isJumping.current });
       }
     }
 
     if (up && !isJumping.current) {
       velocity.current[1] = JUMP_VELOCITY;
       isJumping.current = true;
+      set({ playerJumping: isJumping.current });
     }
 
     if (down && isJumping.current && velocity.current[1] > 0) {

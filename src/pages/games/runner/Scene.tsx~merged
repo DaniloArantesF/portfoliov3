@@ -1,5 +1,10 @@
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, Stars } from '@react-three/drei';
+<<<<<<< HEAD
+import React, { Suspense, useMemo } from 'react';
+import { Physics, Debug } from '@react-three/cannon';
+import { Player } from '@lib/Runner/components/Player';
+=======
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
 import {
@@ -7,6 +12,7 @@ import {
   JUMP_VELOCITY,
   Player,
 } from '@lib/Runner/components/Player';
+>>>>>>> dev
 import { GUI, SceneUtils } from '@lib/Runner/lib/utils';
 import { useStore, keyboardControlsMap } from '@lib/Runner/lib/store';
 import Track from '@lib/Runner/components/Track';
@@ -19,6 +25,11 @@ import CameraRig from '@lib/Runner/components/CameraRig';
 import UI from '@lib/Runner/components/ui';
 import Speed from '@lib/Runner/components/Speed';
 import Clock from '@lib/Runner/components/Clock';
+<<<<<<< HEAD
+
+function Scene() {
+  const { status, run, startGame, debug } = useStore();
+=======
 import { useDrag } from '@use-gesture/react';
 import { clamp } from '~/utils/math';
 
@@ -64,6 +75,7 @@ function Scene() {
     },
   );
 
+>>>>>>> dev
   const scene = useMemo(
     () => (
       <>
@@ -76,18 +88,27 @@ function Scene() {
   );
 
   return (
+<<<<<<< HEAD
+    <>
+=======
     <div
       {...bind()}
       style={{ height: '100vh', touchAction: 'none', userSelect: 'none' }}
     >
+>>>>>>> dev
       <GameOver />
       <UI>
         <Clock />
         <Score />
         <Speed />
+<<<<<<< HEAD
+      </UI>
+      <GUI />
+=======
         <div ref={debugRef}></div>
       </UI>
       {/* <GUI /> */}
+>>>>>>> dev
       <Menu />
 
       {status === 'idle' && (
@@ -112,12 +133,20 @@ function Scene() {
             </Suspense>
             <Lights />
             <SceneUtils />
+<<<<<<< HEAD
+            {/* <fog attach="fog" args={['white', 0, 500]} /> */}
+=======
             {/* <fog attach="fog" args={['#4c4c9f', 0, 500]} /> */}
+>>>>>>> dev
             {/* <Effects /> */}
           </Canvas>
         </KeyboardControls>
       </div>
+<<<<<<< HEAD
+    </>
+=======
     </div>
+>>>>>>> dev
   );
 }
 

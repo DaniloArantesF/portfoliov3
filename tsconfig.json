@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "jsx": "react-jsx",
     "paths": {
+      "~/*": ["./src/*"],
       "@lib/*": ["src/lib/*"],
       "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
@@ -11,5 +12,6 @@
       "@payload-types": ["src/payloads-types.ts"]
     },
     "esModuleInterop": true
-  }
+  },
+  "include": ["**/*", ".eslintrc.cjs"]
 }

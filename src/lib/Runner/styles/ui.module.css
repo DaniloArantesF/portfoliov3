@@ -19,6 +19,8 @@
   color: var(--color-accent-2);
   z-index: 999999;
   pointer-events: none;
+  user-select: none;
+  touch-action: none;
 }
 
 .speed {

@@ -1,7 +1,7 @@
-'use client';
 import React, { Fragment } from 'react';
 import escapeHTML from 'escape-html';
 import { Text } from 'slate';
+// import classes from './RichText.module.css';
 
 // eslint-disable-next-line no-use-before-define
 type Children = Leaf[];
@@ -84,7 +84,7 @@ const serialize = (
         return <li key={i}>{serialize(node.children)}</li>;
       case 'link':
         return (
-          <a href={escapeHTML(node.url)} key={i}>
+          <a href={escapeHTML(node.url)} target="_blank" key={i}>
             {serialize(node.children)}
           </a>
         );

@@ -1,8 +1,12 @@
 import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, Stars } from '@react-three/drei';
-import React, { Suspense, useMemo } from 'react';
+import React, { Suspense, useMemo, useRef } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
-import { Player } from '@lib/Runner/components/Player';
+import {
+  DOWN_VELOCITY,
+  JUMP_VELOCITY,
+  Player,
+} from '@lib/Runner/components/Player';
 import { GUI, SceneUtils } from '@lib/Runner/lib/utils';
 import { useStore, keyboardControlsMap } from '@lib/Runner/lib/store';
 import Track from '@lib/Runner/components/Track';
@@ -15,9 +19,51 @@ import CameraRig from '@lib/Runner/components/CameraRig';
 import UI from '@lib/Runner/components/ui';
 import Speed from '@lib/Runner/components/Speed';
 import Clock from '@lib/Runner/components/Clock';
+import { useDrag } from '@use-gesture/react';
+import { clamp } from '~/utils/math';
 
 function Scene() {
-  const { status, run, startGame, debug } = useStore();
+  const { set, status, run, startGame, debug, playerVelocity } = useStore();
+  const debugRef = useRef(null);
+  const bind = useDrag(
+    (state) => {
+      const {
+        swipe, // [swipeX, swipeY] 0 if no swipe detected, -1 or 1 otherwise
+      } = state;
+
+      if (!playerVelocity.current) return;
+
+      let curTrack = useStore.getState().curTrack;
+      if (swipe[0] === -1) {
+        curTrack = clamp(
+          curTrack + 1,
+          0,
+          useStore.getState().tracks.length - 1,
+        );
+        set({ curTrack: curTrack });
+      } else if (swipe[0] === 1) {
+        curTrack = clamp(
+          curTrack - 1,
+          0,
+          useStore.getState().tracks.length - 1,
+        );
+        set({ curTrack: curTrack });
+      }
+
+      if (swipe[1] === -1 && !useStore.getState().playerJumping) {
+        playerVelocity.current[1] = JUMP_VELOCITY;
+        set({ playerJumping: true });
+      } else if (swipe[1] === 1 && useStore.getState().playerJumping) {
+        playerVelocity.current[1] = DOWN_VELOCITY;
+      }
+    },
+    {
+      pointer: {
+        touch: true,
+      },
+    },
+  );
+
   const scene = useMemo(
     () => (
       <>
@@ -30,14 +76,18 @@ function Scene() {
   );
 
   return (
-    <>
+    <div
+      {...bind()}
+      style={{ height: '100vh', touchAction: 'none', userSelect: 'none' }}
+    >
       <GameOver />
       <UI>
         <Clock />
         <Score />
         <Speed />
+        <div ref={debugRef}></div>
       </UI>
-      <GUI />
+      {/* <GUI /> */}
       <Menu />
 
       {status === 'idle' && (
@@ -62,12 +112,12 @@ function Scene() {
             </Suspense>
             <Lights />
             <SceneUtils />
-            {/* <fog attach="fog" args={['white', 0, 500]} /> */}
+            {/* <fog attach="fog" args={['#4c4c9f', 0, 500]} /> */}
             {/* <Effects /> */}
           </Canvas>
         </KeyboardControls>
       </div>
-    </>
+    </div>
   );
 }
 

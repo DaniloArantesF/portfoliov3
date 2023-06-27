@@ -15,6 +15,8 @@ export type StoreState = ConfigSlice &
   StateSlice &
   TileSlice & {
     player: RefObject<Mesh>;
+    playerVelocity: RefObject<TScene.Vec3>;
+    playerJumping: boolean;
 
     /* Misc. */
     get: () => StoreState;
@@ -47,6 +49,8 @@ export const useStore = create<StoreState>()(
       get,
       set,
       player: createRef<Mesh>(),
+      playerVelocity: createRef<TScene.Vec3>(),
+      playerJumping: false,
       ...createConfigSlice(set, get, store),
       ...createStateSlice(set, get, store),
       ...createTileSlice(set, get, store),

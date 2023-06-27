@@ -1,6 +1,13 @@
-.body_title {
+.card .body_title {
   display: flex;
   justify-content: space-between;
+
+  & span {
+    font-size: var(--text-xs);
+    color: var(--color-text);
+    font-weight: 400;
+    text-transform: uppercase;
+  }
 }
 
 .card {
@@ -22,7 +29,7 @@
 }
 
 .description {
-  padding: 0 1rem;
+  padding: 0 1.75rem;
   flex-grow: 2;
 }
 
@@ -57,15 +64,17 @@
 
 .card h3 {
   font-size: var(--text-md);
+  // letter-spacing: -1px;
 }
 
 .card span {
   display: inline-block;
   font-size: var(--text-xs);
   font-weight: 400;
-  color: var(--color-text-sub);
-  letter-spacing: 2px;
-  margin-bottom: 1rem;
+  color: var(--color-text);
+  // letter-spacing: 2px;
+  line-height: 1.6;
+  // margin-bottom: 1rem;
 }
 
 .card p {
@@ -87,6 +96,7 @@
   position: relative;
   height: fit-content;
   overflow: hidden;
+  margin-top: 1rem;
 }
 
 .tags {
@@ -137,7 +147,7 @@
   opacity: 0;
 }
 
-.tag {
+.card .tag {
   display: inline-flex;
   align-items: center;
   justify-content: center;
