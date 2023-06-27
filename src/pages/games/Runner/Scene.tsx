@@ -2,7 +2,11 @@ import { Canvas } from '@react-three/fiber';
 import { KeyboardControls, Stars } from '@react-three/drei';
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
-import { Player } from '@lib/Runner/components/Player';
+import {
+  DOWN_VELOCITY,
+  JUMP_VELOCITY,
+  Player,
+} from '@lib/Runner/components/Player';
 import { GUI, SceneUtils } from '@lib/Runner/lib/utils';
 import { useStore, keyboardControlsMap } from '@lib/Runner/lib/store';
 import Track from '@lib/Runner/components/Track';
@@ -19,13 +23,15 @@ import { useDrag } from '@use-gesture/react';
 import { clamp } from '~/utils/math';
 
 function Scene() {
-  const { set, status, run, startGame, debug } = useStore();
+  const { set, status, run, startGame, debug, playerVelocity } = useStore();
   const debugRef = useRef(null);
   const bind = useDrag(
     (state) => {
       const {
         swipe, // [swipeX, swipeY] 0 if no swipe detected, -1 or 1 otherwise
       } = state;
+
+      if (!playerVelocity.current) return;
 
       let curTrack = useStore.getState().curTrack;
       if (swipe[0] === -1) {
@@ -44,11 +50,11 @@ function Scene() {
         set({ curTrack: curTrack });
       }
 
-      if (swipe[1] === -1) {
-        // velocity.current[1] = JUMP_VELOCITY;
-        // isJumping.current = true;
-      } else if (swipe[0] === 1) {
-        // velocity.current[1] = DOWN_VELOCITY;
+      if (swipe[1] === -1 && !useStore.getState().playerJumping) {
+        playerVelocity.current[1] = JUMP_VELOCITY;
+        set({ playerJumping: true });
+      } else if (swipe[1] === 1 && useStore.getState().playerJumping) {
+        playerVelocity.current[1] = DOWN_VELOCITY;
       }
     },
     {
