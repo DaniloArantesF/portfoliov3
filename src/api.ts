@@ -99,5 +99,8 @@ export function getCardData(projects: Project[]) {
       card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
     }
   });
-  return data;
+  return data.sort(
+    (a, b) =>
+      parseInt((b.date as string) || '0') - parseInt((a.date as string) || '0'),
+  );
 }
