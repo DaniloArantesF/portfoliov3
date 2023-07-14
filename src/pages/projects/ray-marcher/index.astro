@@ -42,7 +42,7 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
     }
 
     function init() {
-      geometry = new THREE.PlaneGeometry(100, 100);
+      geometry = new THREE.PlaneGeometry(10, 10);
       material = new THREE.ShaderMaterial({
         uniforms: {
           cameraPos: { value: camera.position },
