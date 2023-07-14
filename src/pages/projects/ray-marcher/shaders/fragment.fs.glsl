@@ -14,6 +14,7 @@ uniform float fov;
 uniform float uTime;
 //uniform vec3 spherePos;
 //uniform float sphereRadius;
+uniform float fft;
 
 uniform vec2 uResolution;
 
@@ -66,15 +67,14 @@ float displacement(vec3 p) {
 // Aggregate of objects in the scene
 float scene(vec3 p) {
   vec4 spherePos = vec4(0., 1., 6., 1.);
-  float displacementScale = 20. + 10. * sin(uTime/10.);
+  float displacementScale = 20. + 10. * sin(uTime/8.);
   vec3 rP = rotate(p - spherePos.xyz, vec3(1., 1., 1.), uTime/10.);
 
   float sphere1 = sphereSDF(rP, spherePos.w);
-  float sphere2 = sphereSDF(rP, spherePos.w - .5 - .2 * ((sin(uTime/10.)) / 2. + .5));
+  // float sphere2 = sphereSDF(rP, spherePos.w - .5);
+  // float carvedSphere = max(sphere1, -sphere2);
 
-  float carvedSphere = max(sphere1, -sphere2);
-
-  return max(displacement(rP * displacementScale) / displacementScale, carvedSphere);
+  return max(displacement(rP * displacementScale * (.5 * smoothstep(1., .32, fft))) / (displacementScale), sphere1);
 }
 
 vec3 getNormal(vec3 p){
@@ -115,19 +115,18 @@ void main() {
 
     if (abs(curDist) < MIN_DIST) {
       // hit
-      color = vec3(1., 0., 0.);
       vec3 normal = getNormal(rayPos);
 
       // simple diffuse lighting
       float diffuse = dot(normal, light);
-      color = palette(length(rayLength) + sin(uTime / 8.), vec3(.5, 0.1, 0.9), vec3(.5, 0.0, .5), vec3(1., 0.0, 1.), vec3(0.1));
       color *= vec3(diffuse);
       color /= 1.5;
       break;
     } else if (rayLength > MAX_DIST) {
-      color = vec3(0., 0., 0.);
+      color /= 8.;
       break;
     }
+    color += .03 * palette(rayLength + .5 * smoothstep(.7, .3, fft), vec3(.5, 0.1, 0.9), vec3(.5, 0.0, .5), vec3(1., 0.0, 1.), vec3(0.1));
   }
 
   gl_FragColor = vec4(color, 1.0);
