@@ -28,7 +28,7 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
   const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: true,
+      orbitControls: false,
       cameraPosition: [0, 0, 5],
       far: 1000,
       antialias: true,
@@ -50,6 +50,11 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
     let gpuCompute: GPUComputationRenderer;
     let dtPosition: THREE.DataTexture;
     let positionVariable: Variable;
+
+    const loadedAudioState = {
+      value: 0,
+      maxValue: 0,
+    };
 
     const uniforms = {
       ...state.uniforms,
@@ -78,8 +83,18 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
         player.analyser.getByteFrequencyData(player.buffer);
         const averageFrequency =
           player.buffer.reduce((a, b) => a + b, 0) / player.buffer.length;
+
+        loadedAudioState.value = averageFrequency;
+
+        // Update max fft value
+        loadedAudioState.maxValue = Math.max(
+          loadedAudioState.value,
+          loadedAudioState.maxValue || 1,
+        );
+
+        // Normalize fft value
         (mesh.material as THREE.ShaderMaterial).uniforms.fft.value =
-          averageFrequency / 255;
+          loadedAudioState.value / loadedAudioState.maxValue;
       }
     }
 
@@ -161,6 +176,7 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
         vertexShader,
         fragmentShader,
         side: THREE.DoubleSide,
+        transparent: true,
       });
 
       mesh = new THREE.Points(geometry, material);
@@ -168,6 +184,22 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
 
       registerRenderCallback(animationLoop);
       isReady.set(true);
+    }
+
+    const radius = 5;
+    let angle = 0;
+    let speed = 0.1;
+
+    function rotateCamera() {
+      // Calculate the new camera position using trigonometry
+      camera.position.x = radius * Math.sin(THREE.MathUtils.degToRad(angle));
+      camera.position.z = radius * Math.cos(THREE.MathUtils.degToRad(angle));
+
+      // Make sure the camera is always looking at the origin
+      camera.lookAt(0, 0, 0);
+
+      // Increment the angle for the next frame
+      angle += speed;
     }
 
     init();

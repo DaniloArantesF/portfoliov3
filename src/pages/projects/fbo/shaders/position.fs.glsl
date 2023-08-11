@@ -74,23 +74,47 @@ vec3 curlNoise( vec3 p ){
 }
 
 void main()	{
-  float uCurlFreq = .25;
-  float t = uTime * 0.1;
+  float uCurlFreq = .65;
+  float t = uTime * 1.1;
   float elevationRate = 0.005;
   vec2 uv = gl_FragCoord.xy / resolution.xy;
   vec3 pos = texture2D( texturePosition, uv ).rgb;
 
   vec3 directionToCenter = -pos;
 
-  vec3 noise = curlNoise( pos * uCurlFreq + t ) / 600.;
+  vec3 noise = curlNoise( pos * uCurlFreq + t + 2. * fft ) / (100. - 10. * step(.8, fft));
+
+
+  float dist = distance(vec2(0.), pos.xz + noise.xz);
 
   pos.x += noise.x;
-  pos.y += noise.y * .5 + elevationRate + smoothstep(.0, 0.3, fft) * .01;
+
+  // particles closer to the center go up faster
+  float heatMultiplierRange = 3.;
+  pos.y += noise.y * .2 + elevationRate + clamp(heatMultiplierRange - dist, 0., .01 ) + fft * .01;
+
   pos.z += noise.z;
 
   if (pos.y > 6.0) {
     pos.y = -6.;
   }
+
+  if (pos.x > 8.0) {
+    pos.x = -6.;
+    pos.y = -6.;
+  } else if (pos.x < -8.0) {
+    pos.x = 6.;
+    pos.y = -6.;
+  }
+
+  if (pos.z > 8.0) {
+    pos.z = 6.;
+    pos.y = -6.;
+  } else if (pos.z < -8.0) {
+    pos.y = -6.;
+    pos.z = 6.;
+  }
+
 
   gl_FragColor = vec4(pos, 1.0);
 }
