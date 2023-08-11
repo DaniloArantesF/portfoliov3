@@ -16,10 +16,8 @@ void main() {
   vPosition = position;
 
   vec3 pos = texture2D( positionTexture, reference ).xyz;
-  vec3 position = pos;
-  float maxHeight = 2.05;
-  vParticleY = position.y + 3.5;
+  vParticleY = pos.y + 3.5;
 
-  gl_PointSize = 5. - vParticleY;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  gl_PointSize = 5.5 - vParticleY;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
 }

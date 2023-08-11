@@ -1,8 +1,7 @@
 ---
 import SceneLayout from 'src/layouts/SceneLayout.astro';
-// import * as readme from './readme.md';
 
-const title = 'RayMarcher'; //readme?.frontmatter?.title ??
+const title = 'Embers';
 ---
 
 <SceneLayout title={title} audio />
@@ -13,7 +12,10 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
   import positionFragment from './shaders/position.fs.glsl';
+  import heatPassVertexShader from './shaders/heatPass.vs.glsl';
+  import heatPassFragmentShader from './shaders/heatPass.fs.glsl';
   import { usePlayer } from '~/components/Player';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
   import {
     GPUComputationRenderer,
     Variable,
@@ -28,13 +30,12 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
   const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: false,
+      orbitControls: true,
       cameraPosition: [0, 0, 5],
-      far: 1000,
       antialias: true,
     },
   });
-  const { scene, camera, renderer } = state;
+  const { scene, camera, renderer, composer } = state;
 
   /* ---------- Audio ---------- */
   let player = usePlayer.get();
@@ -47,6 +48,7 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
       material: THREE.ShaderMaterial,
       geometry: THREE.BufferGeometry;
 
+    let heatPass: ShaderPass;
     let gpuCompute: GPUComputationRenderer;
     let dtPosition: THREE.DataTexture;
     let positionVariable: Variable;
@@ -56,23 +58,31 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
       maxValue: 0,
     };
 
+    const settings = {
+      cameraPosition: [0, 0, 5],
+      bloomStrength: 1.5,
+      bloomThreshold: 0.1,
+      bloomRadius: 0.1,
+    };
+
     const uniforms = {
       ...state.uniforms,
       positionTexture: { value: null },
-      uFocus: { value: 5.1 },
-      uSpeed: { value: 100 },
-      uAperture: { value: 1.8 },
-      uFov: { value: 50 },
-      uCurl: { value: 0.25 },
       fft: { value: 0.0 },
     };
 
-    setSceneHook('onResize', () => {
-      const [x, y, z] = [0, 0, window.innerWidth < 750 ? 6 : 3];
-      utils.updateSetting('cameraPosition', [x, y, z]);
-      camera.position.set(x, y, z);
-      camera.updateProjectionMatrix();
-    });
+    function handleEvents() {
+      // Handle resize
+      setSceneHook('onResize', () => {
+        const resolution = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+        heatPass.uniforms.uResolution.value = resolution;
+        utils.updateSetting('cameraPosition', settings.cameraPosition);
+        utils.resetCamera();
+      });
+    }
 
     function animationLoop() {
       gpuCompute.compute();
@@ -182,24 +192,24 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
       mesh = new THREE.Points(geometry, material);
       scene.add(mesh);
 
+      handleEvents();
+      // postProcessing();
       registerRenderCallback(animationLoop);
       isReady.set(true);
     }
 
-    const radius = 5;
-    let angle = 0;
-    let speed = 0.1;
+    function postProcessing() {
+      heatPass = new ShaderPass({
+        uniforms: {
+          ...uniforms,
+          tDiffuse: { value: null },
+        },
+        vertexShader: heatPassVertexShader,
+        fragmentShader: heatPassFragmentShader,
+      });
 
-    function rotateCamera() {
-      // Calculate the new camera position using trigonometry
-      camera.position.x = radius * Math.sin(THREE.MathUtils.degToRad(angle));
-      camera.position.z = radius * Math.cos(THREE.MathUtils.degToRad(angle));
-
-      // Make sure the camera is always looking at the origin
-      camera.lookAt(0, 0, 0);
-
-      // Increment the angle for the next frame
-      angle += speed;
+      heatPass.setSize(window.innerWidth, window.innerHeight);
+      composer.addPass(heatPass);
     }
 
     init();

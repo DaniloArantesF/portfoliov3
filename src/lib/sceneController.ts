@@ -80,11 +80,12 @@ const BaseScene = ({
       alpha: true,
     });
     renderer.setClearAlpha(0);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(1);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     composer = new EffectComposer(renderer);
+    composer.setSize(window.innerWidth, window.innerHeight);
     clock = new THREE.Clock();
 
     initScene();
