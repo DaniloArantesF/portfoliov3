@@ -18,24 +18,6 @@ export interface ProjectProps {
   visibility?: 'visible' | 'hidden' | 'private';
 }
 
-export function getProjectLink(project: Project, href = true) {
-  const live = project.links?.find(({ source }) => source === 'custom')?.url;
-  const github = project.links?.find(({ source }) => source === 'github')?.url;
-  const codesandbox = project.links?.find(
-    ({ source }) => source === 'codesandbox',
-  )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
-
-  return live
-    ? live
-    : codesandbox
-    ? codesandbox
-    : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-}
-
 export async function getLocalProjects(all = false) {
   // Hidden projects are only visible in production.
   // Show all if dev

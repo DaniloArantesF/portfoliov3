@@ -6,6 +6,24 @@ import fs from 'fs';
 import type { CardProps } from './components/Card';
 dotenv.config();
 
+export function getProjectLink(project: Project, href = true) {
+  const live = project.links?.find(({ source }) => source === 'custom')?.url;
+  const github = project.links?.find(({ source }) => source === 'github')?.url;
+  const codesandbox = project.links?.find(
+    ({ source }) => source === 'codesandbox',
+  )?.url;
+  const codepen = project.links?.find(
+    ({ source }) => source === 'codepen',
+  )?.url;
+
+  return live
+    ? live
+    : codesandbox
+    ? codesandbox
+    : github ||
+      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+}
+
 async function apiFetch(url: string, options: any = {}) {
   const defaultOptions = {
     headers: {
@@ -39,7 +57,7 @@ export async function getProjects(
   const url = import.meta?.env
     ? import.meta.env.PAYLOAD_URL
     : process.env.PAYLOAD_URL;
-  const data = await apiFetch(`${url}/danilo/api/projects${stringifiedQuery}`);
+  const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
   return data;
 }
 
@@ -76,15 +94,8 @@ export function getCardData(projects: Project[]) {
       const codepen = project.links?.find(
         ({ source }) => source === 'codepen',
       )?.url;
+      const href = getProjectLink(project);
 
-      const href = live
-        ? live
-        : codesandbox
-        ? codesandbox
-        : github ||
-          `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-
-      // fix this sin
       let tags: Tag[] = [];
       if (project.tags) {
         tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
@@ -109,7 +120,7 @@ export function getCardData(projects: Project[]) {
   ];
   data.forEach((card) => {
     if (typeof card.image === 'object') {
-      card.image.url = `${import.meta.env.PAYLOAD_URL}/danilo${card.image.url}`;
+      card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
     }
   });
   return data.sort(

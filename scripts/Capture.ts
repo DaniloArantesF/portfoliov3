@@ -6,24 +6,7 @@ import * as Puppeteer from 'puppeteer';
 import { getProjects, uploadMedia } from '../src/api';
 import type { Project } from '~/payload-types';
 import { sleep } from '~/utils/utils';
-
-export function getProjectLink(project: Project, href = true) {
-  const live = project.links?.find(({ source }) => source === 'custom')?.url;
-  const github = project.links?.find(({ source }) => source === 'github')?.url;
-  const codesandbox = project.links?.find(
-    ({ source }) => source === 'codesandbox',
-  )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
-
-  return live
-    ? live
-    : codesandbox
-    ? codesandbox
-    : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-}
+import { getProjectLink } from '~/api';
 
 dotenv.config();
 
@@ -66,8 +49,8 @@ class MediaCaptureManager {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
       // Wait a few seconds
-      await sleep(3000);
-
+      await sleep(1500);
+      await this.removeUI(page);
       await page.screenshot({ path: filePath });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -75,6 +58,24 @@ class MediaCaptureManager {
     } finally {
       await page.close();
     }
+  }
+
+  async removeUI(page: Puppeteer.Page) {
+    await page.evaluate(() => {
+      const player = document.querySelector('#audioPlayer-container');
+      if (player) {
+        player.remove();
+      }
+
+      const gui = document.querySelector('#gui_container');
+      if (gui) {
+        gui.remove();
+      }
+      const header = document.querySelector('header');
+      if (header) {
+        header.remove();
+      }
+    });
   }
 
   async shutdown() {
@@ -128,7 +129,10 @@ if (process.argv.length >= 2) {
         }
 
         for (const project of projects) {
-          const url = getProjectLink(project, false);
+          let url = getProjectLink(project, false);
+          if (!url.startsWith('http')) {
+            url = `http://localhost:3000/${url}`;
+          }
           const filePath = path.resolve(
             'public',
             'assets',
