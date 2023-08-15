@@ -7,6 +7,7 @@
 
 export interface Config {
   collections: {
+    tenants: Tenant;
     media: Media;
     pages: Page;
     projects: Project;
@@ -20,13 +21,24 @@ export interface Config {
   globals: {
     footer: Footer;
     'main-menu': MainMenu;
-    'top-bar': TopBar;
   };
+}
+export interface Tenant {
+  id: string;
+  slug: string;
+  parent: string | Tenant;
+  domains?: {
+    domain: string;
+    id?: string;
+  }[];
+  name: string;
+  updatedAt: string;
+  createdAt: string;
 }
 export interface Media {
   id: string;
   alt: string;
-  darkModeFallback?: string | Media;
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
   url?: string;
@@ -636,6 +648,7 @@ export interface Page {
     label?: string;
     id?: string;
   }[];
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
   _status?: 'draft' | 'published';
@@ -646,87 +659,166 @@ export interface Project {
   image: string | Media;
   domain?: string;
   type?: 'project' | 'scene' | 'game';
-  description: {
+  description?: {
     [k: string]: unknown;
   }[];
-  content?: (
-    | {
-        bannerFields: {
-          type?: 'default' | 'success' | 'warning' | 'error';
-          addCheckmark?: boolean;
-          content: {
-            [k: string]: unknown;
-          }[];
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'banner';
-      }
-    | {
-        blogContentFields: {
-          richText: {
-            [k: string]: unknown;
-          }[];
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'blogContent';
-      }
-    | {
-        codeFields: {
-          language?: 'none' | 'js' | 'ts';
-          code: string;
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'code';
-      }
-    | {
-        blogMarkdownFields: {
-          markdown: string;
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'blogMarkdown';
-      }
-    | {
-        mediaBlockFields: {
-          position?: 'default' | 'wide';
-          media: string | Media;
-          caption?: {
-            [k: string]: unknown;
-          }[];
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'mediaBlock';
-      }
-    | {
-        reusableContentBlockFields: {
-          reusableContent: string | ReusableContent;
-        };
-        id?: string;
-        blockName?: string;
-        blockType: 'reusableContentBlock';
-      }
-  )[];
   slug?: string;
   publishedOn?: string;
   visible?: boolean;
   featured?: boolean;
-  live?: string;
-  github?: string;
-  codesandbox?: string;
-  codepen?: string;
+  links?: {
+    source:
+      | 'custom'
+      | 'github'
+      | 'codesandbox'
+      | 'codepen'
+      | 'instagram'
+      | 'behance';
+    url: string;
+    id?: string;
+  }[];
   tags?: string[] | Tag[];
   meta?: {
     title?: string;
     description?: string;
     image?: string | Media;
   };
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
   _status?: 'draft' | 'published';
+}
+export interface Tag {
+  id: string;
+  label?: string;
+  value?: string;
+  url?: string;
+  tenant?: string | Tenant;
+  updatedAt: string;
+  createdAt: string;
+}
+export interface Form {
+  id: string;
+  title: string;
+  fields?: (
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        defaultValue?: string;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'text';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        defaultValue?: string;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'textarea';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        defaultValue?: string;
+        options?: {
+          label: string;
+          value: string;
+          id?: string;
+        }[];
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'select';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'email';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'state';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'country';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        defaultValue?: number;
+        required?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'number';
+      }
+    | {
+        name: string;
+        label?: string;
+        width?: number;
+        required?: boolean;
+        defaultValue?: boolean;
+        id?: string;
+        blockName?: string;
+        blockType: 'checkbox';
+      }
+    | {
+        message?: {
+          [k: string]: unknown;
+        }[];
+        id?: string;
+        blockName?: string;
+        blockType: 'message';
+      }
+  )[];
+  submitButtonLabel?: string;
+  confirmationType?: 'message' | 'redirect';
+  confirmationMessage: {
+    [k: string]: unknown;
+  }[];
+  redirect?: {
+    url: string;
+  };
+  emails?: {
+    emailTo?: string;
+    cc?: string;
+    bcc?: string;
+    replyTo?: string;
+    emailFrom?: string;
+    subject: string;
+    message?: {
+      [k: string]: unknown;
+    }[];
+    id?: string;
+  }[];
+  leader: {
+    [k: string]: unknown;
+  }[];
+  hubSpotFormID?: string;
+  tenant?: string | Tenant;
+  updatedAt: string;
+  createdAt: string;
 }
 export interface ReusableContent {
   id: string;
@@ -1260,146 +1352,16 @@ export interface ReusableContent {
         blockType: 'stickyHighlights';
       }
   )[];
-  updatedAt: string;
-  createdAt: string;
-}
-export interface Form {
-  id: string;
-  title: string;
-  fields?: (
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        defaultValue?: string;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'text';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        defaultValue?: string;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'textarea';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        defaultValue?: string;
-        options?: {
-          label: string;
-          value: string;
-          id?: string;
-        }[];
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'select';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'email';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'state';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'country';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        defaultValue?: number;
-        required?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'number';
-      }
-    | {
-        name: string;
-        label?: string;
-        width?: number;
-        required?: boolean;
-        defaultValue?: boolean;
-        id?: string;
-        blockName?: string;
-        blockType: 'checkbox';
-      }
-    | {
-        message?: {
-          [k: string]: unknown;
-        }[];
-        id?: string;
-        blockName?: string;
-        blockType: 'message';
-      }
-  )[];
-  submitButtonLabel?: string;
-  confirmationType?: 'message' | 'redirect';
-  confirmationMessage: {
-    [k: string]: unknown;
-  }[];
-  redirect?: {
-    url: string;
-  };
-  emails?: {
-    emailTo?: string;
-    cc?: string;
-    bcc?: string;
-    replyTo?: string;
-    emailFrom?: string;
-    subject: string;
-    message?: {
-      [k: string]: unknown;
-    }[];
-    id?: string;
-  }[];
-  leader: {
-    [k: string]: unknown;
-  }[];
-  hubSpotFormID?: string;
-  updatedAt: string;
-  createdAt: string;
-}
-export interface Tag {
-  id: string;
-  label?: string;
-  value?: string;
-  url?: string;
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
 }
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
-  twitter?: string;
-  photo?: string | Media;
+  firstName?: string;
+  lastName?: string;
   roles: ('admin' | 'public')[];
+  tenant: string | Tenant;
   updatedAt: string;
   createdAt: string;
   email?: string;
@@ -1419,6 +1381,7 @@ export interface FormSubmission {
     value: string;
     id?: string;
   }[];
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
 }
@@ -1438,6 +1401,7 @@ export interface Redirect {
         };
     url: string;
   };
+  tenant?: string | Tenant;
   updatedAt: string;
   createdAt: string;
 }
@@ -1487,19 +1451,6 @@ export interface MainMenu {
     };
     id?: string;
   }[];
-  updatedAt?: string;
-  createdAt?: string;
-}
-export interface TopBar {
-  id: string;
-  starText?: {
-    desktop?: {
-      [k: string]: unknown;
-    }[];
-    mobile?: {
-      [k: string]: unknown;
-    }[];
-  };
   updatedAt?: string;
   createdAt?: string;
 }

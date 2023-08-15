@@ -39,7 +39,7 @@ export async function getProjects(
   const url = import.meta?.env
     ? import.meta.env.PAYLOAD_URL
     : process.env.PAYLOAD_URL;
-  const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
+  const data = await apiFetch(`${url}/danilo/api/projects${stringifiedQuery}`);
   return data;
 }
 
@@ -64,11 +64,24 @@ export async function uploadMedia(filePath: string): Promise<Project> {
 export function getCardData(projects: Project[]) {
   const data = [
     ...projects.map((project): CardProps => {
-      const href = project.live
-        ? project.live
-        : project.codesandbox
-        ? project.codesandbox
-        : project.github ||
+      const live = project.links?.find(
+        ({ source }) => source === 'custom',
+      )?.url;
+      const github = project.links?.find(
+        ({ source }) => source === 'github',
+      )?.url;
+      const codesandbox = project.links?.find(
+        ({ source }) => source === 'codesandbox',
+      )?.url;
+      const codepen = project.links?.find(
+        ({ source }) => source === 'codepen',
+      )?.url;
+
+      const href = live
+        ? live
+        : codesandbox
+        ? codesandbox
+        : github ||
           `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 
       // fix this sin
@@ -83,9 +96,9 @@ export function getCardData(projects: Project[]) {
         description: project.description,
         tags,
         image: project.image,
-        github: project.github,
-        live: project.live,
-        sandbox: project?.codesandbox,
+        github: github,
+        live: live,
+        sandbox: codesandbox,
         href,
         date: project.publishedOn?.substring(
           0,
@@ -96,7 +109,7 @@ export function getCardData(projects: Project[]) {
   ];
   data.forEach((card) => {
     if (typeof card.image === 'object') {
-      card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
+      card.image.url = `${import.meta.env.PAYLOAD_URL}/danilo${card.image.url}`;
     }
   });
   return data.sort(
