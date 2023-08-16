@@ -4,7 +4,6 @@ import { useGUI } from '../lib/sceneController';
 const gui = useGUI.get();
 export const BIN_COUNT = 32;
 
-// TODO: allow sound processing to be turned off
 class Player {
   private static player: Player;
   audioContext: AudioContext | null = null;
@@ -21,6 +20,17 @@ class Player {
   lowPassCoefficients = {
     feedforward: [1],
     feedback: [1, -0.5],
+  };
+
+  tracks = [
+    {
+      name: 'Sagan\'s Quest - Droid Bishop',
+      url: '/assets/songs/song1.mp3',
+    },
+  ]
+  loadedAudio = {
+    name: '',
+    url: '',
   };
 
   private constructor() {
@@ -119,8 +129,12 @@ class Player {
   };
 
   public loadDefaultSong() {
-    this.audio.src = '/assets/songs/song1.mp3';
+    this.audio.src = this.tracks[0].url;
     this.audio.load();
+    this.loadedAudio = {
+      name: this.tracks[0].name,
+      url: this.tracks[0].url,
+    };
   }
 }
 

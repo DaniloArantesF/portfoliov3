@@ -21,6 +21,7 @@ export function PlayerController() {
   const progressBarRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
+  const [trackName, setTrackName] = useState(player.loadedAudio.name);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -99,9 +100,11 @@ export function PlayerController() {
   function handleFile(event: ChangeEvent<HTMLInputElement>) {
     if (event.target.files?.length) {
       const file = event.target.files[0];
+      const fileName = file.name.split('.')[0];
       audioRef.current!.src = URL.createObjectURL(file);
       audioRef.current!.load();
       setCustomTrack(true);
+      setTrackName(fileName);
     }
   }
 
@@ -116,25 +119,13 @@ export function PlayerController() {
   function ejectFile() {
     player.loadDefaultSong();
     setCustomTrack(false);
+    setTrackName(player.loadedAudio.name);
   }
 
   return (
     <div id="player-container">
-      <div id="player-status">
-        <span>{msToMinSec(progress)}</span>
-        <div
-          id="progress-bar"
-          ref={progressBarRef}
-          onDragEnd={handleSeek}
-          onClick={handleSeek}
-        >
-          <span id="track" />
-          <span id="thumb" ref={thumbRef} />
-        </div>
-        <span>{msToMinSec(duration * 1000)}</span>
-      </div>
-
-      <div id="player-controls">
+      <div id="track-info">
+        <span>{trackName}</span>
         <div>
           <label
             htmlFor="fileIn"
@@ -152,7 +143,22 @@ export function PlayerController() {
           </label>
           <input ref={inputRef} onChange={handleFile} type="file" id="fileIn" />
         </div>
+      </div>
+      <div id="player-status">
+        <span>{msToMinSec(progress)}</span>
+        <div
+          id="progress-bar"
+          ref={progressBarRef}
+          onDragEnd={handleSeek}
+          onClick={handleSeek}
+        >
+          <span id="track" />
+          <span id="thumb" ref={thumbRef} />
+        </div>
+        <span>{msToMinSec(duration * 1000)}</span>
+      </div>
 
+      <div id="player-controls">
         {playing ? (
           <button className="icon" onClick={handlePause}>
             <svg
