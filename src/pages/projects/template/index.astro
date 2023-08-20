@@ -33,7 +33,8 @@ const title = ''; //readme?.frontmatter?.title ?? '';
     }
 
     function init() {
-      geometry = new THREE.SphereGeometry(0.25, 30, 30);
+      // geometry = new THREE.SphereGeometry(0.25, 30, 30);
+      geometry = new THREE.PlaneGeometry(1, 1, 10, 10);
       material = new THREE.ShaderMaterial({
         uniforms,
         vertexShader,

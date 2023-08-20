@@ -1,7 +1,8 @@
 import { atom } from 'nanostores';
 import { useGUI } from '../lib/sceneController';
+import * as THREE from 'three';
 
-const gui = useGUI.get();
+// const gui = useGUI.get();
 export const BIN_COUNT = 32;
 
 class Player {
@@ -22,6 +23,12 @@ class Player {
     feedback: [1, -0.5],
   };
 
+  // FFT data
+  fftTexture: THREE.DataTexture | null = null;
+  fftNormalized = 0;
+  fftMaxValue = 0;
+
+  // Audio tracks
   tracks = [
     {
       name: 'Sagan\'s Quest - Droid Bishop',
@@ -33,6 +40,8 @@ class Player {
     url: '',
   };
 
+  isReady = false;
+
   private constructor() {
     this.audio = document.querySelector('audio')!;
     this.audio.volume = 0.4;
@@ -40,7 +49,6 @@ class Player {
     this.fftSize = BIN_COUNT * 2;
     this.buffer = new Uint8Array(this.fftSize);
     this.loadDefaultSong();
-    this.setupGUI();
   }
 
   // Init context is called on user input to avoid issues on mobile
@@ -77,7 +85,33 @@ class Player {
 
     // Frequency buffer, frequencyBinCount == fftSize / 2
     this.buffer = new Uint8Array(this.analyser.frequencyBinCount);
+
+    // FFT texture
+    // const format = renderer.capabilities.isWebGL2
+    // ? THREE.RedFormat
+    // : THREE.LuminanceFormat;
+    this.fftTexture = new THREE.DataTexture(
+      this.buffer,
+      BIN_COUNT,
+      1,
+      THREE.RedFormat,
+    );
+    
+    this.isReady = true;
   };
+
+  public update = () => {
+    if (!this.isReady) return;
+
+    // Update FFT texture
+    this.analyser?.getByteFrequencyData(this.buffer);
+    this.fftTexture!.needsUpdate = true;
+
+    // Update normalized value
+    this.fftNormalized = this.buffer.reduce((acc, curr) => acc + curr, 0) / this.buffer.length;
+    this.fftMaxValue = Math.max(this.fftNormalized, this.fftMaxValue || 1);
+    this.fftNormalized = this.fftNormalized / this.fftMaxValue;
+  }
 
   public toggleIirFilter(status = !this.iirFilterEnabled) {
     if (!this.source || !this.iirfilter) return;
@@ -99,6 +133,7 @@ class Player {
   }
 
   private setupGUI = () => {
+    const gui = useGUI.get();
     const audioFolder = gui.addFolder({ title: 'AudioPlayer' });
     const params = {
       volume: 1,

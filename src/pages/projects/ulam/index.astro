@@ -195,11 +195,11 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       camera.lookAt(focusPoint);
     }
 
-    if (player && player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-      globePass.uniforms.uData.value = uniforms.uData.value;
-    }
+    // if (player && player.analyser) {
+    //   player.analyser.getByteFrequencyData(player.buffer);
+    //   uniforms.uData.value = player.buffer;
+    //   globePass.uniforms.uData.value = uniforms.uData.value;
+    // }
   }
 
   // function calculateZ(

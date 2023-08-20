@@ -8,8 +8,16 @@ uniform vec2 uResolution;
 uniform float uTime;
 varying vec2 vUv;
 varying vec3 vNormal;
+uniform sampler2D fftTexture;
+uniform float fft;
 
 void main(){
-  vec2 st = gl_FragCoord.xy/uResolution;
-  gl_FragColor = vec4(vec3(1.),1.);
+  vec2 uv = vUv - .5;
+  float numShades = 16.;
+  float dist = distance(uv, vec2(0.));
+
+  float distId = floor((dist)* numShades) / numShades;
+  float fftTex = texture2D(fftTexture, vec2(distId , 0.5)).r;
+
+  gl_FragColor = vec4(distId + fftTex, 0., fft,1.);
 }

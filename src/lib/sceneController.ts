@@ -13,6 +13,7 @@ import type {
   Uniforms,
   useFrame,
 } from './types';
+import { usePlayer } from '~/components/Player';
 
 export const useGUI = atom(
   new Pane({
@@ -47,6 +48,8 @@ const BaseScene = ({
 }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
+  const player = usePlayer?.get();
+  
   let scene: THREE.Scene,
     renderer: THREE.WebGLRenderer,
     composer: EffectComposer,
@@ -67,6 +70,8 @@ const BaseScene = ({
       value: 0,
     },
     uMouse: { value: { x: 0, y: 0 } },
+    fftTexture: { value: null },
+    fft: { value: 0 },
   };
 
   // Overwrite settings
@@ -209,8 +214,13 @@ const BaseScene = ({
     time = clock.getElapsedTime();
     delta = clock.getDelta();
 
+    // update fft data
+    player.update();
+
     // Update uniforms
     uniforms.uTime.value = time;
+    uniforms.fftTexture.value = player.fftTexture;
+    uniforms.fft.value = player.fftNormalized;
 
     // Execute render callbacks i.e. useFrame
     const state = getSceneState();
