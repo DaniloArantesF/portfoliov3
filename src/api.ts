@@ -6,6 +6,24 @@ import fs from 'fs';
 import type { CardProps } from './components/Card';
 dotenv.config();
 
+export function getProjectLink(project: Project, href = true) {
+  const live = project.links?.find(({ source }) => source === 'custom')?.url;
+  const github = project.links?.find(({ source }) => source === 'github')?.url;
+  const codesandbox = project.links?.find(
+    ({ source }) => source === 'codesandbox',
+  )?.url;
+  const codepen = project.links?.find(
+    ({ source }) => source === 'codepen',
+  )?.url;
+
+  return live
+    ? live
+    : codesandbox
+    ? codesandbox
+    : github ||
+      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+}
+
 async function apiFetch(url: string, options: any = {}) {
   const defaultOptions = {
     headers: {
@@ -64,14 +82,20 @@ export async function uploadMedia(filePath: string): Promise<Project> {
 export function getCardData(projects: Project[]) {
   const data = [
     ...projects.map((project): CardProps => {
-      const href = project.live
-        ? project.live
-        : project.codesandbox
-        ? project.codesandbox
-        : project.github ||
-          `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      const live = project.links?.find(
+        ({ source }) => source === 'custom',
+      )?.url;
+      const github = project.links?.find(
+        ({ source }) => source === 'github',
+      )?.url;
+      const codesandbox = project.links?.find(
+        ({ source }) => source === 'codesandbox',
+      )?.url;
+      const codepen = project.links?.find(
+        ({ source }) => source === 'codepen',
+      )?.url;
+      const href = getProjectLink(project);
 
-      // fix this sin
       let tags: Tag[] = [];
       if (project.tags) {
         tags = (project.tags as Tag[]).filter((t) => typeof t === 'object');
@@ -83,9 +107,9 @@ export function getCardData(projects: Project[]) {
         description: project.description,
         tags,
         image: project.image,
-        github: project.github,
-        live: project.live,
-        sandbox: project?.codesandbox,
+        github: github,
+        live: live,
+        sandbox: codesandbox,
         href,
         date: project.publishedOn?.substring(
           0,
@@ -99,5 +123,8 @@ export function getCardData(projects: Project[]) {
       card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
     }
   });
-  return data;
+  return data.sort(
+    (a, b) =>
+      parseInt((b.date as string) || '0') - parseInt((a.date as string) || '0'),
+  );
 }

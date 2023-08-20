@@ -5,27 +5,32 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 const title = 'RayMarcher'; //readme?.frontmatter?.title ??
 ---
 
-<SceneLayout title={title} />
+<SceneLayout title={title} audio />
 
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
+  import { usePlayer } from '~/components/Player';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback } = BaseScene({
+  const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: true,
-      cameraPosition: [0, 0, 5],
-      far: 5000,
+      orbitControls: false,
+      cameraPosition: [0, 0, window.innerWidth < 750 ? 6 : 3],
+      far: 1000,
+      antialias: true,
     },
   });
   const { scene, camera, uniforms } = state;
+
+  /* ---------- Audio ---------- */
+  let player = usePlayer.get();
 
   /* -------------------------------- */
   /*                Scene             */
@@ -35,14 +40,29 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
       material: THREE.ShaderMaterial,
       geometry: THREE.BufferGeometry;
 
+    setSceneHook('onResize', () => {
+      const [x, y, z] = [0, 0, window.innerWidth < 750 ? 6 : 3];
+      utils.updateSetting('cameraPosition', [x, y, z]);
+      camera.position.set(x, y, z);
+      camera.updateProjectionMatrix();
+    });
+
     function animationLoop() {
       material.uniforms.cameraDir.value = camera.getWorldDirection(
         material.uniforms.cameraDir.value,
       );
+
+      if (player.analyser) {
+        player.analyser.getByteFrequencyData(player.buffer);
+        const averageFrequency =
+          player.buffer.reduce((a, b) => a + b, 0) / player.buffer.length;
+        (mesh.material as THREE.ShaderMaterial).uniforms.fft.value =
+          averageFrequency / 255;
+      }
     }
 
     function init() {
-      geometry = new THREE.PlaneGeometry(100, 100);
+      geometry = new THREE.PlaneGeometry(10, 10);
       material = new THREE.ShaderMaterial({
         uniforms: {
           cameraPos: { value: camera.position },
@@ -51,6 +71,7 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
           fov: { value: camera.fov },
           spherePos: { value: new THREE.Vector3(0, 0, -5) },
           sphereRadius: { value: 1.0 },
+          fft: { value: 0.0 },
           ...uniforms,
         },
         vertexShader,
