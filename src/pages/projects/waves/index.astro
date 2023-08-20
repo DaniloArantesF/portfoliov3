@@ -47,7 +47,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     waveDirection: { value: settings.waveDirection },
     foldFrequency: { value: settings.foldFrequency },
     foldHeight: { value: settings.foldsHeight },
-    uData: { value: player.buffer },
   };
 
   /* -------------------------------- */
@@ -67,10 +66,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   scene.add(mesh);
 
   function animationLoop() {
-    if (player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-    }
   }
 
   isReady.set(true);

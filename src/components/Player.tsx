@@ -2,7 +2,6 @@ import { atom } from 'nanostores';
 import { useGUI } from '../lib/sceneController';
 import * as THREE from 'three';
 
-// const gui = useGUI.get();
 export const BIN_COUNT = 32;
 
 class Player {
@@ -12,7 +11,7 @@ class Player {
   gainNode: GainNode | null = null;
   source: MediaElementAudioSourceNode | null = null;
   buffer: Uint8Array;
-  audio: HTMLAudioElement;
+  audio: HTMLAudioElement | null = null;
   fftSize: number;
 
   // Low-pass filter
@@ -31,10 +30,10 @@ class Player {
   // Audio tracks
   tracks = [
     {
-      name: 'Sagan\'s Quest - Droid Bishop',
+      name: "Sagan's Quest - Droid Bishop",
       url: '/assets/songs/song1.mp3',
     },
-  ]
+  ];
   loadedAudio = {
     name: '',
     url: '',
@@ -43,16 +42,19 @@ class Player {
   isReady = false;
 
   private constructor() {
-    this.audio = document.querySelector('audio')!;
-    this.audio.volume = 0.4;
-
+    this.audio = document.querySelector('audio');
     this.fftSize = BIN_COUNT * 2;
     this.buffer = new Uint8Array(this.fftSize);
+    if (!this.audio) {
+      return;
+    }
+    this.audio.volume = 0.4;
     this.loadDefaultSong();
   }
 
   // Init context is called on user input to avoid issues on mobile
   public initContext = () => {
+    if (!this.audio) return;
     let AudioContext =
       window.AudioContext || (window as any).webkitAudioContext;
     this.audioContext = new AudioContext();
@@ -96,7 +98,7 @@ class Player {
       1,
       THREE.RedFormat,
     );
-    
+
     this.isReady = true;
   };
 
@@ -108,10 +110,11 @@ class Player {
     this.fftTexture!.needsUpdate = true;
 
     // Update normalized value
-    this.fftNormalized = this.buffer.reduce((acc, curr) => acc + curr, 0) / this.buffer.length;
+    this.fftNormalized =
+      this.buffer.reduce((acc, curr) => acc + curr, 0) / this.buffer.length;
     this.fftMaxValue = Math.max(this.fftNormalized, this.fftMaxValue || 1);
     this.fftNormalized = this.fftNormalized / this.fftMaxValue;
-  }
+  };
 
   public toggleIirFilter(status = !this.iirFilterEnabled) {
     if (!this.source || !this.iirfilter) return;
@@ -132,7 +135,7 @@ class Player {
     }
   }
 
-  private setupGUI = () => {
+  public setupGUI = () => {
     const gui = useGUI.get();
     const audioFolder = gui.addFolder({ title: 'AudioPlayer' });
     const params = {
@@ -164,6 +167,7 @@ class Player {
   };
 
   public loadDefaultSong() {
+    if (!this.audio) return;
     this.audio.src = this.tracks[0].url;
     this.audio.load();
     this.loadedAudio = {

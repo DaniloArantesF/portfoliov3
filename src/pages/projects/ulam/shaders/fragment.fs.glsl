@@ -9,7 +9,7 @@ precision mediump float;
 uniform float uTime;
 uniform float waveAmplitude;
 uniform float waveFrequency;
-uniform uint[int(BIN_COUNT)] uData;
+uniform float fft;
 uniform vec2 uResolution;
 varying float elevation;
 varying float vPrime;
@@ -27,7 +27,7 @@ void main() {
   vec3 color = vec3(rd);
 
   int binIndex = int(rd + cos(elevation));
-  float intensity = float(uData[binIndex])/MAX_INTENSITY;
+  float intensity = fft;
 
 
   color = mix(vec3(0.4, 0.1, .8), vec3(.8, 0.1, 0.4), (elevation/waveAmplitude - (rd*step(.8, intensity))/4.));

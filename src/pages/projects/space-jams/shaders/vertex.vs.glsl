@@ -2,7 +2,7 @@
 #define SCALE 64.
 
 uniform float uTime;
-uniform uint[int(BIN_COUNT)] uData;
+uniform float fft;
 varying float intensity;
 varying float vAmplitude;
 varying vec2 vUv;
@@ -20,7 +20,7 @@ void main() {
   float scale = 50.;
   normalizedPosition = abs(position/SCALE);
   float freq = (BIN_COUNT * normalizedPosition.y);
-  intensity = sin(float(uData[int(round(freq))]) / 24.) * vAmplitude;
+  intensity = sin(fft) * vAmplitude;
 
   gl_PointSize = 1. + 1.5 * smoothstep(0.2, .8, (1. - normalizedPosition.y)) + .5 * (1. - intensity/vAmplitude);
 

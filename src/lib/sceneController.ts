@@ -49,7 +49,7 @@ const BaseScene = ({
   if (!canvas) throw new Error('Canvas is undefined!');
 
   const player = usePlayer?.get();
-  
+
   let scene: THREE.Scene,
     renderer: THREE.WebGLRenderer,
     composer: EffectComposer,
@@ -205,6 +205,7 @@ const BaseScene = ({
         camera.updateProjectionMatrix();
       });
 
+    if (player) player.setupGUI();
     gui.disabled = !settings.sceneDebugControls;
     gui.hidden = gui.disabled;
   }

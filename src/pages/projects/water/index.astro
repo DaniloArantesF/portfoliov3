@@ -249,10 +249,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   };
 
   function animationLoop() {
-    if (player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-    }
   }
 
   isReady.set(true);

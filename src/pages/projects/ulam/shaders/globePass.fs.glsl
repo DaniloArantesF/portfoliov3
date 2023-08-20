@@ -20,12 +20,12 @@ uniform vec3 uBackgroundColor;
 
 #define BIN_COUNT 33.
 #define MAX_INTENSITY 255.
-uniform uint[int(BIN_COUNT)] uData;
+uniform float fft;
 
 void main() {
   float aspect = uResolution.y / uResolution.x;
 
-  float intensity = float(uData[int(BIN_COUNT/2. - 1.)])/MAX_INTENSITY;
+  float intensity = fft;
   vec2 dist = vec2(.5);
   float fullRadius = sqrt(dist.x * dist.x + dist.y * dist.y);
 

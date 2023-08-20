@@ -10,7 +10,6 @@ uniform float foldHeight;
 uniform float uTime;
 uniform float waveAmplitude;
 uniform float waveFrequency;
-uniform uint[int(BIN_COUNT)] uData;
 uniform vec2 uResolution;
 uniform vec3 color1;
 uniform vec3 color2;
@@ -23,6 +22,8 @@ varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec4 modelPosition;
+uniform float fft;
+
 
 void main(){
   vec2 uv = vUv;
@@ -30,7 +31,7 @@ void main(){
 
   vec2 gd =  floor(uv * scale) / scale;
   int binIndex = int((gd.y) * BIN_COUNT / 2.);
-  float intensity = float(uData[binIndex])/MAX_INTENSITY;
+  float intensity = fft/MAX_INTENSITY;
 
   vec3 colorSurface = vec3(.0, .6, 1.);
   vec3 colorBottom = vec3(.0, .0, .05);
