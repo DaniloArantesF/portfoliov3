@@ -1,8 +1,8 @@
-#define BIN_COUNT 32.
+#define BIN_COUNT 8.
 #define SCALE 64.
 
 uniform float uTime;
-uniform float fft;
+uniform sampler2D fftTexture;
 varying float intensity;
 varying float vAmplitude;
 varying vec2 vUv;
@@ -19,8 +19,8 @@ void main() {
 
   float scale = 50.;
   normalizedPosition = abs(position/SCALE);
-  float freq = (BIN_COUNT * normalizedPosition.y);
-  intensity = sin(fft) * vAmplitude;
+  float freq = (BIN_COUNT * (normalizedPosition.y)) / BIN_COUNT;
+  intensity = sin(texture2D(fftTexture, vec2(freq)).r ) * vAmplitude;
 
   gl_PointSize = 1. + 1.5 * smoothstep(0.2, .8, (1. - normalizedPosition.y)) + .5 * (1. - intensity/vAmplitude);
 

@@ -1,4 +1,3 @@
-
 attribute vec2 reference;
 
 uniform sampler2D positionTexture;
@@ -19,5 +18,5 @@ void main() {
   vParticleY = pos.y + 3.5;
 
   gl_PointSize = 5.5 - vParticleY;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
 }

@@ -1,6 +1,6 @@
 const r = Math;
 
-const grad3 = [
+const grad3: number[][] = [
   [1, 1, 0],
   [-1, 1, 0],
   [1, -1, 0],
@@ -15,29 +15,29 @@ const grad3 = [
   [0, -1, -1],
 ];
 
-const p = [];
+const p: number[] = [];
 for (let i = 0; i < 256; i++) {
   p[i] = Math.floor(r.random() * 256);
 }
-const perm = [];
+const perm: number[] = [];
 for (let i = 0; i < 512; i++) {
   perm[i] = p[i & 255];
 }
 
-function dot(g, x, y, z) {
+function dot(g: number[], x: number, y: number, z: number): number {
   return g[0] * x + g[1] * y + g[2] * z;
 }
 
-function mix(a, b, t) {
+function mix(a: number, b: number, t: number): number {
   return (1.0 - t) * a + t * b;
 }
 
-function fade(t) {
+function fade(t: number): number {
   return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 }
 
 // Classic Perlin noise, 3D version
-function noise(x: number, y: number, z: number) {
+function noise(x: number, y: number, z: number): number {
   // Find unit grid cell containing point
   let X = Math.floor(x);
   let Y = Math.floor(y);

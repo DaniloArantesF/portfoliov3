@@ -20,6 +20,8 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec4 modelPosition;
 
+uniform float fft;
+
 // ------------
 //	Simplex 3D Noise
 //	by Ian McEwan, Ashima Arts
@@ -100,13 +102,13 @@ float fbmWaves(in vec2 uv) {
   float gain = .5;
   float lacunatiry = 2.;
   float value = 0.;
-  float amplitude = waveAmplitude;
-  float frequency = waveFrequency;
+  float amplitude = waveAmplitude + sin(fft) / 10.;
+  float frequency = waveFrequency ;
   float noise;
 
   for (int i = 0; i < OCTAVES; i++) {
-    noise = snoise(vec3((uv * frequency) + (waveDirection * uTime), 0.));
-    value += amplitude * noise;
+    noise = snoise(vec3((uv * frequency) + (waveDirection * uTime), sin(fft)));
+    value += amplitude * noise ;
     frequency *= lacunatiry;
     amplitude *= gain;
   }

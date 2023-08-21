@@ -10,6 +10,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
   import { usePlayer } from '@components/Player';
+  import type { BaseSceneState } from '~/lib/types';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -24,9 +25,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     },
   });
   const { scene } = state;
-
-  /* ---------- Audio ---------- */
-  let player = usePlayer.get();
 
   const settings = {
     color1: new THREE.Color(1, 0, 0),
@@ -47,7 +45,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     waveDirection: { value: settings.waveDirection },
     foldFrequency: { value: settings.foldFrequency },
     foldHeight: { value: settings.foldsHeight },
-    uData: { value: player.buffer },
   };
 
   /* -------------------------------- */
@@ -66,11 +63,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
 
-  function animationLoop() {
-    if (player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-    }
+  function animationLoop(state: BaseSceneState) {
+    // Update uniforms
+    material.uniforms.fft.value = state.uniforms.fft.value;
+    console.log(material.uniforms.fft.value);
   }
 
   isReady.set(true);

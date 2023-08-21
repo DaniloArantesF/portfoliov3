@@ -8,14 +8,21 @@ import type { Project } from '~/payload-types';
 import { sleep } from '~/utils/utils';
 
 export function getProjectLink(project: Project, href = true) {
-  return project.live
-    ? project.live
-    : project.codesandbox
-    ? project.codesandbox
-    : project.github ||
-      `${!href && `http://localhost:3000/`}${
-        project.type !== 'game' ? 'projects' : 'games'
-      }/${project.slug}`;
+  const live = project.links?.find(({ source }) => source === 'custom')?.url;
+  const github = project.links?.find(({ source }) => source === 'github')?.url;
+  const codesandbox = project.links?.find(
+    ({ source }) => source === 'codesandbox',
+  )?.url;
+  const codepen = project.links?.find(
+    ({ source }) => source === 'codepen',
+  )?.url;
+
+  return live
+    ? live
+    : codesandbox
+    ? codesandbox
+    : github ||
+      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 dotenv.config();

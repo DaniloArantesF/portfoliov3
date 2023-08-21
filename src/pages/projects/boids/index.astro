@@ -40,7 +40,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   const { gui } = utils;
 
   let player = usePlayer.get();
-  uniforms.uData = { value: player.buffer };
 
   const hashGrid = new SpatialGrid<Boid>({
     bounds: [
@@ -264,15 +263,10 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       boids[i].step(time * settings.timeMultiplier);
     }
 
-    if (player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-    }
-
     // Animate lights
     let bin = Math.floor(player.buffer.length / (lights.length + 1));
     for (let i = 0; i < lights.length; i++) {
-      const value = uniforms.uData.value[i * bin] / 255;
+      const value = uniforms.fft.value;
       const targetIntensity = Math.max(1 - value, 0.7);
       const intensity = damp(lights[i].intensity, targetIntensity, 0.5, time);
       lights[i].setIntensity(intensity);

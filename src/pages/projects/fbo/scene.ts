@@ -1,0 +1,180 @@
+import * as THREE from 'three';
+import BaseScene, { isReady } from '@lib/sceneController';
+import vertexShader from './shaders/vertex.vs.glsl';
+import fragmentShader from './shaders/fragment.fs.glsl';
+import positionFragment from './shaders/position.fs.glsl';
+import heatPassVertexShader from './shaders/heatPass.vs.glsl';
+import heatPassFragmentShader from './shaders/heatPass.fs.glsl';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import {
+  GPUComputationRenderer,
+  Variable,
+} from 'three/examples/jsm/misc/GPUComputationRenderer';
+import type { BaseSceneState } from '~/lib/types';
+
+const SIMULATION_WIDTH = 32;
+
+/* -------------------------------- */
+/*          Setup & Globals         */
+/* -------------------------------- */
+const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
+  canvas,
+  settings: {
+    orbitControls: true,
+    cameraPosition: [0, 0, 5],
+    antialias: true,
+  },
+});
+const { scene, camera, renderer, composer } = state;
+
+/* -------------------------------- */
+/*                Scene             */
+/* -------------------------------- */
+function Scene() {
+  let mesh: THREE.Points,
+    material: THREE.ShaderMaterial,
+    geometry: THREE.BufferGeometry;
+
+  let heatPass: ShaderPass;
+  let gpuCompute: GPUComputationRenderer;
+  let dtPosition: THREE.DataTexture;
+  let positionVariable: Variable;
+
+  const settings = {
+    cameraPosition: [0, 0, 5],
+    bloomStrength: 1.5,
+    bloomThreshold: 0.1,
+    bloomRadius: 0.1,
+  };
+
+  const uniforms = {
+    ...state.uniforms,
+    positionTexture: { value: null },
+    fft: { value: 0.0 },
+  };
+
+  function handleEvents() {
+    // Handle resize
+    setSceneHook('onResize', () => {
+      const resolution = new THREE.Vector2(
+        window.innerWidth,
+        window.innerHeight,
+      );
+      heatPass.uniforms.uResolution.value = resolution;
+      utils.updateSetting('cameraPosition', settings.cameraPosition);
+      utils.resetCamera();
+    });
+  }
+
+  function animationLoop(state: BaseSceneState) {
+    gpuCompute.compute();
+    material.uniforms.positionTexture.value =
+      gpuCompute.getCurrentRenderTarget(positionVariable).texture;
+  }
+
+  function initGPGPU() {
+    gpuCompute = new GPUComputationRenderer(
+      SIMULATION_WIDTH,
+      SIMULATION_WIDTH,
+      renderer,
+    );
+
+    dtPosition = gpuCompute.createTexture();
+
+    fillPositions(dtPosition);
+
+    positionVariable = gpuCompute.addVariable(
+      'texturePosition',
+      positionFragment,
+      dtPosition,
+    );
+
+    // Add variable uniforms
+    positionVariable.material.uniforms = uniforms;
+
+    positionVariable.wrapS = THREE.RepeatWrapping;
+    positionVariable.wrapT = THREE.RepeatWrapping;
+
+    gpuCompute.init();
+  }
+
+  function fillPositions(texture: THREE.DataTexture) {
+    let data = texture.image.data;
+    let radius = 5;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const phi = Math.random() * 2 * Math.PI; // azimuthal angle
+      const theta = Math.acos(2 * Math.random() - 1); // polar angle
+
+      const x = Math.random() * radius * Math.sin(theta) * Math.cos(phi);
+      const y = Math.random() * radius * Math.sin(theta) * Math.sin(phi);
+      const z = Math.random() * radius * Math.cos(theta);
+      data[i + 0] = x * 2;
+      data[i + 1] = y * 4 - 2 * y;
+      data[i + 2] = -1 * z;
+      data[i + 3] = 1;
+    }
+  }
+
+  function init() {
+    initGPGPU();
+
+    let positions = new Float32Array(SIMULATION_WIDTH ** 2 * 3);
+    let references = new Float32Array(SIMULATION_WIDTH ** 2 * 2);
+    for (let i = 0; i < SIMULATION_WIDTH ** 2; i++) {
+      let x = Math.random();
+      let y = Math.random();
+      let z = Math.random();
+      positions.set([x, y, z], i * 3);
+
+      // Reference column and row number
+      let xx = (i % SIMULATION_WIDTH) / SIMULATION_WIDTH;
+      let yy = ~~(i / SIMULATION_WIDTH) / SIMULATION_WIDTH;
+      references.set([xx, yy], i * 2);
+    }
+
+    geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute(
+      'reference',
+      new THREE.BufferAttribute(references, 2),
+    );
+
+    material = new THREE.ShaderMaterial({
+      uniforms: {
+        ...uniforms,
+      },
+      vertexShader,
+      fragmentShader,
+      side: THREE.DoubleSide,
+      transparent: true,
+    });
+
+    mesh = new THREE.Points(geometry, material);
+    scene.add(mesh);
+
+    handleEvents();
+    // postProcessing();
+    registerRenderCallback(animationLoop);
+    isReady.set(true);
+  }
+
+  function postProcessing() {
+    heatPass = new ShaderPass({
+      uniforms: {
+        ...uniforms,
+        tDiffuse: { value: null },
+      },
+      vertexShader: heatPassVertexShader,
+      fragmentShader: heatPassFragmentShader,
+    });
+
+    heatPass.setSize(window.innerWidth, window.innerHeight);
+    composer.addPass(heatPass);
+  }
+
+  init();
+}
+
+export default Scene;
