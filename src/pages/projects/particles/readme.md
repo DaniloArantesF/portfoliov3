@@ -1,5 +1,5 @@
 ---
-title: Tiles
+title: Text Particles
 subtitle: ThreeJS
 description:
 image: projects/project-desktop-sample.webp
@@ -8,6 +8,6 @@ visibility: private
 tags: ['threejs', 'typescript']
 ---
 
-## Todos
+### Todos
 
-- Add image distortion effects
+### Limitations

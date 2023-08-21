@@ -1,4 +1,5 @@
 #player-container {
+  width: 100%;
   padding: 1rem 1rem;
   display: flex;
   flex-direction: column;
@@ -85,13 +86,26 @@
 
 #player-controls {
   display: grid;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  grid-template-columns: 0.1fr 0.8fr 0.1fr;
+  // grid-template-columns: 0.1fr 0.8fr 0.1fr;
 }
 
-#player-controls input {
-  display: none;
+#track-info {
+  font-size: var(--text-xs);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+
+  & span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text-sub);
+  }
 }
 
 .file_input {

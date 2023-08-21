@@ -1,8 +1,8 @@
 ---
-import { getCardData, getProjects } from 'src/api';
+import { getCardData, getProjects, getProjectLink } from 'src/api';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
-import type { Project, Tag } from '../payload-types';
+import type { Tag } from '../payload-types';
 
 export interface ProjectProps {
   description: string;
@@ -16,17 +16,6 @@ export interface ProjectProps {
   tags: Tag[];
   title: string;
   visibility?: 'visible' | 'hidden' | 'private';
-}
-
-export function getProjectLink(project: Project, href = true) {
-  return project.live
-    ? project.live
-    : project.codesandbox
-    ? project.codesandbox
-    : project.github ||
-      `${!href && `http://localhost:3000/`}${
-        project.type !== 'game' ? 'projects' : 'games'
-      }/${project.slug}`;
 }
 
 export async function getLocalProjects(all = false) {

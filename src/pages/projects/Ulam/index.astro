@@ -59,7 +59,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ...state.uniforms,
     waveFrequency: { value: settings.waveFrequency },
     waveAmplitude: { value: settings.waveAmplitude },
-    uData: { value: player.buffer },
   };
 
   // debug
@@ -197,12 +196,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       camera.position.z = Math.cos(time * 2);
       focusPoint.y = 1 + 0.2 * (0.5 * Math.cos(time * 2) + 0.5);
       camera.lookAt(focusPoint);
-    }
-
-    if (player && player.analyser) {
-      player.analyser.getByteFrequencyData(player.buffer);
-      uniforms.uData.value = player.buffer;
-      globePass.uniforms.uData.value = uniforms.uData.value;
     }
   }
 
