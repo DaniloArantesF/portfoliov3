@@ -88,24 +88,6 @@ const title = 'Embers';
       gpuCompute.compute();
       material.uniforms.positionTexture.value =
         gpuCompute.getCurrentRenderTarget(positionVariable).texture;
-
-      if (player.analyser) {
-        player.analyser.getByteFrequencyData(player.buffer);
-        const averageFrequency =
-          player.buffer.reduce((a, b) => a + b, 0) / player.buffer.length;
-
-        loadedAudioState.value = averageFrequency;
-
-        // Update max fft value
-        loadedAudioState.maxValue = Math.max(
-          loadedAudioState.value,
-          loadedAudioState.maxValue || 1,
-        );
-
-        // Normalize fft value
-        (mesh.material as THREE.ShaderMaterial).uniforms.fft.value =
-          loadedAudioState.value / loadedAudioState.maxValue;
-      }
     }
 
     function initGPGPU() {

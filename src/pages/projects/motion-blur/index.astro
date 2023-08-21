@@ -1,0 +1,117 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+// import * as readme from './readme.md';
+
+const title = ''; //readme?.frontmatter?.title ?? '';
+---
+
+<SceneLayout title={title} />
+
+<script>
+  import * as THREE from 'three';
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+
+  // Create orthographic camera, so we can look at our fullscreen quads
+  let orthoCamera: THREE.OrthographicCamera;
+
+  const left = -innerWidth / 2;
+  const right = innerWidth / 2;
+  const top = -innerHeight / 2;
+  const bottom = innerHeight / 2;
+  const rttNear = -100;
+  const rttFar = 100;
+  orthoCamera = new THREE.OrthographicCamera(
+    left,
+    right,
+    top,
+    bottom,
+    rttNear,
+    rttFar,
+  );
+  orthoCamera.position.z = -10;
+  orthoCamera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  const fullscreenQuadGeometry = new THREE.PlaneGeometry(
+    innerWidth,
+    innerHeight,
+  );
+
+  const fadeMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      inputTexture: { value: null },
+    },
+    vertexShader: `
+    varying vec2 vUv;
+    void main () {
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      vUv = uv;
+    }
+  `,
+    fragmentShader: `
+    uniform sampler2D inputTexture;
+    varying vec2 vUv;
+    void main () {
+      vec2 uv =  1. - vUv;
+      vec4 texColor = texture2D(inputTexture, uv);
+      vec4 fadeColor = vec4(0.0, .0, 0.0, 1.0);
+      gl_FragColor = mix(texColor, fadeColor, 0.09);
+    }
+  `,
+  });
+  const fadePlane = new THREE.Mesh(fullscreenQuadGeometry, fadeMaterial);
+
+  const resultMaterial = new THREE.MeshBasicMaterial({ map: null });
+  const resultPlane = new THREE.Mesh(fullscreenQuadGeometry, resultMaterial);
+
+  const renderer = new THREE.WebGLRenderer({ canvas });
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(1);
+
+  let camera: THREE.PerspectiveCamera;
+  const fieldOfView = 45;
+  const screenAspect = innerWidth / innerHeight;
+  const near = 0.1;
+  const far = 10;
+  camera = new THREE.PerspectiveCamera(fieldOfView, screenAspect, near, far);
+  camera.position.z = 8;
+
+  const scene = new THREE.Scene();
+  const boxGeometry = new THREE.BoxGeometry();
+  const material = new THREE.MeshBasicMaterial({ color: 'red' });
+  const mesh = new THREE.Mesh(boxGeometry, material);
+  scene.add(mesh);
+
+  let framebuffer1 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+  let framebuffer2 = new THREE.WebGLRenderTarget(innerWidth, innerHeight);
+
+  renderer.setClearColor(0x000000);
+  renderer.setRenderTarget(framebuffer1);
+  renderer.clearColor();
+  renderer.setRenderTarget(framebuffer2);
+  renderer.clearColor();
+
+  // Start render loop
+  renderer.setAnimationLoop((timeElapsed: number) => {
+    timeElapsed /= 1000;
+    mesh.position.x = Math.sin(timeElapsed) * 2;
+
+    renderer.autoClearColor = false;
+    fadePlane.material.uniforms.inputTexture.value = framebuffer1.texture;
+    renderer.setRenderTarget(framebuffer2);
+    renderer.render(fadePlane, orthoCamera);
+    renderer.render(scene, camera);
+
+    renderer.setRenderTarget(null);
+    resultPlane.material.map = framebuffer2.texture;
+    renderer.render(resultPlane, orthoCamera);
+
+    const swap = framebuffer1;
+    framebuffer1 = framebuffer2;
+    framebuffer2 = swap;
+  });
+
+</script>

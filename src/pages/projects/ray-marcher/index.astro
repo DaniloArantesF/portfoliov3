@@ -51,14 +51,6 @@ const title = 'RayMarcher'; //readme?.frontmatter?.title ??
       material.uniforms.cameraDir.value = camera.getWorldDirection(
         material.uniforms.cameraDir.value,
       );
-
-      if (player.analyser) {
-        player.analyser.getByteFrequencyData(player.buffer);
-        const averageFrequency =
-          player.buffer.reduce((a, b) => a + b, 0) / player.buffer.length;
-        (mesh.material as THREE.ShaderMaterial).uniforms.fft.value =
-          averageFrequency / 255;
-      }
     }
 
     function init() {

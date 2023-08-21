@@ -193,32 +193,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       focusPoint.y = 1 + 0.2 * (0.5 * Math.cos(time * 2) + 0.5);
       camera.lookAt(focusPoint);
     }
-
-    // if (player && player.analyser) {
-    //   player.analyser.getByteFrequencyData(player.buffer);
-    //   uniforms.uData.value = player.buffer;
-    //   globePass.uniforms.uData.value = uniforms.uData.value;
-    // }
   }
-
-  // function calculateZ(
-  //   targetZ: number,
-  //   targetHeight1 = window.innerHeight / 8,
-  //   targetHeight2 = window.innerHeight / 2,
-  // ) {
-  //   let vFOV = (camera.fov * Math.PI) / 180;
-
-  //   // calculate viewport height from camera position
-  //   let vHeightPartial = 2 * Math.tan(vFOV / 2);
-
-  //   var p1 = targetHeight1 * window.innerHeight;
-  //   var p2 = targetZ * vHeightPartial;
-  //   var p3 = targetHeight2 * vHeightPartial;
-  //   var p4 = targetHeight2 * p2;
-  //   var p5 = p1 + p4;
-  //   var z = p5 / p3;
-  //   return z;
-  // }
 
   function handleEvents() {
     // Handle resize

@@ -58,6 +58,8 @@ const BaseScene = ({
   let camera: THREE.PerspectiveCamera;
   let orbitControls: OrbitControls;
   let stats: Stats;
+  let sceneRenderTarget: THREE.WebGLRenderTarget;
+  let bufferManager: TextureBufferManager;
 
   // Render loop subscribers
   const subscribers: useFrame[] = [];
@@ -324,5 +326,130 @@ const BaseScene = ({
 
   return init();
 };
+
+class TextureBufferManager {
+  private renderer: THREE.WebGLRenderer;
+  private scene: THREE.Scene;
+  private sceneScreen: THREE.Scene;
+  public sceneRenderTarget!: THREE.WebGLRenderTarget;
+
+  private camera: THREE.OrthographicCamera;
+  private geometry: THREE.PlaneGeometry;
+  private baseMaterial: THREE.ShaderMaterial;
+  private materialScreen: THREE.ShaderMaterial;
+  private mesh: THREE.Mesh;
+  private quad: THREE.Mesh;
+
+  vertexShader = `
+  varying vec2 vUv;
+
+  void main() {
+
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+  }`;
+
+  fragShaderPass = `
+  varying vec2 vUv;
+  uniform float time;
+
+  void main() {
+
+    float r = vUv.x;
+    if( vUv.y < 0.5 ) r = 0.0;
+    float g = vUv.y;
+    if( vUv.x < 0.5 ) g = 0.0;
+
+    gl_FragColor = vec4( r, g, time, 1.0 );
+
+  }`;
+
+  constructor(renderer: THREE.WebGLRenderer) {
+    this.renderer = renderer;
+    this.scene = new THREE.Scene();
+    this.sceneScreen = new THREE.Scene();
+    // this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    // this.geometry = new THREE.PlaneGeometry(2, 2);
+    this.geometry = new THREE.PlaneGeometry(
+      window.innerWidth,
+      window.innerHeight,
+    );
+    // this.baseMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    this.baseMaterial = new THREE.ShaderMaterial({
+      uniforms: { time: { value: 0.0 } },
+      vertexShader: this.vertexShader,
+      fragmentShader: this.fragShaderPass,
+    });
+
+    this.camera = new THREE.OrthographicCamera(
+      window.innerWidth / -2,
+      window.innerWidth / 2,
+      window.innerHeight / 2,
+      window.innerHeight / -2,
+      -10000,
+      10000,
+    );
+    this.camera.position.z = 100;
+    this.mesh = new THREE.Mesh(this.geometry, this.baseMaterial);
+    this.scene.add(this.mesh);
+
+    this.materialScreen = new THREE.ShaderMaterial({
+      uniforms: { tDiffuse: { value: null } },
+      vertexShader: this.vertexShader,
+      fragmentShader: `
+      varying vec2 vUv;
+			uniform sampler2D tDiffuse;
+
+			void main() {
+
+				gl_FragColor = texture2D( tDiffuse, vUv );
+				//#include <colorspace_fragment>
+        #include <encodings_fragment>
+			}`,
+      depthWrite: false,
+    });
+    this.quad = new THREE.Mesh(this.geometry, this.materialScreen);
+    this.quad.position.z = -100;
+    this.sceneScreen.add(this.quad);
+  }
+
+  public static getBufferKey(id: number) {
+    return `prgm${id}Texture`;
+  }
+
+  setSceneTexture(
+    texture: THREE.Texture,
+    renderTarget: THREE.WebGLRenderTarget,
+  ) {
+    this.sceneRenderTarget = renderTarget;
+    // this.baseMaterial.map = texture;
+    this.materialScreen.uniforms.tDiffuse.value = texture;
+  }
+
+  addBuffer() {}
+
+  public renderTextures() {
+    // Render scene texture
+    // this.mesh.material = this.baseMaterial;
+    // this.renderer.setRenderTarget(this.sceneRenderTarget);
+    // this.renderer.render(this.scene, this.camera);
+    // this.renderer.setRenderTarget(null);
+
+    // Render first scene into texture
+    this.renderer.setRenderTarget(this.sceneRenderTarget);
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
+
+    // Render full screen quad with generated texture
+    this.renderer.setRenderTarget(null);
+    this.renderer.clear();
+    this.renderer.render(this.sceneScreen, this.camera);
+
+    // Render second scene to screen
+    // (using first scene as regular texture)
+    // this.renderer.render(scene, camera);
+  }
+}
 
 export default BaseScene;
