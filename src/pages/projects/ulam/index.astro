@@ -17,10 +17,6 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import type { BaseSceneState } from '@lib/types';
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
   import { isMobile } from '@utils/utils';
-  import { BlendShader } from 'three/examples/jsm/shaders/BlendShader.js';
-  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-  import { SavePass } from 'three/examples/jsm/postprocessing/SavePass.js';
-  import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -59,6 +55,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     ...state.uniforms,
     waveFrequency: { value: settings.waveFrequency },
     waveAmplitude: { value: settings.waveAmplitude },
+    uData: { value: player.buffer },
   };
 
   // debug
@@ -197,7 +194,32 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       focusPoint.y = 1 + 0.2 * (0.5 * Math.cos(time * 2) + 0.5);
       camera.lookAt(focusPoint);
     }
+
+    if (player && player.analyser) {
+      player.analyser.getByteFrequencyData(player.buffer);
+      uniforms.uData.value = player.buffer;
+      globePass.uniforms.uData.value = uniforms.uData.value;
+    }
   }
+
+  // function calculateZ(
+  //   targetZ: number,
+  //   targetHeight1 = window.innerHeight / 8,
+  //   targetHeight2 = window.innerHeight / 2,
+  // ) {
+  //   let vFOV = (camera.fov * Math.PI) / 180;
+
+  //   // calculate viewport height from camera position
+  //   let vHeightPartial = 2 * Math.tan(vFOV / 2);
+
+  //   var p1 = targetHeight1 * window.innerHeight;
+  //   var p2 = targetZ * vHeightPartial;
+  //   var p3 = targetHeight2 * vHeightPartial;
+  //   var p4 = targetHeight2 * p2;
+  //   var p5 = p1 + p4;
+  //   var z = p5 / p3;
+  //   return z;
+  // }
 
   function handleEvents() {
     // Handle resize
@@ -236,35 +258,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       settings.bloomThreshold,
     );
 
-    const renderPass = new RenderPass(scene, camera);
-    const renderTargetParameters = {
-      minFilter: THREE.LinearFilter,
-      magFilter: THREE.LinearFilter,
-      format: THREE.RGBAFormat,
-      stencilBuffer: false,
-    };
-
-    const savePass = new SavePass(
-      new THREE.WebGLRenderTarget(
-        window.innerWidth,
-        window.innerHeight,
-        renderTargetParameters,
-      ),
-    );
-
-    const blendPass = new ShaderPass(BlendShader, 'tDiffuse1');
-    blendPass.uniforms['tDiffuse2'].value = savePass.renderTarget.texture;
-    blendPass.uniforms['mixRatio'].value = 0.5;
-
-    const copyPass = new ShaderPass(CopyShader);
-    copyPass.renderToScreen = true;
-
-    composer.addPass(renderPass);
-    composer.addPass(blendPass);
-    composer.addPass(savePass);
-
     composer.addPass(bloomPass);
-    composer.addPass(copyPass);
     composer.addPass(globePass);
   }
 
