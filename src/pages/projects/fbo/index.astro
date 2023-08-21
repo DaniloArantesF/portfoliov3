@@ -53,6 +53,8 @@ const title = 'Embers';
     let dtPosition: THREE.DataTexture;
     let positionVariable: Variable;
 
+    let spotLight: THREE.SpotLight;
+
     const loadedAudioState = {
       value: 0,
       maxValue: 0,
@@ -106,6 +108,7 @@ const title = 'Embers';
         (mesh.material as THREE.ShaderMaterial).uniforms.fft.value =
           loadedAudioState.value / loadedAudioState.maxValue;
       }
+      // spotLight.rotation.y += 0.01;
     }
 
     function initGPGPU() {
@@ -153,6 +156,9 @@ const title = 'Embers';
     }
 
     function init() {
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
       initGPGPU();
 
       let positions = new Float32Array(SIMULATION_WIDTH ** 2 * 3);
@@ -190,8 +196,32 @@ const title = 'Embers';
       });
 
       mesh = new THREE.Points(geometry, material);
+      mesh.castShadow = true;
+
       scene.add(mesh);
 
+      var particles = new THREE.Points(
+        new THREE.SphereGeometry(5, 12, 8),
+        new THREE.PointsMaterial({ size: 2 }),
+      );
+      particles.position.set(10, 10, 0);
+      particles.castShadow = true;
+      scene.add(particles);
+
+      var sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(5, 12, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0x00ffff,
+          transparent: true,
+          opacity: 0.7,
+        }),
+      );
+      sphere.castShadow = true;
+      sphere.position.set(-10, 10, 0);
+      scene.add(sphere);
+
+      createLights();
+      createWall();
       handleEvents();
       // postProcessing();
       registerRenderCallback(animationLoop);
@@ -210,6 +240,46 @@ const title = 'Embers';
 
       heatPass.setSize(window.innerWidth, window.innerHeight);
       composer.addPass(heatPass);
+    }
+
+    function createWall() {
+      let geometry = new THREE.PlaneGeometry(100, 100, 10, 10);
+      let material = new THREE.MeshStandardMaterial({
+        metalness: 0,
+        roughness: 0,
+      });
+
+      const wall = new THREE.Mesh(geometry, material);
+      wall.receiveShadow = true;
+      wall.position.z = -50;
+      wall.position.y = 2;
+      scene.add(wall);
+
+      geometry = new THREE.PlaneGeometry(100, 100, 10, 10);
+      material = new THREE.MeshStandardMaterial({ metalness: 0, roughness: 0 });
+
+      const ground = new THREE.Mesh(geometry, material);
+      ground.receiveShadow = true;
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -10;
+      scene.add(ground);
+    }
+
+    function createLights() {
+      spotLight = new THREE.SpotLight(0xffffff, 0.5);
+      spotLight.angle = 3.06;
+      spotLight.penumbra = 1;
+      spotLight.position.set(50, 500, 500);
+      spotLight.castShadow = true;
+      spotLight.shadow.mapSize.width = 1024;
+      spotLight.shadow.mapSize.height = 1024;
+      spotLight.shadow.camera.near = 1;
+      spotLight.shadow.camera.far = 1000;
+
+      // spotLight.position.set(0, -5, 8);
+      const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+      scene.add(spotLightHelper);
+      scene.add(spotLight);
     }
 
     init();

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+// import { PCFSoftShadowMap } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -83,6 +84,10 @@ const BaseScene = ({
     renderer.setPixelRatio(1);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+    // renderer.sortObjects = false;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = true;
 
     composer = new EffectComposer(renderer);
     composer.setSize(window.innerWidth, window.innerHeight);

@@ -1,0 +1,199 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+import * as readme from './readme.md';
+
+const title = readme?.frontmatter?.title ?? '';
+---
+
+<SceneLayout title={title}>
+  <canvas id="text-view"></canvas>
+</SceneLayout>
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import gsap from 'gsap';
+  import { Observer } from 'gsap/Observer';
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const FONT_NAME = 'Ubuntu';
+  const FONT_SIZE = 100;
+  const FONT_SCALE = 0.4;
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+  const textCanvas = document.getElementById('text-view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback, utils } = BaseScene({
+    canvas,
+    settings: {
+      cameraPosition: [0, 0, FONT_SIZE],
+      orbitControls: false,
+    },
+  });
+  const { scene } = state;
+
+  const settings = {
+    text: 'Batata\nFrita',
+  };
+
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
+  function Scene() {
+    // let mouseActive = false;
+    let mousePosition = { x: -200, y: -200 };
+
+    // Setup text canvas
+    const textContext = textCanvas.getContext('2d')!;
+    const textCoordinates: { x: number; y: number; z: number }[] = [];
+
+    let plane: THREE.Mesh;
+    let particleGeometry: THREE.BufferGeometry,
+      particleMaterial: THREE.MeshBasicMaterial;
+    let particles: THREE.InstancedMesh;
+    const dummy = new THREE.Object3D();
+
+    function sampleTextCoordinates() {
+      const text = settings.text;
+      const lines = text.split('\n');
+      const lineCount = lines.length;
+      const maxLineLength = [...lines].sort((a, b) => b.length - a.length)[0]
+        .length;
+      const textureWidth = FONT_SIZE * maxLineLength;
+      const textureHeight = FONT_SIZE * lines.length;
+
+      // Draw text
+      textCanvas.width = textureWidth;
+      textCanvas.height = textureHeight;
+      textContext.font = `${FONT_SIZE}px ${FONT_NAME}`;
+      // textContext.textAlign = 'center';
+      (textContext.fillStyle = '#ff0000'),
+        textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
+
+      for (let i = 0; i < lineCount; i++) {
+        textContext.fillText(
+          lines[i],
+          0,
+          (i + 0.85) * (textureHeight / lineCount),
+        );
+      }
+
+      // Sample coordinates
+      const imageData = textContext.getImageData(
+        0,
+        0,
+        textureWidth,
+        textureHeight,
+      );
+      const samplingStep = 4;
+
+      const {
+        actualBoundingBoxAscent,
+        actualBoundingBoxDescent,
+        actualBoundingBoxLeft,
+        actualBoundingBoxRight,
+      } = textContext.measureText(settings.text);
+
+      const textHeight =
+        (actualBoundingBoxAscent + actualBoundingBoxDescent) * FONT_SCALE;
+      const textWidth =
+        (actualBoundingBoxRight + actualBoundingBoxLeft) * FONT_SCALE;
+
+      for (let y = 0; y < textureHeight; y += samplingStep) {
+        for (let x = 0; x < textureWidth; x += samplingStep) {
+          if (imageData.data[(x + y * textureWidth) * samplingStep] > 0) {
+            textCoordinates.push({
+              x: x * FONT_SCALE - textWidth / 4,
+              y: textHeight - y * FONT_SCALE,
+              z: 0,
+            });
+          }
+        }
+      }
+    }
+
+    function createParticles() {
+      particleGeometry = new THREE.PlaneGeometry(1, 1, 1, 1);
+      particleMaterial = new THREE.MeshBasicMaterial({
+        color: 0xffff00,
+        side: THREE.DoubleSide,
+      });
+
+      particles = new THREE.InstancedMesh(
+        particleGeometry,
+        particleMaterial,
+        textCoordinates.length,
+      );
+
+      updateParticleMatrices();
+      scene.add(particles);
+    }
+
+    function updateParticleMatrices() {
+      for (let i = 0; i < textCoordinates.length; i++) {
+        dummy.position.set(textCoordinates[i].x, textCoordinates[i].y, 0);
+        dummy.updateMatrix();
+        particles.setMatrixAt(i, dummy.matrix.clone());
+      }
+      particles.instanceMatrix.needsUpdate = true;
+    }
+
+    function handleEvents() {
+      gsap.registerPlugin(Observer);
+      Observer.create({
+        type: 'touch, pointer',
+        onPress: () => {
+          // mouseActive = true;
+        },
+        onRelease: () => {
+          // mouseActive = false;
+        },
+        onMove: ({ x, y }) => {
+          if (x === undefined || y === undefined) return;
+          mousePosition.x = (x / window.innerWidth) * 2 - 1;
+          mousePosition.y = -(y / window.innerHeight) * 2 + 1;
+        },
+        tolerance: window.innerWidth / 100,
+      });
+    }
+
+    function animationLoop() {}
+
+    function init() {
+      const { width, height } = utils.getViewport();
+      plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(width, height),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true }),
+      );
+      plane.visible = false;
+      scene.add(plane);
+
+      sampleTextCoordinates();
+      createParticles();
+
+      handleEvents();
+      registerRenderCallback(animationLoop);
+      isReady.set(true);
+    }
+
+    init();
+  }
+
+  Scene();
+</script>
+
+<style>
+  /* #text-view {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 500;
+    border: red;
+  } */
+
+  /* Hide text canvas */
+  #text-view {
+    opacity: 0;
+  }
+</style>
