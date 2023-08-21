@@ -1,8 +1,7 @@
 ---
 import SceneLayout from 'src/layouts/SceneLayout.astro';
-// import * as readme from './readme.md';
 
-const title = ''; //readme?.frontmatter?.title ?? '';
+const title = 'Scene Template';
 ---
 
 <SceneLayout title={title} audio />
@@ -10,45 +9,50 @@ const title = ''; //readme?.frontmatter?.title ?? '';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
+  import type { BaseSceneState } from '~/lib/types';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
 
-  /* -------------------------------- */
-  /*          Setup & Globals         */
-  /* -------------------------------- */
-  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
-  const { state, registerRenderCallback } = BaseScene({ canvas });
-  const { scene, uniforms } = state;
+  class Scene {
+    canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    uniforms: { [key: string]: THREE.IUniform };
+    geometry: THREE.SphereGeometry;
+    material: THREE.ShaderMaterial;
+    mesh: THREE.Mesh;
 
-  /* -------------------------------- */
-  /*                Scene             */
-  /* -------------------------------- */
-  function Scene() {
-    let mesh: THREE.Mesh,
-      material: THREE.ShaderMaterial,
-      geometry: THREE.BufferGeometry;
+    constructor() {
+      const { state, registerRenderCallback } = BaseScene({
+        canvas: this.canvas,
+        settings: {
+          cameraPosition: [0, 0, 5],
+          autoRotate: true,
+        }
+      });
+      this.scene = state.scene;
+      this.camera = state.camera;
+      this.renderer = state.renderer;
+      this.uniforms = state.uniforms;
 
-    function animationLoop() {
-      mesh.position.y = Math.sin(state.time * 2) / 2;
-    }
-
-    function init() {
-      // geometry = new THREE.SphereGeometry(0.25, 30, 30);
-      geometry = new THREE.PlaneGeometry(1, 1, 10, 10);
-      material = new THREE.ShaderMaterial({
-        uniforms,
+      this.geometry = new THREE.SphereGeometry(1, 32, 32);
+      this.material = new THREE.ShaderMaterial({
+        uniforms: this.uniforms,
         vertexShader,
         fragmentShader,
       });
-      mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
 
-      registerRenderCallback(animationLoop);
+      this.mesh = new THREE.Mesh(this.geometry, this.material);
+      this.scene.add(this.mesh);
+      registerRenderCallback(this.render);
       isReady.set(true);
     }
 
-    init();
+    render = (state: BaseSceneState) => {
+      this.mesh.position.y = Math.sin(state.time * 2) / 2;
+    };
   }
 
-  Scene();
+  const scene = new Scene();
 </script>

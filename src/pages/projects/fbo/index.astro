@@ -175,7 +175,7 @@ const title = 'Embers';
       scene.add(mesh);
 
       handleEvents();
-      // postProcessing();
+      postProcessing();
       registerRenderCallback(animationLoop);
       isReady.set(true);
     }
@@ -191,7 +191,7 @@ const title = 'Embers';
       });
 
       heatPass.setSize(window.innerWidth, window.innerHeight);
-      composer.addPass(heatPass);
+      // composer.addPass(heatPass);
     }
 
     init();
