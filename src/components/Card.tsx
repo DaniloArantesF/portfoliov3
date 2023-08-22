@@ -7,6 +7,7 @@ import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect'
 import RichText from './RichText';
 
 export interface CardProps {
+  slug: string;
   title: string;
   image: string | Pick<Project, 'image'>['image'];
   subtitle?: string;
@@ -29,6 +30,7 @@ export function useGsapContext(scope?: string | object | Element) {
 }
 
 export default function Card({
+  slug,
   title,
   subtitle,
   href,
@@ -93,24 +95,14 @@ export default function Card({
             <source
               height="1200"
               width="1600"
-              srcSet={
-                typeof image === 'string'
-                  ? `/assets/projects/${image}`
-                  : `${image.url}`
-              }
+              srcSet={`/assets/projects/${slug}.webp`}
               media="(min-width: 800px)"
             />
             <img
               height="450"
               width="600"
               alt={`${title} demo`}
-              src={
-                typeof image === 'string'
-                  ? `/assets/${
-                      image.split('.')[0] + '-sm.' + image.split('.')[1]
-                    }`
-                  : `${image.url}`
-              }
+              src={`/assets/projects/${slug}.webp`}
             />
           </picture>
         </div>

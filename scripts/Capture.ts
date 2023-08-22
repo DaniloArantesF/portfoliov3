@@ -52,7 +52,6 @@ class MediaCaptureManager {
 
   // Captures a screenshot of a page and saves it to the specified file path
   async capture(url: string, filePath: string, device = 'Desktop') {
-    console.log(url);
     const page = await this.browser.newPage();
 
     // Emulate device

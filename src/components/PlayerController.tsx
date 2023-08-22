@@ -17,7 +17,7 @@ export function PlayerController() {
   const [duration, setDuration] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [customTrack, setCustomTrack] = useState(false);
-  const progressInterval = useRef<NodeJS.Timer>();
+  const progressInterval = useRef<NodeJS.Timeout>();
   const progressBarRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);

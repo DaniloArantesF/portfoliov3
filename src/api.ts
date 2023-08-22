@@ -4,6 +4,7 @@ import type { Project, Tag } from './payload-types';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import type { CardProps } from './components/Card';
+import { ConsoleMessage } from 'puppeteer';
 dotenv.config();
 
 export function getProjectLink(project: Project, href = true) {
@@ -54,17 +55,10 @@ export async function getProjects(
     { addQueryPrefix: true },
   );
 
-  const url = import.meta?.env
-    ? import.meta.env.PAYLOAD_URL
-    : process.env.PAYLOAD_URL;
+  const url = import.meta?.env?.PAYLOAD_URL
+    ? import.meta.env?.PAYLOAD_URL
+    : process.env?.PAYLOAD_URL;
   const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
-
-  // Replace remove image urls with local image paths
-  data.docs = data.docs.map((project: Project) => ({
-    ...project,
-    image: `${project.slug}.png`,
-  }));
-
   return data;
 }
 
@@ -109,6 +103,7 @@ export function getCardData(projects: Project[]) {
       }
 
       return {
+        slug: project.slug || '',
         title: project.title,
         subtitle: '',
         description: project.description,
