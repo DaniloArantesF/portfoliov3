@@ -15,7 +15,7 @@ void main() {
     vec3 orange = vec3(1.0, 0.65, 0.0);
     vec3 red = vec3(1.0, 0.0, 0.0);
 
-    float particleIntensity = vParticleY - 2. * step(.7, fft);
+    float particleIntensity = vParticleY - 2. * step(.5, fft);
 
     vec3 color1 = mix(yellow, orange, smoothstep(0.0, .1, particleIntensity));
     vec3 color2 = mix(orange, red, smoothstep(.5, 2.0, particleIntensity));
