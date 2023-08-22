@@ -94,7 +94,9 @@ export default function Card({
               height="1200"
               width="1600"
               srcSet={
-                typeof image === 'string' ? `/assets/${image}` : `${image.url}`
+                typeof image === 'string'
+                  ? `/assets/projects/${image}`
+                  : `${image.url}`
               }
               media="(min-width: 800px)"
             />

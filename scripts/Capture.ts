@@ -6,6 +6,7 @@ import * as Puppeteer from 'puppeteer';
 import { getProjects, uploadMedia } from '../src/api';
 import type { Project } from '~/payload-types';
 import { sleep } from '~/utils/utils';
+dotenv.config();
 
 export function getProjectLink(project: Project, href = true) {
   const live = project.links?.find(({ source }) => source === 'custom')?.url;
@@ -24,8 +25,6 @@ export function getProjectLink(project: Project, href = true) {
     : github ||
       `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
-
-dotenv.config();
 
 const createIntegration = (): AstroIntegration => ({
   name: 'thumbnail',
@@ -53,6 +52,7 @@ class MediaCaptureManager {
 
   // Captures a screenshot of a page and saves it to the specified file path
   async capture(url: string, filePath: string, device = 'Desktop') {
+    console.log(url);
     const page = await this.browser.newPage();
 
     // Emulate device
@@ -83,7 +83,7 @@ class MediaCaptureManager {
 }
 
 function cleanup() {
-  const postDir = path.resolve('src', 'posts');
+  const postDir = path.resolve('media');
   if (!fs.existsSync(postDir)) {
     return;
   }
@@ -110,6 +110,7 @@ if (process.argv.length >= 2) {
 
         const { docs: projects } = await getProjects();
         for (const project of projects) {
+          // TODO: test this
           const data = await uploadMedia(filePath);
         }
       })();
@@ -128,13 +129,12 @@ if (process.argv.length >= 2) {
         }
 
         for (const project of projects) {
-          const url = getProjectLink(project, false);
-          const filePath = path.resolve(
-            'public',
-            'assets',
-            'projects',
-            `${project.slug}.png`,
-          );
+          let url = getProjectLink(project, false);
+          if (!url.startsWith('http')) {
+            url = `${process.env.ASTRO_URL}/${url}`;
+          }
+
+          const filePath = path.resolve('media', `${project.slug}.webp`);
 
           await manager.init();
           await manager.capture(url, filePath);

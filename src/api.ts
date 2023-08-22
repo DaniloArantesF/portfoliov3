@@ -58,6 +58,13 @@ export async function getProjects(
     ? import.meta.env.PAYLOAD_URL
     : process.env.PAYLOAD_URL;
   const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
+
+  // Replace remove image urls with local image paths
+  data.docs = data.docs.map((project: Project) => ({
+    ...project,
+    image: `${project.slug}.png`,
+  }));
+
   return data;
 }
 

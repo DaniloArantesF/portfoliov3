@@ -7,7 +7,6 @@ import glsl from 'vite-plugin-glsl';
 // https://astro.build/config
 export default defineConfig({
   integrations: [react()],
-
   output: 'static',
   adapter: vercel(),
   vite: {
