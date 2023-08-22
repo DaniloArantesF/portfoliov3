@@ -15,8 +15,5 @@ void main() {
   vUv = uv;
   vNormal = normalize(normalMatrix * normal);
   vAmplitude = 2.;
-
-  float freq = BIN_COUNT * .6 - vUv.y;
-
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z+vUv.y, 1.0 );
 }

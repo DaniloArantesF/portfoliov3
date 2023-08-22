@@ -252,32 +252,7 @@ const BaseScene = ({
 
   function effects() {
     renderScene = new RenderPass(scene, camera);
-
-    // const renderTargetParameters = {
-    //   minFilter: THREE.LinearFilter,
-    //   magFilter: THREE.LinearFilter,
-    //   stencilBuffer: false,
-    // };
-
-    // const savePass = new SavePass(
-    //   new THREE.WebGLRenderTarget(
-    //     window.innerWidth,
-    //     window.innerHeight,
-    //     renderTargetParameters,
-    //   ),
-    // );
-
-    // const blendPass = new ShaderPass(BlendShader, 'tDiffuse1');
-    // blendPass.uniforms['tDiffuse2'].value = savePass.renderTarget.texture;
-    // blendPass.uniforms['mixRatio'].value = 0.015;
-
-    // const outputPass = new ShaderPass(CopyShader);
-    // outputPass.renderToScreen = true;
-
     composer.addPass(renderScene);
-    // composer.addPass(blendPass);
-    // composer.addPass(savePass);
-    // composer.addPass(outputPass);
   }
 
   function registerRenderCallback(cb: useFrame) {

@@ -12,6 +12,10 @@ const title = readme?.frontmatter?.title ?? '';
   import BaseScene, { isReady } from '@lib/sceneController';
   import type { BaseSceneState } from '@lib/types';
   import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+  import { SavePass } from 'three/examples/jsm/postprocessing/SavePass';
+  import { BlendShader } from 'three/examples/jsm/shaders/BlendShader';
+  import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -25,7 +29,7 @@ const title = readme?.frontmatter?.title ?? '';
       near: 0.001,
     },
   });
-  const { scene, camera } = state;
+  const { scene, camera, composer } = state;
   const { gui } = utils;
   const settings = {
     scale: 2,
@@ -223,13 +227,38 @@ const title = readme?.frontmatter?.title ?? '';
         max: 0.01,
         step: 0.001,
       });
+    }
 
-      // lorenzFolder.expanded = false;
-      // thomasFolder.expanded = false;
+    function postProcessing() {
+      const renderTargetParameters = {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        stencilBuffer: false,
+      };
+
+      const savePass = new SavePass(
+        new THREE.WebGLRenderTarget(
+          window.innerWidth,
+          window.innerHeight,
+          renderTargetParameters,
+        ),
+      );
+
+      const blendPass = new ShaderPass(BlendShader, 'tDiffuse1');
+      blendPass.uniforms['tDiffuse2'].value = savePass.renderTarget.texture;
+      blendPass.uniforms['mixRatio'].value = 0.75;
+
+      const outputPass = new ShaderPass(CopyShader);
+      outputPass.renderToScreen = true;
+
+      composer.addPass(blendPass);
+      composer.addPass(savePass);
+      composer.addPass(outputPass);
     }
 
     init();
     setupGUI();
+    postProcessing();
     registerRenderCallback(animationLoop);
     isReady.set(true);
   }

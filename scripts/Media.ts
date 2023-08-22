@@ -26,6 +26,7 @@ export const downloadPicture = async (
       // Create Directory if it doesn't exist
       await fs.promises
         .mkdir(savePath, { recursive: true })
+        // eslint-disable-next-line no-console
         .catch(console.error);
     }
     const pipe = promisify(pipeline);

@@ -187,11 +187,13 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   let focusPoint = new THREE.Vector3(0, 0, 0).add(scene.position);
   function animationLoop(state: BaseSceneState) {
     if (!state.orbitControls.enabled) {
-      let time = state.time * 0.05;
-      camera.position.x = -Math.sin(time * 2);
-      camera.position.z = Math.cos(time * 2);
-      focusPoint.y = 1 + 0.2 * (0.5 * Math.cos(time * 2) + 0.5);
-      camera.lookAt(focusPoint);
+      if (!state.orbitControls.enabled) {
+        camera.position.x +=
+          (uniforms.uMouse.value.x / 10 - camera.position.x - 2) * 1;
+        camera.position.y +=
+          (-uniforms.uMouse.value.y / 15 - camera.position.y + 2.5) * 1.5;
+        camera.lookAt(focusPoint);
+      }
     }
   }
 

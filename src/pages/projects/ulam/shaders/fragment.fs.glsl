@@ -15,7 +15,7 @@ varying float vPrime;
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vPosition;
-uniform float fft;
+uniform sampler2D fftTexture;
 
 void main() {
   vec3 position = vPosition + .5;
@@ -26,9 +26,8 @@ void main() {
   float rd = floor(d * BIN_COUNT);  // radius id
   vec3 color = vec3(rd);
 
-  int binIndex = int(rd + cos(elevation));
-  float intensity = fft;
-
+  float binIndex = rd + cos(elevation);
+  float intensity = texture2D(fftTexture, vec2(binIndex / BIN_COUNT, 0)).r;
 
   color = mix(vec3(0.4, 0.1, .8), vec3(.8, 0.1, 0.4), (elevation/waveAmplitude - (rd*step(.8, intensity))/4.));
 
