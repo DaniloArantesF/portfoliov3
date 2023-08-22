@@ -8,10 +8,11 @@ uniform float uStarLayerCount;
 uniform float uGridScale;
 uniform float uTime;
 uniform vec2 uResolution;
-varying float intensity;
+uniform float fft;
 varying float vAmplitude;
 varying vec2 vUv;
 varying vec3 vNormal;
+
 
 mat2 Rot(float a) {
   float s = sin(a);
@@ -54,10 +55,8 @@ vec3 Stars(vec2 uv) {
     for (int x = -1; x <= 1; x++) {
       vec2 offset = vec2(x,y);
       float n = Hash21(id + offset);
-
-      float intensityScale =  sin(intensity/vAmplitude * 4. - 1.)*.5 + .5;
-      float size = fract(n*753.34/intensityScale);
-      float star = Star(gv-offset-vec2(n, fract(n*942.73))+.5, size/2.);
+      float size = fract(n*753.34) + fft / 2.;
+      float star = Star(gv-offset-vec2(n, fract(n*942.73)) + .5, size/2.);
 
       vec3 starColor = mix(vec3(98./255., 37./255., 116./255.), vec3(0.2, .3, .8), fract(n*1354.34));
       color += star*size*starColor;

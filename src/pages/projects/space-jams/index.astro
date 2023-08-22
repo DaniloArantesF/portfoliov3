@@ -179,7 +179,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       ssrPass.output = SSRPass.OUTPUT.Beauty;
       ssrPass.opacity = 0.9;
 
-      // composer.addPass(ssrPass);
+      composer.addPass(ssrPass);
       // composer.addPass(bloomPass);
     }
 
@@ -281,7 +281,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     mesh.scale.copy(plateScale);
     mesh.position.add(plate.position);
     mesh.scale.set(0.006, 0.003, 0.006);
-    mesh.position.add(new THREE.Vector3(0.5, 0.285, 0.075));
+    mesh.position.add(new THREE.Vector3(0.55, 0.285, 0.075));
     mesh.rotateX(-Math.PI / 2);
 
     points = new THREE.Points(
@@ -299,7 +299,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     mesh2.position.copy(plateWorldPosition);
     mesh2.quaternion.copy(plateQuaternion);
     mesh2.scale.copy(plateScale);
-    mesh2.position.add(new THREE.Vector3(-0.51, 0.285, -0.05));
+    mesh2.position.add(new THREE.Vector3(-0.56, 0.285, -0.05));
     mesh2.scale.set(0.006, 0.003, 0.006);
     mesh2.rotateX(Math.PI / 2);
 

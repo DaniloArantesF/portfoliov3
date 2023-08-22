@@ -7,7 +7,6 @@ precision mediump float;
 uniform float uStarLayerCount;
 uniform float uTime;
 uniform float fft;
-varying float intensity;
 varying float vAmplitude;
 varying vec2 vUv;
 varying vec3 vNormal;
@@ -18,8 +17,6 @@ void main() {
   vAmplitude = 2.;
 
   float freq = BIN_COUNT * .6 - vUv.y;
-
-  intensity = sin(fft) * vAmplitude;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y, position.z+vUv.y, 1.0 );
 }

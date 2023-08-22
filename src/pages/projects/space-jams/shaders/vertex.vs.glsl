@@ -1,9 +1,9 @@
-#define BIN_COUNT 8.
-#define SCALE 64.
+#define BIN_COUNT 16.
+#define SCALE 50.
 
 uniform float uTime;
 uniform sampler2D fftTexture;
-varying float intensity;
+varying float vIntensity;
 varying float vAmplitude;
 varying vec2 vUv;
 varying vec3 normalizedPosition;
@@ -11,20 +11,18 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 
 void main() {
-  // Pass uv data to fragment shader
   vUv = uv;
   vPosition = position;
-  vAmplitude = 15.;
+  vAmplitude = 30.;
   vNormal = normalize(normalMatrix * normal);
 
-  float scale = 50.;
-  normalizedPosition = abs(position/SCALE);
-  float freq = (BIN_COUNT * (normalizedPosition.y)) / BIN_COUNT;
-  intensity = sin(texture2D(fftTexture, vec2(freq)).r ) * vAmplitude;
+  float dist = distance(vPosition.xz / SCALE, vec2(0.0));
+  float gv = fract(dist * BIN_COUNT);
+  float gd = floor((dist) * BIN_COUNT) / BIN_COUNT;
+  vIntensity = texture2D(fftTexture, vec2(gd, 0.5)).r;
 
-  gl_PointSize = 1. + 1.5 * smoothstep(0.2, .8, (1. - normalizedPosition.y)) + .5 * (1. - intensity/vAmplitude);
+  float yOffset = min(vIntensity * vAmplitude, vAmplitude * .4);
 
-  float hOffset = 2.5 * (exp(1.-normalizedPosition.y)-.8)/2.;
-
-  gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y + max(0., vAmplitude - intensity), position.z , 1.0 );
+  gl_PointSize = 1. + vIntensity;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x, position.y + yOffset, position.z , 1.0 );
 }
