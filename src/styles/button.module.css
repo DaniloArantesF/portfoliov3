@@ -28,6 +28,7 @@
   border: none;
   box-shadow: var(--box-shadow);
   text-transform: uppercase;
+  z-index: 2;
 }
 
 .button > * {
@@ -35,7 +36,7 @@
 }
 
 .button.outlined {
-  background: transparent;
+  background: rgba(0, 0, 0, 0);
   color: var(--color-accent-2);
   background: var(--color-background);
 }
@@ -48,6 +49,7 @@
   animation: spin 3s linear infinite;
   /* #330867 */
   background-image: linear-gradient(var(--rotate), #2629e1 0%, #620fc7 100%);
+  color: white;
 }
 
 .button:before {
@@ -74,7 +76,7 @@
 
 .button.outlined:before {
   filter: none;
-  background: var(--color-accent);
+  /* background: var(--color-accent); */
 }
 
 .button:after {

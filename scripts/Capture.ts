@@ -65,8 +65,8 @@ class MediaCaptureManager {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
       // Wait a few seconds
-      await sleep(3000);
-
+      await sleep(1500);
+      await this.removeUI(page);
       await page.screenshot({ path: filePath });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -74,6 +74,24 @@ class MediaCaptureManager {
     } finally {
       await page.close();
     }
+  }
+
+  async removeUI(page: Puppeteer.Page) {
+    await page.evaluate(() => {
+      const player = document.querySelector('#audioPlayer-container');
+      if (player) {
+        player.remove();
+      }
+
+      const gui = document.querySelector('#gui_container');
+      if (gui) {
+        gui.remove();
+      }
+      const header = document.querySelector('header');
+      if (header) {
+        header.remove();
+      }
+    });
   }
 
   async shutdown() {

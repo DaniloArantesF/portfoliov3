@@ -24,8 +24,15 @@
     text-align: center;
     gap: 1rem;
     border: 1px solid var(--color-accent-2);
+    border-radius: var(--border-radius);
     padding: 1.25rem;
     margin-bottom: var(--main-margin-y);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: var(--color-surface-0);
+  }
+
+  & .section-details a {
+    // color:
   }
 
   @media only screen and (min-width: 600px) {
@@ -71,7 +78,7 @@
 }
 
 .checkbox-label:hover {
-  background: var(--color-accent-3);
+  // background: var(--color-accent-3);
   color: var(--color-text);
   border: 2px solid var(--color-accent-2);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -89,7 +96,7 @@
 }
 
 .checkbox-label.checked:hover {
-  background: var(--color-background);
+  // background: var(--color-background);
   border: 2px solid var(--color-accent);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }

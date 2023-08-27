@@ -30,7 +30,7 @@ const title = 'Embers';
   const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: true,
+      orbitControls: false,
       cameraPosition: [0, 0, 5],
       antialias: true,
     },
@@ -79,6 +79,15 @@ const title = 'Embers';
       gpuCompute.compute();
       material.uniforms.positionTexture.value =
         gpuCompute.getCurrentRenderTarget(positionVariable).texture;
+
+      if (!state.orbitControls.enabled) {
+        if (!state.orbitControls.enabled) {
+          camera.position.x +=
+            (uniforms.uMouse.value.x / 10 - camera.position.x) * 1;
+          camera.position.y +=
+            (-uniforms.uMouse.value.y / 15 - camera.position.y) * 1;
+        }
+      }
     }
 
     function initGPGPU() {

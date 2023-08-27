@@ -20,6 +20,7 @@ uniform vec2 uResolution;
 
 uniform vec3 bgColor;
 varying vec2 vUv;
+uniform vec2 uMouse;
 
 vec3 light = vec3(1., 1., -1.);
 
@@ -90,9 +91,10 @@ vec3 getNormal(vec3 p){
 }
 
 void main() {
-  // normalized uv coordinates
   vec2 uv = vUv - .5;
   vec3 cameraPos = vec3(0., 1., .2);
+  cameraPos.x += (uMouse.x / 10. - cameraPos.x) * 1.;
+  cameraPos.y += (-uMouse.y / 15. - cameraPos.y + 1.) * 1.5;
 
   // vector pointing from camera
   vec3 rayDir = normalize(vec3(uv, 1.));
