@@ -113,6 +113,8 @@ export function getCardData(projects: Project[]) {
         live: live,
         sandbox: codesandbox,
         href,
+        visibility: project.visible ? 'visible' : 'hidden',
+        type: project.type,
         date: project.publishedOn?.substring(
           0,
           project.publishedOn.indexOf('-'),

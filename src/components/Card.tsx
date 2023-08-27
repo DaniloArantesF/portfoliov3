@@ -18,7 +18,8 @@ export interface CardProps {
   live?: string;
   github?: string;
   sandbox?: string;
-  visibility?: 'visible' | 'hidden' | 'private';
+  visibility: 'visible' | 'hidden' | 'private';
+  type: Pick<Project, 'type'>['type'];
 }
 
 export function useGsapContext(scope?: string | object | Element) {
@@ -47,7 +48,7 @@ export default function Card({
   const ctx = useGsapContext(cardRef);
 
   useIsomorphicLayoutEffect(() => {
-    return () => ctx?.current.revert(); // cleanup
+    return () => ctx?.current?.revert(); // cleanup
   }, []);
 
   function onHover({ currentTarget }: BaseSyntheticEvent) {
