@@ -64,6 +64,7 @@ class MediaCaptureManager {
     try {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
+      // Wait a few seconds
       await sleep(1500);
       await this.removeUI(page);
       await page.screenshot({ path: filePath });

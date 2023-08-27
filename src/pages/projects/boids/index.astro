@@ -219,7 +219,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       this.light.position.copy(this.position);
 
       scene.add(this.light);
-      this.debug();
+      // this.debug();
     }
 
     setIntensity(intensity: number) {
@@ -316,7 +316,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 
     createBoids();
 
-    scene.add(boundsHelper);
+    // scene.add(boundsHelper);
     scene.add(groundMesh);
     registerRenderCallback(animationLoop);
   }
