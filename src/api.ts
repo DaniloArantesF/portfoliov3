@@ -114,7 +114,7 @@ export function getCardData(projects: Project[]) {
         sandbox: codesandbox,
         href,
         visibility: project.visible ? 'visible' : 'hidden',
-        type: project.type,
+        type: project.type ?? 'project',
         date: project.publishedOn?.substring(
           0,
           project.publishedOn.indexOf('-'),
