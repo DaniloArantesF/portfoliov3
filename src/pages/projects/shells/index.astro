@@ -1,0 +1,135 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+
+const title = 'Shells';
+---
+
+<SceneLayout title={title} audio />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import fragmentShader from './shaders/fragment.fs.glsl';
+  import type { BaseSceneState } from '~/lib/types';
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const settings = {
+    cameraPosition: [0, 3.5, 5],
+    bloomStrength: 1.5,
+    bloomThreshold: 0.1,
+    bloomRadius: 0.1,
+  };
+
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
+    canvas,
+    settings: {
+      orbitControls: true,
+      cameraPosition: settings.cameraPosition,
+      antialias: true,
+    },
+  });
+  const { scene, camera, renderer, composer } = state;
+
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
+  function Scene() {
+    let mesh: THREE.Mesh,
+      material: THREE.ShaderMaterial,
+      geometry: THREE.BufferGeometry;
+
+    const uniforms = {
+      hairMap: { value: null as null | THREE.Texture },
+      ...state.uniforms,
+    };
+
+    function handleEvents() {
+      // Handle resize
+      setSceneHook('onResize', () => {
+        const resolution = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+        utils.updateSetting('cameraPosition', settings.cameraPosition);
+        utils.resetCamera();
+      });
+    }
+
+    function animationLoop(state: BaseSceneState) {
+      if (!state.orbitControls.enabled) {
+        if (!state.orbitControls.enabled) {
+          // camera.position.x +=
+          //   (uniforms.uMouse.value.x / 10 - camera.position.x) * 1;
+          // camera.position.y +=
+          //   (-uniforms.uMouse.value.y / 15 - camera.position.y) * 1;
+        }
+      }
+    }
+
+    function init() {
+      // Create hair property texture
+      let canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      let context = canvas.getContext('2d')!;
+
+      let strandCount = 30000;
+      for (let i = 0; i < strandCount; i++) {
+        let length = ~~(Math.random() * 255);
+
+        let darkness = ~~(Math.random() * 255);
+        let drawHair = true;
+        context.fillStyle = `rgba(${
+          drawHair ? '255' : '0'
+        }, ${length}, ${darkness}, 1)`;
+
+        context.fillRect(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          1,
+          1,
+        );
+      }
+
+      const hairPropertiesTexture = new THREE.CanvasTexture(canvas);
+      uniforms.hairMap.value = hairPropertiesTexture;
+
+      geometry = new THREE.SphereGeometry(1, 10, 10);
+
+      let shellCount = 256;
+      let shells = [];
+      for (let i = 0; i < shellCount; i++) {
+        material = new THREE.ShaderMaterial({
+          uniforms: {
+            ...uniforms,
+            offset: { value: i / shellCount },
+          },
+          vertexShader,
+          fragmentShader,
+          side: THREE.DoubleSide,
+          transparent: true,
+          // wireframe: true
+        });
+
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.x -= Math.PI / 2;
+        scene.add(mesh);
+        shells.push(mesh);
+      }
+
+      handleEvents();
+      registerRenderCallback(animationLoop);
+      isReady.set(true);
+    }
+
+    function postProcessing() {}
+
+    init();
+  }
+
+  Scene();
+</script>
