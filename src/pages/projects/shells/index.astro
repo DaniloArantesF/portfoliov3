@@ -4,7 +4,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
 const title = 'Shells';
 ---
 
-<SceneLayout title={title} audio />
+<SceneLayout title={title} />
 
 <script>
   import * as THREE from 'three';
@@ -12,6 +12,7 @@ const title = 'Shells';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
   import type { BaseSceneState } from '~/lib/types';
+  import { toRadians } from '~/utils/math';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -21,15 +22,17 @@ const title = 'Shells';
     bloomStrength: 1.5,
     bloomThreshold: 0.1,
     bloomRadius: 0.1,
+    gravity: new THREE.Vector3(0.25, -0.25, 0),
   };
 
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
   const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
     canvas,
     settings: {
-      orbitControls: true,
+      orbitControls: false,
       cameraPosition: settings.cameraPosition,
       antialias: true,
+      gridHelper: true,
     },
   });
   const { scene, camera, renderer, composer } = state;
@@ -42,12 +45,53 @@ const title = 'Shells';
       material: THREE.ShaderMaterial,
       geometry: THREE.BufferGeometry;
 
+    let group: THREE.Group;
+
     const uniforms = {
       hairMap: { value: null as null | THREE.Texture },
       ...state.uniforms,
     };
 
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+
     function handleEvents() {
+      // Handle cursor drag
+      document.addEventListener('mousedown', () => {
+        isDragging = true;
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        let deltaMove = {
+          x: e.offsetX - previousMousePosition.x,
+          y: e.offsetY - previousMousePosition.y,
+        };
+
+        if (isDragging) {
+          let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(
+              toRadians(deltaMove.y * 1),
+              toRadians(deltaMove.x * 1),
+              0,
+              'XYZ',
+            ),
+          );
+
+          group.quaternion.multiplyQuaternions(
+            deltaRotationQuaternion,
+            group.quaternion,
+          );
+        }
+        previousMousePosition = {
+          x: e.offsetX,
+          y: e.offsetY,
+        };
+      });
+
       // Handle resize
       setSceneHook('onResize', () => {
         const resolution = new THREE.Vector2(
@@ -71,6 +115,8 @@ const title = 'Shells';
     }
 
     function init() {
+      group = new THREE.Group();
+
       // Create hair property texture
       let canvas = document.createElement('canvas');
       canvas.width = 256;
@@ -107,6 +153,7 @@ const title = 'Shells';
           uniforms: {
             ...uniforms,
             offset: { value: i / shellCount },
+            gravity: { value: settings.gravity },
           },
           vertexShader,
           fragmentShader,
@@ -116,10 +163,12 @@ const title = 'Shells';
         });
 
         mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x -= Math.PI / 2;
-        scene.add(mesh);
+        // scene.add(mesh);
+        group.add(mesh);
         shells.push(mesh);
       }
+
+      scene.add(group);
 
       handleEvents();
       registerRenderCallback(animationLoop);

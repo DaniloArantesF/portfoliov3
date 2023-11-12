@@ -30,10 +30,11 @@ void main() {
   if (hairProperties.a <= 0.0 || hairProperties.g < offset) {
     discard;
   }
-  float shadow = mix(0.0, hairProperties.b * 1.0, offset);
-  vec3 light = vec3(-0.1,1.0,0.5);
 
-  float diffuse = pow(max(0.15, dot(vNormal.xyz, light))*2.5, 1.4);
+  float shadow = mix(0.0, hairProperties.b * 1.0, offset);
+  vec3 light = vec3(-0.1,1.0,0.3);
+
+  float diffuse = pow(max(0.2, dot(vNormal.xyz, light))*2.5, 1.4);
 
   gl_FragColor = vec4(hairColor * hairColor.xyz * diffuse * shadow, 1.1-offset);
 }
