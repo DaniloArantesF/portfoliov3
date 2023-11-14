@@ -18,11 +18,13 @@ const title = 'Shells';
   /*          Setup & Globals         */
   /* -------------------------------- */
   const settings = {
-    cameraPosition: [0, 3.5, 5],
+    cameraPosition: [0, 3.75, 3.25],
     bloomStrength: 1.5,
     bloomThreshold: 0.1,
     bloomRadius: 0.1,
-    gravity: new THREE.Vector3(0.25, -0.25, 0),
+    gravity: new THREE.Vector3(0.0, -0.25, 0),
+    gravityMultiplier: 2.5,
+    shellCount: 256,
   };
 
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
@@ -32,7 +34,6 @@ const title = 'Shells';
       orbitControls: false,
       cameraPosition: settings.cameraPosition,
       antialias: true,
-      gridHelper: true,
     },
   });
   const { scene, camera, renderer, composer } = state;
@@ -49,14 +50,27 @@ const title = 'Shells';
 
     const uniforms = {
       hairMap: { value: null as null | THREE.Texture },
+      spacing: { value: 1.0 },
+      gravityMultiplier: { value: settings.gravityMultiplier },
+      gravity: { value: settings.gravity },
       ...state.uniforms,
     };
 
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
+    let shells: THREE.Mesh[] = [];
+
+    function updateGravityForShells() {
+      shells.forEach((shell) => {
+        if (shell.material instanceof THREE.ShaderMaterial) {
+          const localGravity = settings.gravity.clone();
+          shell.worldToLocal(localGravity);
+          shell.material.uniforms.gravity.value = localGravity;
+        }
+      });
+    }
 
     function handleEvents() {
-      // Handle cursor drag
       document.addEventListener('mousedown', () => {
         isDragging = true;
       });
@@ -85,6 +99,8 @@ const title = 'Shells';
             deltaRotationQuaternion,
             group.quaternion,
           );
+
+          updateGravityForShells();
         }
         previousMousePosition = {
           x: e.offsetX,
@@ -144,16 +160,14 @@ const title = 'Shells';
       const hairPropertiesTexture = new THREE.CanvasTexture(canvas);
       uniforms.hairMap.value = hairPropertiesTexture;
 
-      geometry = new THREE.SphereGeometry(1, 10, 10);
+      // geometry = new THREE.SphereGeometry(1, 10, 10);
+      geometry = new THREE.TorusGeometry(2, 0.1, 20, 20);
 
-      let shellCount = 256;
-      let shells = [];
-      for (let i = 0; i < shellCount; i++) {
+      for (let i = 0; i < settings.shellCount; i++) {
         material = new THREE.ShaderMaterial({
           uniforms: {
             ...uniforms,
-            offset: { value: i / shellCount },
-            gravity: { value: settings.gravity },
+            offset: { value: i / settings.shellCount },
           },
           vertexShader,
           fragmentShader,
@@ -163,7 +177,6 @@ const title = 'Shells';
         });
 
         mesh = new THREE.Mesh(geometry, material);
-        // scene.add(mesh);
         group.add(mesh);
         shells.push(mesh);
       }
