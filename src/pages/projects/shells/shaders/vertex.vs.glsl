@@ -6,8 +6,8 @@ varying float vHeight;
 uniform float uTime;
 uniform vec2 uResolution;
 uniform vec3 gravity;
-uniform float spacing;
-
+uniform float layerOffset;
+uniform float gravityMultiplier;
 uniform float offset;
 
 #define PI 3.1415926535897932384626433832795
@@ -53,7 +53,7 @@ float cnoise(vec2 P){
 }
 
 void main() {
-  vec3 displacement = 2.5 * gravity + vec3(
+  vec3 displacement = gravityMultiplier * gravity + vec3(
     sin(cnoise(vec2(position.x, uTime  * 0.2))) * 0.8,
     cos(cnoise(vec2(position.y, uTime  * 0.25))) * 0.4,
     sin(cnoise(vec2(position.y , uTime * 0.5))) * 0.8
@@ -66,7 +66,7 @@ void main() {
   vNormal = normalize(normalMatrix * displacedNormal );
   vUv = uv;
 
-  vec3 point = position.xyz + (normalize(displacedNormal) * offset * spacing);
+  vec3 point = position.xyz + (normalize(displacedNormal) * offset * layerOffset);
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4( point, 1.0 );
 }
