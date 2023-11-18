@@ -1,0 +1,323 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+
+const title = 'Shells';
+---
+
+<SceneLayout title={title} />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import fragmentShader from './shaders/fragment.fs.glsl';
+  import type { BaseSceneState } from '~/lib/types';
+  import { toRadians } from '~/utils/math';
+  import { isMobile } from '@utils/utils';
+  import { BladeApi } from 'tweakpane';
+
+  let cameraZ = window.innerWidth > 800 ? 4 : 8;
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const geometries = {
+    plane: {
+      geometry: new THREE.BoxGeometry(5, 5, 0.00001, 1),
+      dummyGeometry: new THREE.BoxGeometry(5, 5, 2, 1),
+    },
+    sphere: {
+      geometry: new THREE.SphereGeometry(2.25, 10, 10),
+      dummyGeometry: new THREE.SphereGeometry(3, 10, 10),
+    },
+    torus: {
+      geometry: new THREE.TorusGeometry(2, 0.1, 20, 20),
+      dummyGeometry: new THREE.TorusGeometry(2, 0.7, 20, 20),
+    },
+    torusknot: {
+      geometry: new THREE.TorusKnotGeometry(2, 0.1, 256, 32),
+      dummyGeometry: new THREE.TorusKnotGeometry(2, 0.7, 128, 32),
+    },
+  };
+
+  const settings = {
+    cameraPosition: [0, 5, cameraZ],
+    bloomStrength: 1.5,
+    bloomThreshold: 0.1,
+    bloomRadius: 0.1,
+    gravity: new THREE.Vector3(0.0, -0.25, 0),
+    gravityMultiplier: 2.5,
+    shellCount: 512,
+    strandCount: 75000,
+    layerOffset: 1,
+    currentGeometry: 'sphere' as keyof typeof geometries,
+    geometries: ['plane', 'sphere', 'torus', 'torusknot'],
+  };
+
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
+    canvas,
+    settings: {
+      orbitControls: false,
+      cameraPosition: settings.cameraPosition,
+      antialias: true,
+    },
+  });
+  const { scene, camera, renderer, composer } = state;
+  const { gui, getSettings } = utils;
+
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
+  function Scene() {
+    let mesh: THREE.Mesh,
+      material: THREE.ShaderMaterial,
+      geometry: THREE.BufferGeometry;
+
+    let raycastMesh: THREE.Mesh;
+
+    let group: THREE.Group;
+    const raycaster = new THREE.Raycaster();
+    const uniforms = {
+      hairMap: { value: null as null | THREE.Texture },
+      layerOffset: { value: settings.layerOffset },
+      gravityMultiplier: { value: settings.gravityMultiplier },
+      gravity: { value: settings.gravity },
+      ...state.uniforms,
+    };
+
+    let groupRotation = new THREE.Quaternion();
+    let raycastMeshRotation = new THREE.Quaternion();
+
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    let shells: THREE.Mesh[] = [];
+
+    function updateGravityForShells() {
+      shells.forEach((shell) => {
+        if (shell.material instanceof THREE.ShaderMaterial) {
+          const localGravity = settings.gravity.clone();
+          shell.worldToLocal(localGravity);
+          shell.material.uniforms.gravity.value = localGravity;
+        }
+      });
+    }
+    let mouse = new THREE.Vector2();
+
+    function handleEvents() {
+      document.addEventListener('mousedown', (event) => {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects([raycastMesh]);
+
+        if (intersects.length > 0 && !getSettings().orbitControls) {
+          isDragging = true;
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      document.addEventListener('mousemove', (event) => {
+        // Calculate rotation on object
+        let deltaMove = {
+          x: event.offsetX - previousMousePosition.x,
+          y: event.offsetY - previousMousePosition.y,
+        };
+
+        if (isDragging) {
+          let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(
+              toRadians(deltaMove.y * 1),
+              toRadians(deltaMove.x * 1),
+              0,
+              'XYZ',
+            ),
+          );
+
+          group.quaternion.multiplyQuaternions(
+            deltaRotationQuaternion,
+            group.quaternion,
+          );
+
+          raycastMesh.quaternion.multiplyQuaternions(
+            deltaRotationQuaternion,
+            raycastMesh.quaternion,
+          );
+
+          updateGravityForShells();
+        }
+        previousMousePosition = {
+          x: event.offsetX,
+          y: event.offsetY,
+        };
+
+        // Save normalized mouse position
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      });
+
+      // Handle resize
+      setSceneHook('onResize', () => {
+        const resolution = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+        settings.cameraPosition[2] = window.innerWidth > 800 ? 4 : 8;
+        utils.updateSetting('cameraPosition', settings.cameraPosition);
+        utils.resetCamera();
+      });
+
+      // Parameters
+      gui
+        .addInput(settings, 'layerOffset', { min: 0, max: 20, step: 0.1 })
+        .on('change', ({ value }) => {
+          shells.forEach((shell) => {
+            if (shell.material instanceof THREE.ShaderMaterial) {
+              shell.material.uniforms.layerOffset.value = value;
+            }
+          });
+        });
+
+      gui
+        .addInput(settings, 'gravityMultiplier', { min: 0, max: 10, step: 0.1 })
+        .on('change', ({ value }) => {
+          shells.forEach((shell) => {
+            if (shell.material instanceof THREE.ShaderMaterial) {
+              shell.material.uniforms.gravityMultiplier.value = value;
+            }
+          });
+        });
+
+      gui
+        .addInput(settings, 'shellCount', { min: 0, max: 1024, step: 32 })
+        .on('change', ({ value }) => {
+          clearScene();
+          settings.shellCount = value;
+          init();
+        });
+
+      gui
+        .addInput(settings, 'strandCount', { min: 0, max: 1000000, step: 1000 })
+        .on('change', ({ value }) => {
+          clearScene();
+          settings.strandCount = value;
+          init();
+        });
+
+      gui.addBlade({
+        view: 'list',
+        label: 'Geometry',
+        options: settings.geometries.map((g) => ({ text: g, value: g })),
+        value: settings.currentGeometry,
+      }).element.onchange = (e: any) => {
+        clearScene();
+        settings.currentGeometry = e.target.value;
+        init();
+      };
+    }
+
+    function animationLoop(state: BaseSceneState) {
+      if (!state.orbitControls.enabled) {
+        if (!state.orbitControls.enabled) {
+          // camera.position.x +=
+          //   (uniforms.uMouse.value.x / 10 - camera.position.x) * 1;
+          // camera.position.y +=
+          //   (-uniforms.uMouse.value.y / 15 - camera.position.y) * 1;
+        }
+      }
+    }
+
+    function init() {
+      group = new THREE.Group();
+
+      // Create hair property texture
+      let canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      let context = canvas.getContext('2d')!;
+
+      for (let i = 0; i < settings.strandCount; i++) {
+        let length = ~~(Math.random() * 255);
+
+        let darkness = ~~(Math.random() * 255);
+        let drawHair = true;
+        context.fillStyle = `rgba(${
+          drawHair ? '255' : '0'
+        }, ${length}, ${darkness}, 1)`;
+
+        context.fillRect(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          1,
+          1,
+        );
+      }
+
+      const hairPropertiesTexture = new THREE.CanvasTexture(canvas);
+      uniforms.hairMap.value = hairPropertiesTexture;
+
+      // geometry = new THREE.SphereGeometry(1, 10, 10);
+      // geometry = new THREE.TorusGeometry(2, 0.1, 20, 20);
+      // geometry = new THREE.TorusKnotGeometry(2, 0.1, 256, 32);
+      // let dummyGeometry = new THREE.TorusKnotGeometry(2, 0.7, 128, 32);
+      geometry = geometries[settings.currentGeometry].geometry;
+      let dummyGeometry = geometries[settings.currentGeometry].dummyGeometry;
+
+      for (let i = 0; i < settings.shellCount; i++) {
+        material = new THREE.ShaderMaterial({
+          uniforms: {
+            ...uniforms,
+            offset: { value: i / settings.shellCount },
+          },
+          vertexShader,
+          fragmentShader,
+          side: THREE.DoubleSide,
+          transparent: true,
+          // wireframe: true
+        });
+
+        mesh = new THREE.Mesh(geometry, material);
+        group.add(mesh);
+        shells.push(mesh);
+      }
+
+      group.quaternion.copy(groupRotation);
+      scene.add(group);
+
+      let dummyMaterial = new THREE.MeshBasicMaterial({
+        color: 0xff00ff,
+        transparent: true,
+        opacity: 0.0,
+        depthTest: false,
+      });
+      raycastMesh = new THREE.Mesh(dummyGeometry, dummyMaterial);
+      raycastMesh.quaternion.copy(raycastMeshRotation);
+      scene.add(raycastMesh);
+    }
+
+    function clearScene() {
+      if (group) {
+        groupRotation.copy(group.quaternion);
+      }
+      if (raycastMesh) {
+        raycastMeshRotation.copy(raycastMesh.quaternion);
+      }
+      scene.remove(group);
+      scene.remove(raycastMesh);
+    }
+
+    function postProcessing() {}
+
+    init();
+    handleEvents();
+    registerRenderCallback(animationLoop);
+    isReady.set(true);
+  }
+
+  Scene();
+</script>
