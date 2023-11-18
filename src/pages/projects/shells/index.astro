@@ -14,12 +14,32 @@ const title = 'Shells';
   import type { BaseSceneState } from '~/lib/types';
   import { toRadians } from '~/utils/math';
   import { isMobile } from '@utils/utils';
+  import { BladeApi } from 'tweakpane';
 
   let cameraZ = window.innerWidth > 800 ? 4 : 8;
 
   /* -------------------------------- */
   /*          Setup & Globals         */
   /* -------------------------------- */
+  const geometries = {
+    plane: {
+      geometry: new THREE.BoxGeometry(5, 5, 0.00001, 1),
+      dummyGeometry: new THREE.BoxGeometry(5, 5, 2, 1),
+    },
+    sphere: {
+      geometry: new THREE.SphereGeometry(2.25, 10, 10),
+      dummyGeometry: new THREE.SphereGeometry(3, 10, 10),
+    },
+    torus: {
+      geometry: new THREE.TorusGeometry(2, 0.1, 20, 20),
+      dummyGeometry: new THREE.TorusGeometry(2, 0.7, 20, 20),
+    },
+    torusknot: {
+      geometry: new THREE.TorusKnotGeometry(2, 0.1, 256, 32),
+      dummyGeometry: new THREE.TorusKnotGeometry(2, 0.7, 128, 32),
+    },
+  };
+
   const settings = {
     cameraPosition: [0, 5, cameraZ],
     bloomStrength: 1.5,
@@ -30,6 +50,8 @@ const title = 'Shells';
     shellCount: 512,
     strandCount: 75000,
     layerOffset: 1,
+    currentGeometry: 'sphere' as keyof typeof geometries,
+    geometries: ['plane', 'sphere', 'torus', 'torusknot'],
   };
 
   const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
@@ -42,7 +64,7 @@ const title = 'Shells';
     },
   });
   const { scene, camera, renderer, composer } = state;
-  const { gui } = utils;
+  const { gui, getSettings } = utils;
 
   /* -------------------------------- */
   /*                Scene             */
@@ -63,6 +85,9 @@ const title = 'Shells';
       gravity: { value: settings.gravity },
       ...state.uniforms,
     };
+
+    let groupRotation = new THREE.Quaternion();
+    let raycastMeshRotation = new THREE.Quaternion();
 
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
@@ -88,7 +113,7 @@ const title = 'Shells';
 
         const intersects = raycaster.intersectObjects([raycastMesh]);
 
-        if (intersects.length > 0) {
+        if (intersects.length > 0 && !getSettings().orbitControls) {
           isDragging = true;
         }
       });
@@ -183,6 +208,17 @@ const title = 'Shells';
           settings.strandCount = value;
           init();
         });
+
+      gui.addBlade({
+        view: 'list',
+        label: 'Geometry',
+        options: settings.geometries.map((g) => ({ text: g, value: g })),
+        value: settings.currentGeometry,
+      }).element.onchange = (e: any) => {
+        clearScene();
+        settings.currentGeometry = e.target.value;
+        init();
+      };
     }
 
     function animationLoop(state: BaseSceneState) {
@@ -227,8 +263,10 @@ const title = 'Shells';
 
       // geometry = new THREE.SphereGeometry(1, 10, 10);
       // geometry = new THREE.TorusGeometry(2, 0.1, 20, 20);
-      geometry = new THREE.TorusKnotGeometry(2, 0.1, 256, 32);
-      let dummyGeometry = new THREE.TorusKnotGeometry(2, 0.7, 128, 32);
+      // geometry = new THREE.TorusKnotGeometry(2, 0.1, 256, 32);
+      // let dummyGeometry = new THREE.TorusKnotGeometry(2, 0.7, 128, 32);
+      geometry = geometries[settings.currentGeometry].geometry;
+      let dummyGeometry = geometries[settings.currentGeometry].dummyGeometry;
 
       for (let i = 0; i < settings.shellCount; i++) {
         material = new THREE.ShaderMaterial({
@@ -248,22 +286,29 @@ const title = 'Shells';
         shells.push(mesh);
       }
 
-      group.rotateX(toRadians(-45));
+      group.quaternion.copy(groupRotation);
       scene.add(group);
 
       let dummyMaterial = new THREE.MeshBasicMaterial({
         color: 0xff00ff,
         transparent: true,
-        opacity: 0,
+        opacity: 0.0,
         depthTest: false,
       });
       raycastMesh = new THREE.Mesh(dummyGeometry, dummyMaterial);
-      raycastMesh.rotateX(toRadians(-45));
+      raycastMesh.quaternion.copy(raycastMeshRotation);
       scene.add(raycastMesh);
     }
 
     function clearScene() {
+      if (group) {
+        groupRotation.copy(group.quaternion);
+      }
+      if (raycastMesh) {
+        raycastMeshRotation.copy(raycastMesh.quaternion);
+      }
       scene.remove(group);
+      scene.remove(raycastMesh);
     }
 
     function postProcessing() {}
