@@ -14,9 +14,10 @@ const title = 'Shells';
   import type { BaseSceneState } from '~/lib/types';
   import { toRadians } from '~/utils/math';
   import { isMobile } from '@utils/utils';
-  import { BladeApi } from 'tweakpane';
 
-  let cameraZ = window.innerWidth > 800 ? 4 : 8;
+  function getCameraZ() {
+    return window.innerWidth > 800 ? 8 : 12;
+  }
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -41,15 +42,15 @@ const title = 'Shells';
   };
 
   const settings = {
-    cameraPosition: [0, 5, cameraZ],
+    cameraPosition: [0, 5, getCameraZ()],
     bloomStrength: 1.5,
     bloomThreshold: 0.1,
     bloomRadius: 0.1,
     gravity: new THREE.Vector3(0.0, -0.25, 0),
     gravityMultiplier: 2.5,
-    shellCount: 512,
+    shellCount: isMobile() ? 256 : 512,
     strandCount: 75000,
-    layerOffset: 1,
+    layerOffset: 4,
     currentGeometry: 'sphere' as keyof typeof geometries,
     geometries: ['plane', 'sphere', 'torus', 'torusknot'],
   };
@@ -89,6 +90,7 @@ const title = 'Shells';
     let groupRotation = new THREE.Quaternion();
     let raycastMeshRotation = new THREE.Quaternion();
 
+    let mouse = new THREE.Vector2();
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
     let shells: THREE.Mesh[] = [];
@@ -102,7 +104,6 @@ const title = 'Shells';
         }
       });
     }
-    let mouse = new THREE.Vector2();
 
     const handleInputDown = (event: MouseEvent | TouchEvent) => {
       if (event instanceof MouseEvent) {
@@ -139,7 +140,6 @@ const title = 'Shells';
         offsetY = event.offsetY;
       }
 
-      // Calculate rotation on object
       let deltaMove = {
         x: offsetX - previousMousePosition.x,
         y: offsetY - previousMousePosition.y,
@@ -201,7 +201,7 @@ const title = 'Shells';
           window.innerWidth,
           window.innerHeight,
         );
-        settings.cameraPosition[2] = window.innerWidth > 800 ? 4 : 8;
+        settings.cameraPosition[2] = getCameraZ();
         utils.updateSetting('cameraPosition', settings.cameraPosition);
         utils.resetCamera();
       });
