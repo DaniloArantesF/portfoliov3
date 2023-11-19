@@ -104,61 +104,95 @@ const title = 'Shells';
     }
     let mouse = new THREE.Vector2();
 
+    const handleInputDown = (event: MouseEvent | TouchEvent) => {
+      if (event instanceof MouseEvent) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      } else if (event instanceof TouchEvent) {
+        mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+      }
+
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects([raycastMesh]);
+
+      if (intersects.length > 0 && !getSettings().orbitControls) {
+        isDragging = true;
+      }
+    };
+
+    const handleInputUp = () => {
+      isDragging = false;
+    };
+
+    const handleInputMove = (event: MouseEvent | TouchEvent) => {
+      let offsetX = 0,
+        offsetY = 0;
+      if (event instanceof TouchEvent) {
+        const touch = event.touches[0];
+        const target = event.target as HTMLElement;
+        offsetX = touch.clientX - target.offsetLeft;
+        offsetY = touch.clientY - target.offsetTop;
+      } else if (event instanceof MouseEvent) {
+        offsetX = event.offsetX;
+        offsetY = event.offsetY;
+      }
+
+      // Calculate rotation on object
+      let deltaMove = {
+        x: offsetX - previousMousePosition.x,
+        y: offsetY - previousMousePosition.y,
+      };
+
+      if (isDragging) {
+        let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+          new THREE.Euler(
+            toRadians(deltaMove.y * 1),
+            toRadians(deltaMove.x * 1),
+            0,
+            'XYZ',
+          ),
+        );
+
+        group.quaternion.multiplyQuaternions(
+          deltaRotationQuaternion,
+          group.quaternion,
+        );
+
+        raycastMesh.quaternion.multiplyQuaternions(
+          deltaRotationQuaternion,
+          raycastMesh.quaternion,
+        );
+
+        updateGravityForShells();
+      }
+      previousMousePosition = {
+        x: offsetX,
+        y: offsetY,
+      };
+
+      // Save normalized mouse position
+      if (event instanceof MouseEvent) {
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      } else if (event instanceof TouchEvent) {
+        mouse.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+      }
+    };
+
     function handleEvents() {
-      document.addEventListener('mousedown', (event) => {
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      document.addEventListener('mousedown', handleInputDown);
+      document.addEventListener('mouseup', handleInputUp);
+      document.addEventListener('mousemove', handleInputMove);
 
-        raycaster.setFromCamera(mouse, camera);
-
-        const intersects = raycaster.intersectObjects([raycastMesh]);
-
-        if (intersects.length > 0 && !getSettings().orbitControls) {
-          isDragging = true;
-        }
+      document.addEventListener('touchstart', handleInputDown, {
+        passive: true,
       });
-
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
-
-      document.addEventListener('mousemove', (event) => {
-        // Calculate rotation on object
-        let deltaMove = {
-          x: event.offsetX - previousMousePosition.x,
-          y: event.offsetY - previousMousePosition.y,
-        };
-
-        if (isDragging) {
-          let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
-            new THREE.Euler(
-              toRadians(deltaMove.y * 1),
-              toRadians(deltaMove.x * 1),
-              0,
-              'XYZ',
-            ),
-          );
-
-          group.quaternion.multiplyQuaternions(
-            deltaRotationQuaternion,
-            group.quaternion,
-          );
-
-          raycastMesh.quaternion.multiplyQuaternions(
-            deltaRotationQuaternion,
-            raycastMesh.quaternion,
-          );
-
-          updateGravityForShells();
-        }
-        previousMousePosition = {
-          x: event.offsetX,
-          y: event.offsetY,
-        };
-
-        // Save normalized mouse position
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      document.addEventListener('touchend', handleInputUp, { passive: true });
+      document.addEventListener('touchmove', handleInputMove, {
+        passive: true,
       });
 
       // Handle resize
