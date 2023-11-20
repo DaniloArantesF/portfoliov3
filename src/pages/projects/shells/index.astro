@@ -16,7 +16,7 @@ const title = 'Shells';
   import { isMobile } from '@utils/utils';
 
   function getCameraZ() {
-    return window.innerWidth > 800 ? 8 : 12;
+    return window.innerWidth > 800 ? 12 : 18;
   }
 
   /* -------------------------------- */
@@ -25,19 +25,19 @@ const title = 'Shells';
   const geometries = {
     plane: {
       geometry: new THREE.BoxGeometry(5, 5, 0.00001, 1),
-      dummyGeometry: new THREE.BoxGeometry(5, 5, 2, 1),
+      dummyGeometry: new THREE.BoxGeometry(5, 5, 5, 1),
     },
     sphere: {
-      geometry: new THREE.SphereGeometry(2.25, 10, 10),
-      dummyGeometry: new THREE.SphereGeometry(3, 10, 10),
+      geometry: new THREE.SphereGeometry(4.25, 10, 10),
+      dummyGeometry: new THREE.SphereGeometry(6.5, 10, 10),
     },
     torus: {
-      geometry: new THREE.TorusGeometry(2, 0.1, 20, 20),
-      dummyGeometry: new THREE.TorusGeometry(2, 0.7, 20, 20),
+      geometry: new THREE.TorusGeometry(4, 0.01, 20, 20),
+      dummyGeometry: new THREE.TorusGeometry(4, 3, 20, 20),
     },
     torusknot: {
-      geometry: new THREE.TorusKnotGeometry(2, 0.1, 256, 32),
-      dummyGeometry: new THREE.TorusKnotGeometry(2, 0.7, 128, 32),
+      geometry: new THREE.TorusKnotGeometry(4, 0.01, 128, 32),
+      dummyGeometry: new THREE.TorusKnotGeometry(4, 2.5, 64, 32),
     },
   };
 
@@ -50,7 +50,7 @@ const title = 'Shells';
     gravityMultiplier: 2.5,
     shellCount: isMobile() ? 256 : 512,
     strandCount: 75000,
-    layerOffset: 4,
+    layerOffset: 3.75,
     currentGeometry: 'sphere' as keyof typeof geometries,
     geometries: ['plane', 'sphere', 'torus', 'torusknot'],
   };
@@ -64,7 +64,7 @@ const title = 'Shells';
       antialias: true,
     },
   });
-  const { scene, camera, renderer, composer } = state;
+  const { scene, camera, renderer, composer, orbitControls } = state;
   const { gui, getSettings } = utils;
 
   /* -------------------------------- */
@@ -94,6 +94,10 @@ const title = 'Shells';
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
     let shells: THREE.Mesh[] = [];
+
+    // orbitControls.enablePan = false;
+    // orbitControls.enableDamping = true;
+    // orbitControls.maxPolarAngle = Math.PI / 4;
 
     function updateGravityForShells() {
       shells.forEach((shell) => {
@@ -148,8 +152,8 @@ const title = 'Shells';
       if (isDragging) {
         let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
           new THREE.Euler(
-            toRadians(deltaMove.y * 1),
-            toRadians(deltaMove.x * 1),
+            toRadians(deltaMove.y * 0.1),
+            toRadians(deltaMove.x * 0.1),
             0,
             'XYZ',
           ),
@@ -236,7 +240,7 @@ const title = 'Shells';
         });
 
       gui
-        .addInput(settings, 'strandCount', { min: 0, max: 1000000, step: 1000 })
+        .addInput(settings, 'strandCount', { min: 0, max: 1000000, step: 100 })
         .on('change', ({ value }) => {
           clearScene();
           settings.strandCount = value;
