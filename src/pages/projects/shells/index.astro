@@ -174,7 +174,7 @@ const title = 'Shells';
 
       // Parameters
       gui
-        .addInput(settings, 'layerOffset', { min: 0, max: 20, step: 0.1 })
+        .addBinding(settings, 'layerOffset', { min: 0, max: 20, step: 0.1 })
         .on('change', ({ value }) => {
           shells.forEach((shell) => {
             if (shell.material instanceof THREE.ShaderMaterial) {
@@ -184,7 +184,11 @@ const title = 'Shells';
         });
 
       gui
-        .addInput(settings, 'gravityMultiplier', { min: 0, max: 10, step: 0.1 })
+        .addBinding(settings, 'gravityMultiplier', {
+          min: 0,
+          max: 10,
+          step: 0.1,
+        })
         .on('change', ({ value }) => {
           shells.forEach((shell) => {
             if (shell.material instanceof THREE.ShaderMaterial) {
@@ -194,7 +198,7 @@ const title = 'Shells';
         });
 
       gui
-        .addInput(settings, 'shellCount', { min: 0, max: 1024, step: 32 })
+        .addBinding(settings, 'shellCount', { min: 0, max: 1024, step: 32 })
         .on('change', ({ value }) => {
           clearScene();
           settings.shellCount = value;
@@ -202,7 +206,11 @@ const title = 'Shells';
         });
 
       gui
-        .addInput(settings, 'strandCount', { min: 0, max: 1000000, step: 1000 })
+        .addBinding(settings, 'strandCount', {
+          min: 0,
+          max: 1000000,
+          step: 1000,
+        })
         .on('change', ({ value }) => {
           clearScene();
           settings.strandCount = value;

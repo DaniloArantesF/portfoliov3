@@ -12,10 +12,10 @@ const title = readme?.frontmatter?.title ?? '';
   import BaseScene, { isReady } from '@lib/sceneController';
   import type { BaseSceneState } from '@lib/types';
   import { MeshLineGeometry, MeshLineMaterial } from 'meshline';
-  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-  import { SavePass } from 'three/examples/jsm/postprocessing/SavePass';
-  import { BlendShader } from 'three/examples/jsm/shaders/BlendShader';
-  import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+  import { SavePass } from 'three/examples/jsm/postprocessing/SavePass.js';
+  import { BlendShader } from 'three/examples/jsm/shaders/BlendShader.js';
+  import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 
   /* -------------------------------- */
   /*          Setup & Globals         */
@@ -194,7 +194,7 @@ const title = readme?.frontmatter?.title ?? '';
         });
 
       folder
-        .addInput(settings, 'scale', { min: 1, max: 10, step: 1 })
+        .addBinding(settings, 'scale', { min: 1, max: 10, step: 1 })
         .on('change', ({ value }) => {
           camera.position.z = 1.5 * value;
         });
@@ -204,25 +204,25 @@ const title = readme?.frontmatter?.title ?? '';
       });
 
       const lorenzFolder = folder.addFolder({ title: 'Lorenz' });
-      lorenzFolder.addInput(settings.lorenz, 'dt', {
+      lorenzFolder.addBinding(settings.lorenz, 'dt', {
         min: 0.001,
         max: 0.02,
         step: 0.001,
       });
-      lorenzFolder.addInput(settings.lorenz, 'sigma');
-      lorenzFolder.addInput(settings.lorenz, 'beta');
-      lorenzFolder.addInput(settings.lorenz, 'rho');
+      lorenzFolder.addBinding(settings.lorenz, 'sigma');
+      lorenzFolder.addBinding(settings.lorenz, 'beta');
+      lorenzFolder.addBinding(settings.lorenz, 'rho');
 
       const thomasFolder = folder.addFolder({
         title: 'Thomas',
       });
-      thomasFolder.addInput(settings.thomas, 'b', {
+      thomasFolder.addBinding(settings.thomas, 'b', {
         min: 0,
         max: 1.5,
         step: 0.001,
       });
 
-      thomasFolder.addInput(settings.thomas, 'dt', {
+      thomasFolder.addBinding(settings.thomas, 'dt', {
         min: 0.0,
         max: 0.01,
         step: 0.001,

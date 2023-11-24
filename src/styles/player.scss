@@ -20,7 +20,9 @@
     height: 100%;
     width: auto;
     color: var(--color-text-main);
-    transition: transform 50ms ease-out, color 50ms ease-out;
+    transition:
+      transform 50ms ease-out,
+      color 50ms ease-out;
 
     &:hover {
       transform: scale(1.2);

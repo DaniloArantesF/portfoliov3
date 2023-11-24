@@ -13,16 +13,15 @@ export function getProjectLink(project: Project, href = true) {
   const codesandbox = project.links?.find(
     ({ source }) => source === 'codesandbox',
   )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
+  const codepen = project.links?.find(({ source }) => source === 'codepen')
+    ?.url;
 
   return live
     ? live
     : codesandbox
-    ? codesandbox
-    : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      ? codesandbox
+      : github ||
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 async function apiFetch(url: string, options: any = {}) {
@@ -83,18 +82,15 @@ export async function uploadMedia(filePath: string): Promise<Project> {
 export function getCardData(projects: Project[]) {
   const data = [
     ...projects.map((project): CardProps => {
-      const live = project.links?.find(
-        ({ source }) => source === 'custom',
-      )?.url;
-      const github = project.links?.find(
-        ({ source }) => source === 'github',
-      )?.url;
+      const live = project.links?.find(({ source }) => source === 'custom')
+        ?.url;
+      const github = project.links?.find(({ source }) => source === 'github')
+        ?.url;
       const codesandbox = project.links?.find(
         ({ source }) => source === 'codesandbox',
       )?.url;
-      const codepen = project.links?.find(
-        ({ source }) => source === 'codepen',
-      )?.url;
+      const codepen = project.links?.find(({ source }) => source === 'codepen')
+        ?.url;
       const href = getProjectLink(project);
 
       let tags: Tag[] = [];

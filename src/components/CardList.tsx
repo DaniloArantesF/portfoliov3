@@ -1,4 +1,4 @@
-import cardList from '@styles/cardList.scss';
+import '@styles/cardList.scss';
 import button from '@styles/button.module.css';
 import type { CardProps } from './Card';
 import Card from './Card';

@@ -14,16 +14,15 @@ export function getProjectLink(project: Project, href = true) {
   const codesandbox = project.links?.find(
     ({ source }) => source === 'codesandbox',
   )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
+  const codepen = project.links?.find(({ source }) => source === 'codepen')
+    ?.url;
 
   return live
     ? live
     : codesandbox
-    ? codesandbox
-    : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      ? codesandbox
+      : github ||
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 const createIntegration = (): AstroIntegration => ({

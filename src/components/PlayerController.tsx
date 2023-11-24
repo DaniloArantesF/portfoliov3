@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
+import React, { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import '../styles/player.scss';
 import { clamp } from '../utils/math';
 import { msToMinSec } from '../utils/time';
