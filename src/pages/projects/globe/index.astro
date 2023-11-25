@@ -39,12 +39,13 @@ const title = 'Travel Globe';
   });
   const { scene } = state;
 
+  // Most textures from https://www.solarsystemscope.com/textures/
   const textures = {
     colorMap: new THREE.TextureLoader().load(
       '/assets/textures/earth/2k_earth_daymap.jpg',
     ),
     displacementMap: new THREE.TextureLoader().load(
-      '/assets/textures/earth/2k_earth_normal_map.tif',
+      '/assets/textures/earth/srtm_ramp2.world.5400x2700.jpg', // from https://sbcode.net/topoearth/srtm-heightmap/
     ),
     specularMap: new THREE.TextureLoader().load(
       '/assets/textures/earth/2k_earth_specular_map.tif',
@@ -111,6 +112,7 @@ const title = 'Travel Globe';
         normalMap: textures.normalMap,
         specularColorMap: textures.specularMap,
         displacementMap: textures.displacementMap,
+        displacementScale: 0.2
       });
       mesh = new THREE.Mesh(globe, material);
       scene.add(mesh);
