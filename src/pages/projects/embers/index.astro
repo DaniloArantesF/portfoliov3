@@ -14,11 +14,11 @@ const title = 'Embers';
   import positionFragment from './shaders/position.fs.glsl';
   import heatPassVertexShader from './shaders/heatPass.vs.glsl';
   import heatPassFragmentShader from './shaders/heatPass.fs.glsl';
-  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
   import {
     GPUComputationRenderer,
-    Variable,
-  } from 'three/examples/jsm/misc/GPUComputationRenderer';
+    type Variable,
+  } from 'three/examples/jsm/misc/GPUComputationRenderer.js';
   import type { BaseSceneState } from '~/lib/types';
 
   const SIMULATION_WIDTH = 32;

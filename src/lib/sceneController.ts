@@ -1,14 +1,9 @@
 import * as THREE from 'three';
 // import { PCFSoftShadowMap } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import Stats from 'three/examples/jsm/libs/stats.module';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { SavePass } from 'three/examples/jsm/postprocessing/SavePass';
-import { BlendShader } from 'three/examples/jsm/shaders/BlendShader';
-import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
-
 import { atom } from 'nanostores';
 import { Pane } from 'tweakpane';
 import type {
@@ -190,7 +185,7 @@ const BaseScene = ({
   function initGUI() {
     gui.expanded = false;
     const debugFolder = gui.addFolder({ title: 'Debug' });
-    debugFolder.addInput(settings, 'orbitControls').on('change', () => {
+    debugFolder.addBinding(settings, 'orbitControls').on('change', () => {
       orbitControls.enabled = settings.orbitControls;
       if (!settings.orbitControls) {
         settings.autoRotate = false;
@@ -200,7 +195,7 @@ const BaseScene = ({
       }
     });
 
-    debugFolder.addInput(settings, 'autoRotate').on('change', () => {
+    debugFolder.addBinding(settings, 'autoRotate').on('change', () => {
       if (settings.autoRotate) {
         orbitControls.enabled = true;
         settings.orbitControls = true;
@@ -210,7 +205,7 @@ const BaseScene = ({
     });
 
     debugFolder
-      .addInput(settings, 'zoom', { min: 0.1, max: 3, step: 0.001 })
+      .addBinding(settings, 'zoom', { min: 0.1, max: 3, step: 0.001 })
       .on('change', ({ value }) => {
         camera.zoom = value;
         camera.updateProjectionMatrix();

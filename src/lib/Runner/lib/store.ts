@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { createRef, RefObject } from 'react';
-import type { Mesh } from 'three/src/Three';
+import { createRef, type RefObject } from 'react';
+import type { Mesh } from 'three/src/Three.js';
 import { devtools } from 'zustand/middleware';
-import { ConfigSlice, createConfigSlice } from './configSlice';
-import { createStateSlice, StateSlice } from './stateSlice';
+import { type ConfigSlice, createConfigSlice } from './configSlice';
+import { createStateSlice, type StateSlice } from './stateSlice';
 import {
   createTileSlice,
-  TileSlice,
+  type TileSlice,
   TILE_COUNT,
   TILE_LENGTH,
 } from './tileSlice';

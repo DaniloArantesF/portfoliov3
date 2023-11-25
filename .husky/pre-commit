@@ -2,4 +2,4 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 # Run prettier on staged files
-npx pretty-quick --staged
+# npx lint-staged

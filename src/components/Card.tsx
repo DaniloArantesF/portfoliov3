@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
+import { type BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import '../styles/card.scss';
 import type { Project, Tag } from 'src/payload-types';
