@@ -7,7 +7,7 @@ import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
 import { getProject } from '~/api';
 import { richTextToString } from '~/components/RichText/serialize';
-import SideDrawer from '../components/SideDrawer';
+import SceneInfo from '~/components/SceneInfo';
 
 export interface Props {
   slug?: string;
@@ -17,8 +17,10 @@ export interface Props {
 const { slug, audio = false } = Astro.props;
 let plainTextDescription = '',
   title = '';
+let project = null;
+
 if (slug) {
-  const project = await getProject(slug);
+  project = await getProject(slug);
   title = project.title;
   plainTextDescription = richTextToString(project.description as any);
 }
@@ -39,10 +41,7 @@ if (slug) {
     <main id="container">
       <LoadingOverlay />
       <div id="gui_container"></div>
-      <SideDrawer isOpen={false} side="left" client:only="react" label={'Info'}>
-        <h1>{title}</h1>
-        <p>{plainTextDescription}</p>
-      </SideDrawer>
+      <SceneInfo client:only="react" project={project} />
       <canvas id="app-view"></canvas>
       {
         audio && (

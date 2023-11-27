@@ -17,6 +17,9 @@ export default defineConfig({
         // compress: true,
       }),
     ],
+    ssr: {
+      noExternal: ['@radix-ui/react-tabs'],
+    },
   },
   server: {
     port: 3000,

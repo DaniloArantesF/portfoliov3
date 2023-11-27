@@ -12,11 +12,23 @@ type Props = {
   onOpen?: () => void;
 };
 
-const SideDrawer: React.FC<Props> = ({ isOpen, children, side = 'left', label }) => {
+const SideDrawer: React.FC<Props> = ({
+  isOpen,
+  children,
+  side = 'left',
+  label,
+  onOpen,
+  onClose,
+}) => {
   const [open, setOpen] = useState(isOpen);
 
   const toggleDrawer = () => {
     setOpen((o) => !o);
+    if (isOpen) {
+      onClose && onClose();
+    } else {
+      onOpen && onOpen();
+    }
   };
 
   return (
@@ -27,7 +39,7 @@ const SideDrawer: React.FC<Props> = ({ isOpen, children, side = 'left', label })
         }`}
       >
         <button className={`${classes.button}`} onClick={toggleDrawer}>
-          { label && <span className={classes.label}>{label}</span> }
+          {label && <span className={classes.label}>{label}</span>}
           <svg
             width="20"
             height="20"
@@ -37,8 +49,8 @@ const SideDrawer: React.FC<Props> = ({ isOpen, children, side = 'left', label })
             className={classes.icon}
           >
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M5.64001 11.8236L6.34712 12.5307L9.99357 8.88422L13.64 12.5307L14.3471 11.8236L9.99357 7.47001L5.64001 11.8236Z"
               fill="currentColor"
             />

@@ -1,0 +1,61 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.list {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.trigger {
+  font-family: inherit;
+  padding: 0 20px;
+  height: 45px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  background: transparent;
+  color: var(--color-text-main);
+  border: none;
+  outline: none;
+  user-select: none;
+}
+
+.trigger:first-child {
+  border-top-left-radius: 6px;
+}
+.trigger:last-child {
+  border-top-right-radius: 6px;
+}
+.trigger:hover {
+  color: var(--color-accent);
+}
+
+.trigger[data-state='active'] {
+  color: var(--color-accent);
+  box-shadow:
+    inset 0 -1px 0 0 currentColor,
+    0 1px 0 0 currentColor;
+}
+
+.trigger:focus {
+  position: relative;
+  // box-shadow: 0 0 0 2px var(--color-text-sub);
+}
+
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  outline: none;
+}
+
+.content:focus {
+  // box-shadow: 0 0 0 2px var(--color-text-sub);
+}

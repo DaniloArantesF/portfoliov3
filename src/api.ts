@@ -78,7 +78,7 @@ export async function getProject(slug: string): Promise<Project> {
   );
 
   const data = (await apiFetch(`${url}/api/projects${stringifiedQuery}`).catch(
-  // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
     (e) => console.log(e),
   )) as PayloadCollection<Project>;
   return data?.docs[0];

@@ -1,20 +1,22 @@
-
-
 .container {
+  --width: calc(100% - 4.75rem);
+  --max-width: 1000px;
   --animation-duration: 250ms;
   position: absolute;
   display: inline-flex;
   flex-direction: column;
-  max-width: 500px;
-  width: 60%;
+  max-width: var(--max-width);
+  width: var(--width);
   background: var(--color-surface-3);
   padding: 1rem 2rem;
   top: calc(var(--header-height));
 
-  transition: right var(--animation-duration) ease-in-out, left var(--animation-duration) ease-in-out;
+  transition:
+    right var(--animation-duration) ease-in-out,
+    left var(--animation-duration) ease-in-out;
 
   &.left {
-    left: max(-60%, -500px);
+    left: max(calc(-1 * var(--width)), calc(-1 * var(--max-width)));
     border-radius: 0 0 var(--border-radius) 0;
 
     .button {
@@ -28,7 +30,7 @@
     }
 
     &.open {
-      left: 0;
+      left: -1%;
 
       & .icon {
         transform: rotate(-90deg);
@@ -37,13 +39,14 @@
   }
 
   &.right {
-    right: max(-60%, -500px);
+    right: max(calc(-1 * var(--width)), calc(-1 * var(--max-width)));
     border-radius: 0 0 0 var(--border-radius);
 
     .button {
-      padding-right: .5rem;
+      padding-right: 1rem;
       border-radius: var(--border-radius) 0 0 var(--border-radius);
       right: 100%;
+      flex-direction: row-reverse;
 
       .icon {
         transform: rotate(-90deg);
@@ -59,7 +62,6 @@
     }
   }
 
-
   p {
     color: var(--color-text-sub);
   }
@@ -68,7 +70,7 @@
 .button {
   position: absolute;
   top: 0;
-  padding: .1rem;
+  padding: 0.1rem;
   display: inline-flex;
   align-items: center;
   background: var(--color-surface-3);
@@ -83,3 +85,9 @@
   }
 }
 
+@media only screen and (min-width: 900px) {
+  .container {
+    --width: 60%;
+    --max-width: 500px;
+  }
+}

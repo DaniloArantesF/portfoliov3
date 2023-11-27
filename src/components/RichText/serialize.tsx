@@ -94,35 +94,35 @@ const serialize = (
     }
   }) ?? [];
 
-
-
 export const richTextToString = (children: Children | undefined): string =>
-  children?.map((node): string => {
-    if (Text.isText(node)) {
-      return node.text;
-    }
+  children
+    ?.map((node): string => {
+      if (Text.isText(node)) {
+        return node.text;
+      }
 
-    if (!node) {
-      return '';
-    }
+      if (!node) {
+        return '';
+      }
 
-    switch (node.type) {
-      case 'h1':
-      case 'h2':
-      case 'h3':
-      case 'h4':
-      case 'h5':
-      case 'h6':
-      case 'quote':
-      case 'ul':
-      case 'ol':
-      case 'li':
-        return richTextToString(node.children);
-      case 'link':
-        return node.url ?? '';
-      default:
-        return richTextToString(node.children);
-    }
-  })?.join('') ?? '';
+      switch (node.type) {
+        case 'h1':
+        case 'h2':
+        case 'h3':
+        case 'h4':
+        case 'h5':
+        case 'h6':
+        case 'quote':
+        case 'ul':
+        case 'ol':
+        case 'li':
+          return richTextToString(node.children);
+        case 'link':
+          return node.url ?? '';
+        default:
+          return richTextToString(node.children);
+      }
+    })
+    ?.join('') ?? '';
 
 export default serialize;
