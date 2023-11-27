@@ -1,0 +1,85 @@
+
+
+.container {
+  --animation-duration: 250ms;
+  position: absolute;
+  display: inline-flex;
+  flex-direction: column;
+  max-width: 500px;
+  width: 60%;
+  background: var(--color-surface-3);
+  padding: 1rem 2rem;
+  top: calc(var(--header-height));
+
+  transition: right var(--animation-duration) ease-in-out, left var(--animation-duration) ease-in-out;
+
+  &.left {
+    left: max(-60%, -500px);
+    border-radius: 0 0 var(--border-radius) 0;
+
+    .button {
+      padding-left: 1rem;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      left: 100%;
+
+      .icon {
+        transform: rotate(90deg);
+      }
+    }
+
+    &.open {
+      left: 0;
+
+      & .icon {
+        transform: rotate(-90deg);
+      }
+    }
+  }
+
+  &.right {
+    right: max(-60%, -500px);
+    border-radius: 0 0 0 var(--border-radius);
+
+    .button {
+      padding-right: .5rem;
+      border-radius: var(--border-radius) 0 0 var(--border-radius);
+      right: 100%;
+
+      .icon {
+        transform: rotate(-90deg);
+      }
+    }
+
+    &.open {
+      right: 0;
+
+      & .icon {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+
+  p {
+    color: var(--color-text-sub);
+  }
+}
+
+.button {
+  position: absolute;
+  top: 0;
+  padding: .1rem;
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface-3);
+  color: var(--color-text-main);
+  border: none;
+  outline: none;
+
+  & .icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    transition: transform var(--animation-duration) ease-in-out;
+  }
+}
+

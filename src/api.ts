@@ -57,8 +57,31 @@ export async function getProjects(
   const url = import.meta?.env?.PAYLOAD_URL
     ? import.meta.env?.PAYLOAD_URL
     : process.env?.PAYLOAD_URL;
-  const data = await apiFetch(`${url}/api/projects${stringifiedQuery}`);
+  const data = (await apiFetch(
+    `${url}/api/projects${stringifiedQuery}`,
+  )) as PayloadCollection<Project>;
   return data;
+}
+
+export async function getProject(slug: string): Promise<Project> {
+  const url = import.meta?.env
+    ? import.meta.env.PAYLOAD_URL
+    : process.env.PAYLOAD_URL;
+
+  const stringifiedQuery = qs.stringify(
+    {
+      where: {
+        slug: { equals: slug },
+      },
+    },
+    { addQueryPrefix: true },
+  );
+
+  const data = (await apiFetch(`${url}/api/projects${stringifiedQuery}`).catch(
+  // eslint-disable-next-line no-console
+    (e) => console.log(e),
+  )) as PayloadCollection<Project>;
+  return data?.docs[0];
 }
 
 export async function uploadMedia(filePath: string): Promise<Project> {
