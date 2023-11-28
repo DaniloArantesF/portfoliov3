@@ -96,7 +96,7 @@
   position: relative;
   height: fit-content;
   overflow: hidden;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
 }
 
 .tags {
@@ -127,7 +127,8 @@
   display: inline-flex;
   z-index: 2;
   align-items: center;
-  justify-content: space-around;
+  justify-content: flex-start;
+  margin: 0 2rem;
   opacity: 1;
   overflow: hidden;
   position: absolute;
