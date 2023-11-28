@@ -22,12 +22,16 @@ export function PlayerController() {
   const inputRef = useRef<HTMLInputElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
   const [trackName, setTrackName] = useState(player.loadedAudio.name);
+  const volumeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!audioRef.current) return;
     player.loadDefaultSong();
     const audioEl = audioRef.current;
     setPlaying(!audioEl.paused);
+
+    // Set initial player value
+    volumeRef.current!.value = `${player.audio?.volume ?? 0.5}`;
 
     const onPlay = () => {
       setPlaying(true);
@@ -122,10 +126,31 @@ export function PlayerController() {
     setTrackName(player.loadedAudio.name);
   }
 
+  function handleVolumeChange(event: ChangeEvent<HTMLInputElement>) {
+    if (!player.audio) return;
+    player.audio.volume = parseFloat(event.target.value);
+  }
+
   return (
     <div id="player-container">
       <div id="track-info">
         <span>{trackName}</span>
+      </div>
+      <div id="player-status">
+        <span>{msToMinSec(progress)}</span>
+        <div
+          id="progress-bar"
+          ref={progressBarRef}
+          onDragEnd={handleSeek}
+          onClick={handleSeek}
+        >
+          <span id="track" />
+          <span id="thumb" ref={thumbRef} />
+        </div>
+        <span>{msToMinSec(duration * 1000)}</span>
+      </div>
+
+      <div id="player-controls">
         <div>
           <label
             htmlFor="fileIn"
@@ -143,22 +168,6 @@ export function PlayerController() {
           </label>
           <input ref={inputRef} onChange={handleFile} type="file" id="fileIn" />
         </div>
-      </div>
-      <div id="player-status">
-        <span>{msToMinSec(progress)}</span>
-        <div
-          id="progress-bar"
-          ref={progressBarRef}
-          onDragEnd={handleSeek}
-          onClick={handleSeek}
-        >
-          <span id="track" />
-          <span id="thumb" ref={thumbRef} />
-        </div>
-        <span>{msToMinSec(duration * 1000)}</span>
-      </div>
-
-      <div id="player-controls">
         {playing ? (
           <button className="icon" onClick={handlePause}>
             <svg
@@ -192,6 +201,18 @@ export function PlayerController() {
             </svg>
           </button>
         )}
+
+        <div id="volume-slider">
+          <input
+            ref={volumeRef}
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            onChange={handleVolumeChange}
+            aria-label="Volume slider"
+          />
+        </div>
       </div>
     </div>
   );
