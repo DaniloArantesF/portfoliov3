@@ -23,7 +23,8 @@ const serialize = (
   children?.map((node, i): React.ReactElement | null => {
     if (Text.isText(node)) {
       let text = (
-        <span dangerouslySetInnerHTML={{ __html: escapeHTML(node.text) }} />
+        // <span dangerouslySetInnerHTML={{ __html: escapeHTML(node.text) }} />
+        <React.Fragment>{escapeHTML(node.text)}</React.Fragment>
       );
 
       if (node.bold) {
