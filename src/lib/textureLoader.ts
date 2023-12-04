@@ -1,5 +1,8 @@
 import * as THREE from 'three';
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import {
+  GLTFLoader,
+  type GLTF,
+} from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export const loadTexture = (url: string) => {
   return new THREE.TextureLoader().load(url);

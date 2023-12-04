@@ -2,7 +2,7 @@
 import SceneLayout from 'src/layouts/SceneLayout.astro';
 ---
 
-<SceneLayout title={"Ulam's Orb"} audio />
+<SceneLayout slug={'ulam'} audio />
 
 <script>
   import * as THREE from 'three';
@@ -10,12 +10,13 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
   import vertexShader from './shaders/vertex.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
   import { inRange, isPrime } from '@utils/math';
-  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+  import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
   import globePassVertexShader from './shaders/globePass.vs.glsl';
   import globePassFragmentShader from './shaders/globePass.fs.glsl';
   import { usePlayer } from '@components/Player';
   import type { BaseSceneState } from '@lib/types';
-  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
   import { isMobile } from '@utils/utils';
 
   /* -------------------------------- */
@@ -122,8 +123,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
     const gui = utils.gui;
 
     let cb: NodeJS.Timeout;
+
     gui
-      .addInput(settings, 'gridSize', {
+      .addBinding(settings, 'gridSize', {
         x: { min: 1, max: 3000, step: 1 },
         y: { min: 1, max: 3000, step: 1 },
       })
@@ -131,8 +133,9 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
         if (cb) clearTimeout(cb);
         cb = setTimeout(() => createPoints(), 1000);
       });
+
     gui
-      .addInput(settings, 'waveAmplitude', {
+      .addBinding(settings, 'waveAmplitude', {
         step: 0.001,
         min: 0.05,
         max: 2,
@@ -142,7 +145,7 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       });
 
     gui
-      .addInput(settings, 'waveFrequency', {
+      .addBinding(settings, 'waveFrequency', {
         step: 0.01,
         min: 0.01,
         max: 50,
@@ -152,35 +155,35 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       });
 
     gui
-      .addInput(settings, 'uScale', { min: -5, max: 10, step: 0.01 })
+      .addBinding(settings, 'uScale', { min: -5, max: 10, step: 0.01 })
       .on('change', () => (globePass.uniforms.uScale.value = settings.uScale));
     gui
-      .addInput(settings, 'uPower', { min: -5, max: 50, step: 0.1 })
+      .addBinding(settings, 'uPower', { min: -5, max: 50, step: 0.1 })
       .on('change', () => (globePass.uniforms.uPower.value = settings.uPower));
     gui
-      .addInput(settings, 'uSize', { min: -2, max: 5, step: 0.01 })
+      .addBinding(settings, 'uSize', { min: -2, max: 5, step: 0.01 })
       .on('change', () => (globePass.uniforms.uSize.value = settings.uSize));
     gui
-      .addInput(settings, 'uProgress', { min: 0, max: 1, step: 0.01 })
+      .addBinding(settings, 'uProgress', { min: 0, max: 1, step: 0.01 })
       .on(
         'change',
         () => (globePass.uniforms.uProgress.value = settings.uProgress),
       );
     gui
-      .addInput(settings, 'uActive')
+      .addBinding(settings, 'uActive')
       .on(
         'change',
         () => (globePass.uniforms.uActive.value = settings.uActive),
       );
 
     gui
-      .addInput(settings, 'bloomStrength', { min: 0, max: 5, step: 0.1 })
+      .addBinding(settings, 'bloomStrength', { min: 0, max: 5, step: 0.1 })
       .on('change', ({ value }) => (bloomPass.strength = value));
     gui
-      .addInput(settings, 'bloomRadius', { min: 0, max: 3, step: 0.05 })
+      .addBinding(settings, 'bloomRadius', { min: 0, max: 3, step: 0.05 })
       .on('change', ({ value }) => (bloomPass.radius = value));
     gui
-      .addInput(settings, 'bloomThreshold', { min: 0, max: 3, step: 0.01 })
+      .addBinding(settings, 'bloomThreshold', { min: 0, max: 3, step: 0.01 })
       .on('change', ({ value }) => (bloomPass.threshold = value));
   }
 

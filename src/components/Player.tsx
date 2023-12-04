@@ -142,7 +142,7 @@ class Player {
       volume: 1,
     };
     audioFolder
-      .addInput(params, 'volume', {
+      .addBinding(params, 'volume', {
         title: 'Gain',
         min: 0,
         max: 5,

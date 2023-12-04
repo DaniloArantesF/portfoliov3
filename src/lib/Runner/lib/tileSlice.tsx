@@ -1,7 +1,7 @@
 import type { StateCreator } from 'zustand';
-import { StoreState, useStore } from './store';
+import { type StoreState, useStore } from './store';
 import { addEffect } from '@react-three/fiber';
-import { createRef, RefObject } from 'react';
+import { createRef, type RefObject } from 'react';
 import * as THREE from 'three';
 import Obstacle from '../components/Obstacle';
 import Coin from '../components/Coin';

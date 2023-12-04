@@ -23,7 +23,8 @@ const serialize = (
   children?.map((node, i): React.ReactElement | null => {
     if (Text.isText(node)) {
       let text = (
-        <span dangerouslySetInnerHTML={{ __html: escapeHTML(node.text) }} />
+        // <span dangerouslySetInnerHTML={{ __html: escapeHTML(node.text) }} />
+        <React.Fragment>{escapeHTML(node.text)}</React.Fragment>
       );
 
       if (node.bold) {
@@ -93,5 +94,36 @@ const serialize = (
         return <p key={i}>{serialize(node.children)}</p>;
     }
   }) ?? [];
+
+export const richTextToString = (children: Children | undefined): string =>
+  children
+    ?.map((node): string => {
+      if (Text.isText(node)) {
+        return node.text;
+      }
+
+      if (!node) {
+        return '';
+      }
+
+      switch (node.type) {
+        case 'h1':
+        case 'h2':
+        case 'h3':
+        case 'h4':
+        case 'h5':
+        case 'h6':
+        case 'quote':
+        case 'ul':
+        case 'ol':
+        case 'li':
+          return richTextToString(node.children);
+        case 'link':
+          return node.url ?? '';
+        default:
+          return richTextToString(node.children);
+      }
+    })
+    ?.join('') ?? '';
 
 export default serialize;

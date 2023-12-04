@@ -30,8 +30,8 @@ export const range = (
   return offset < start
     ? 0
     : offset > end
-    ? 1
-    : (offset - start) / (end - start);
+      ? 1
+      : (offset - start) / (end - start);
 };
 
 export const inRange = (s: number, e: number, n: number) => n >= s && n < e;

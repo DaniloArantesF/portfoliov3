@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { KeyboardControls, Stars } from '@react-three/drei';
+import { KeyboardControls, OrbitControls, Stars } from '@react-three/drei';
 import React, { Suspense, useMemo, useRef } from 'react';
 import { Physics, Debug } from '@react-three/cannon';
 import {
@@ -87,6 +87,7 @@ function Scene() {
         <Speed />
         <div ref={debugRef}></div>
       </UI>
+
       {/* <GUI /> */}
       <Menu />
 
@@ -114,6 +115,7 @@ function Scene() {
             <SceneUtils />
             {/* <fog attach="fog" args={['#4c4c9f', 0, 500]} /> */}
             {/* <Effects /> */}
+            {/* <OrbitControls /> */}
           </Canvas>
         </KeyboardControls>
       </div>

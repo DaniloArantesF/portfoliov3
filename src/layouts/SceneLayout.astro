@@ -5,31 +5,43 @@ import LoadingOverlay from 'src/components/LoadingOverlay.astro';
 import Header from '../components/Header.astro';
 import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
+import { getProject } from '~/api';
+import { richTextToString } from '~/components/RichText/serialize';
+import SceneInfo from '~/components/SceneInfo';
 
 export interface Props {
-  title: string;
-  description?: string;
+  slug?: string;
   audio?: boolean;
 }
 
-const { title, description = '', audio = false } = Astro.props;
+const { slug, audio = false } = Astro.props;
+let plainTextDescription = '',
+  title = '';
+let project = null;
+
+if (slug) {
+  project = await getProject(slug);
+  title = project.title;
+  plainTextDescription = richTextToString(project.description as any);
+}
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <SEO title={title} description={description} />
+    <SEO title={title} description={plainTextDescription} />
     <title>{title}</title>
   </head>
   <body>
     <Header stealth />
     <main id="container">
-      <!-- <LoadingOverlay /> -->
+      <LoadingOverlay />
       <div id="gui_container"></div>
+      <SceneInfo client:only="react" project={project} />
       <canvas id="app-view"></canvas>
       {
         audio && (
@@ -92,7 +104,7 @@ const { title, description = '', audio = false } = Astro.props;
       #gui_container {
         position: absolute;
         top: var(--header-height);
-        left: 2rem;
+        right: 1rem;
       }
 
       /* Audio controlls */

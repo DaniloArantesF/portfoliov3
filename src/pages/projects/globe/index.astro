@@ -1,0 +1,175 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+
+const title = 'Travel Globe';
+---
+
+<SceneLayout />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  // import vertexShader from './shaders/vertex.vs.glsl';
+  // import fragmentShader from './shaders/fragment.fs.glsl';
+  import type { BaseSceneState } from '~/lib/types';
+
+  function getCameraPosition(width: number) {
+    return width > 800 ? 20 : 25;
+  }
+
+  /* -------------------------------- */
+  /*          Setup & Globals         */
+  /* -------------------------------- */
+  const settings = {
+    cameraPosition: [0, 5, getCameraPosition(window.innerWidth)],
+    bloomStrength: 1.5,
+    bloomThreshold: 0.1,
+    bloomRadius: 0.1,
+    radius: 10,
+  };
+
+  const canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+  const { state, registerRenderCallback, setSceneHook, utils } = BaseScene({
+    canvas,
+    settings: {
+      orbitControls: true,
+      cameraPosition: settings.cameraPosition,
+      antialias: true,
+    },
+  });
+  const { scene } = state;
+
+  // Most textures from https://www.solarsystemscope.com/textures/
+  const textures = {
+    colorMap: new THREE.TextureLoader().load(
+      '/assets/textures/earth/2k_earth_daymap.jpg',
+    ),
+    displacementMap: new THREE.TextureLoader().load(
+      '/assets/textures/earth/srtm_ramp2.world.5400x2700.jpg', // from https://sbcode.net/topoearth/srtm-heightmap/
+    ),
+    specularMap: new THREE.TextureLoader().load(
+      '/assets/textures/earth/2k_earth_specular_map.tif',
+    ),
+    normalMap: new THREE.TextureLoader().load(
+      '/assets/textures/earth/2k_earth_normal_map.tif',
+    ),
+  };
+
+  [textures.colorMap, textures.specularMap, textures.normalMap].forEach((t) => {
+    if (!(t instanceof THREE.Texture)) return;
+    t.wrapS = THREE.RepeatWrapping;
+    t.wrapT = THREE.RepeatWrapping;
+    t.colorSpace = THREE.LinearSRGBColorSpace;
+  });
+
+  /* -------------------------------- */
+  /*                Scene             */
+  /* -------------------------------- */
+  function Scene() {
+    let mesh: THREE.Mesh,
+      material: THREE.ShaderMaterial,
+      geometry: THREE.BufferGeometry;
+
+    let group: THREE.Group;
+    const raycaster = new THREE.Raycaster();
+    const uniforms = {
+      ...state.uniforms,
+    };
+
+    function handleEvents() {
+      // Handle resize
+      setSceneHook('onResize', () => {
+        const resolution = new THREE.Vector2(
+          window.innerWidth,
+          window.innerHeight,
+        );
+        settings.cameraPosition[2] = getCameraPosition(window.innerWidth);
+        utils.updateSetting('cameraPosition', settings.cameraPosition);
+        utils.resetCamera();
+      });
+    }
+
+    function animationLoop(state: BaseSceneState) {
+      if (!state.orbitControls.enabled) {
+        if (!state.orbitControls.enabled) {
+          // camera.position.x +=
+          //   (uniforms.uMouse.value.x / 10 - camera.position.x) * 1;
+          // camera.position.y +=
+          //   (-uniforms.uMouse.value.y / 15 - camera.position.y) * 1;
+        }
+      }
+    }
+
+    function init() {
+      // Add lights
+      const light = new THREE.AmbientLight(0xffffff, 1);
+      scene.add(light);
+
+      // Earth
+      const globe = new THREE.SphereGeometry(settings.radius, 128, 128);
+      const material = new THREE.MeshPhysicalMaterial({
+        map: textures.colorMap,
+        normalMap: textures.normalMap,
+        specularColorMap: textures.specularMap,
+        displacementMap: textures.displacementMap,
+        displacementScale: 0.2,
+      });
+      mesh = new THREE.Mesh(globe, material);
+      scene.add(mesh);
+
+      // Note
+      // eastern longitude is positive, western is negative
+      // northern latitude is positive, southern is negative
+      const sanDiegoCoords = {
+        lat: 32.7157,
+        lon: -117.1611,
+      };
+      const kyotoCoords = {
+        lat: 35.0116,
+        lon: 135.7681,
+      };
+
+      addPin(sanDiegoCoords.lat, sanDiegoCoords.lon);
+      addPin(kyotoCoords.lat, kyotoCoords.lon);
+    }
+
+    function getPositionFromLatLonRad(
+      lat: number,
+      lon: number,
+      radius: number,
+    ) {
+      // map latitude (-90 to 90) to (0 to 180)
+      const phi = ((90 - lat) * Math.PI) / 180;
+
+      // map longitude (-180 to 180) to (0 to 360)
+      const theta = ((lon + 180) * Math.PI) / 180;
+
+      const x = -(radius * Math.sin(phi) * Math.cos(theta));
+      const y = radius * Math.cos(phi);
+      const z = radius * Math.sin(phi) * Math.sin(theta);
+
+      return new THREE.Vector3(x, y, z);
+    }
+
+    function addPin(lat: number, lon: number) {
+      const coords = getPositionFromLatLonRad(lat, lon, settings.radius);
+
+      const pin = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 32, 32),
+        new THREE.MeshBasicMaterial({ color: 0xff0000 }),
+      );
+
+      pin.position.set(coords.x, coords.y, coords.z);
+      scene.add(pin);
+    }
+
+    function clearScene() {}
+
+    init();
+    handleEvents();
+    registerRenderCallback(animationLoop);
+    isReady.set(true);
+  }
+
+  Scene();
+</script>

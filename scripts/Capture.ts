@@ -14,16 +14,15 @@ export function getProjectLink(project: Project, href = true) {
   const codesandbox = project.links?.find(
     ({ source }) => source === 'codesandbox',
   )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
+  const codepen = project.links?.find(({ source }) => source === 'codepen')
+    ?.url;
 
   return live
     ? live
     : codesandbox
-    ? codesandbox
-    : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      ? codesandbox
+      : github ||
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 const createIntegration = (): AstroIntegration => ({
@@ -65,7 +64,7 @@ class MediaCaptureManager {
       await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
       // Wait a few seconds
-      await sleep(1500);
+      await sleep(500);
       await this.removeUI(page);
       await page.screenshot({ path: filePath });
     } catch (error) {
