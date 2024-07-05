@@ -11,6 +11,8 @@
   padding: 1rem 2rem;
   top: calc(var(--header-height));
 
+  user-select: none;
+
   transition:
     right var(--animation-duration) ease-in-out,
     left var(--animation-duration) ease-in-out;

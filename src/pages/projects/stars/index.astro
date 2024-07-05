@@ -1,0 +1,137 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+
+const title = 'Instanced Stars';
+---
+
+<SceneLayout audio />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import fragmentShader from './shaders/fragment.fs.glsl';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import type { BaseSceneState } from '~/lib/types';
+
+  class Scene {
+    canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    uniforms: { [key: string]: THREE.IUniform };
+    instancedAttributes: Record<string, THREE.InstancedBufferAttribute>;
+
+    constructor() {
+      const { state, registerRenderCallback } = BaseScene({
+        canvas: this.canvas,
+        settings: {
+          cameraPosition: [0, 0, 15],
+          autoRotate: false,
+          orbitControls: true,
+        },
+      });
+      this.scene = state.scene;
+      this.camera = state.camera;
+      this.renderer = state.renderer;
+      this.uniforms = state.uniforms;
+
+      this.instancedAttributes = {
+        starId: new THREE.InstancedBufferAttribute(
+          new Float32Array(1024).fill(0),
+          1,
+        ),
+      };
+
+      this.createStars();
+      this.createLights();
+      registerRenderCallback(this.render);
+      isReady.set(true);
+    }
+
+    createLights = () => {
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      this.scene.add(ambientLight);
+    };
+
+    createStars = () => {
+      const starGeometry = new THREE.BufferGeometry().copy(
+        new THREE.OctahedronGeometry(1, 0),
+      );
+
+      const instancedGeometry = new THREE.InstancedBufferGeometry();
+      instancedGeometry.index = starGeometry.index;
+      instancedGeometry.attributes.position = starGeometry.attributes.position;
+      instancedGeometry.attributes.uv = starGeometry.attributes.uv;
+      instancedGeometry.attributes.normal = starGeometry.attributes.normal;
+
+      instancedGeometry.setAttribute('starId', this.instancedAttributes.starId);
+
+      const starMaterial = new THREE.ShaderMaterial({
+        fragmentShader,
+        vertexShader,
+        uniforms: this.uniforms,
+      });
+      const starCount = 1024;
+      const mesh = new THREE.InstancedMesh(
+        instancedGeometry,
+        starMaterial,
+        starCount,
+      );
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.receiveShadow = true;
+      mesh.castShadow = true;
+
+      const matrix = new THREE.Matrix4();
+      const position = new THREE.Vector3();
+      const quaternion = new THREE.Quaternion();
+      const scale = new THREE.Vector3();
+
+      for (let i = 0; i < starCount; i++) {
+        position.copy(this.getLocationInsideRadius(100, 99));
+        quaternion.setFromEuler(
+          new THREE.Euler(
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+            Math.random() * Math.PI,
+          ),
+        );
+        scale.setScalar(Math.random() * 0.5 + 0.5);
+        matrix.compose(position, quaternion, scale);
+        mesh.setMatrixAt(i, matrix);
+
+        // set starId
+        this.instancedAttributes.starId.set([i], i);
+      }
+      this.scene.add(mesh);
+    };
+
+    getLocationInsideRadius = (
+      radius: number,
+      minRadius: number,
+    ): THREE.Vector3 => {
+      let u = Math.random();
+      let v = Math.random();
+      let theta = 2 * Math.PI * u;
+      let phi = Math.acos(2 * v - 1);
+      let r = Math.cbrt(Math.random()) * radius + minRadius;
+
+      let x = r * Math.sin(phi) * Math.cos(theta);
+      let y = r * Math.sin(phi) * Math.sin(theta);
+      let z = r * Math.cos(phi);
+
+      return new THREE.Vector3(x, y, z);
+    };
+
+    render = (state: BaseSceneState) => {
+      // this.mesh.position.y = Math.sin(state.time * 2) / 2;
+    };
+
+    setUniformAt = (
+      key: string,
+      instanceIndex: number,
+      value: THREE.IUniform,
+    ) => {};
+  }
+
+  const scene = new Scene();
+</script>
