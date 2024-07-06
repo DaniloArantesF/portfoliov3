@@ -45,7 +45,7 @@ let settings: BaseSceneSettings = {
 const BaseScene = ({
   canvas,
   settings: customSettings,
-  onResize = () => {},
+  onResize = () => { },
 }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
@@ -74,7 +74,22 @@ const BaseScene = ({
     uMouse: { value: { x: 0, y: 0 } },
     fftTexture: { value: null },
     fft: { value: 0 },
+    noiseTexture: {
+      value: null
+    }
   };
+
+  const textureLoader = new THREE.TextureLoader();
+  textureLoader.load('/assets/textures/noise.png', (texture) => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+
+    texture.repeat.set(1, 1);
+
+    uniforms.noiseTexture.value = texture;
+  });
 
   // Overwrite settings
   settings = { ...settings, ...customSettings };
@@ -326,7 +341,7 @@ const BaseScene = ({
   }
 
   // TODO
-  function cleanup() {}
+  function cleanup() { }
 
   return init();
 };

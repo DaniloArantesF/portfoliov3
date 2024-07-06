@@ -1,0 +1,99 @@
+---
+import SceneLayout from 'src/layouts/SceneLayout.astro';
+
+const title = 'Instanced Stars';
+---
+
+<SceneLayout audio />
+
+<script>
+  import * as THREE from 'three';
+  import BaseScene, { isReady } from '@lib/sceneController';
+  import fragmentShader from './shaders/fragment.fs.glsl';
+  import vertexShader from './shaders/vertex.vs.glsl';
+  import type { BaseSceneState } from '~/lib/types';
+
+  class Scene {
+    canvas = document.getElementById('app-view')! as HTMLCanvasElement;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    uniforms: { [key: string]: THREE.IUniform };
+
+    constructor() {
+      const { state, registerRenderCallback } = BaseScene({
+        canvas: this.canvas,
+        settings: {
+          cameraPosition: [0, 0.5, 10],
+          autoRotate: false,
+          orbitControls: true,
+          gridHelper: false,
+        },
+      });
+      this.scene = state.scene;
+      this.camera = state.camera;
+      this.renderer = state.renderer;
+      this.uniforms = {
+        ...state.uniforms,
+        ...THREE.ShaderLib.phong.uniforms,
+      };
+
+      this.createLights();
+      this.createWave();
+      registerRenderCallback(this.render);
+      isReady.set(true);
+    }
+
+    createWave = () => {
+      // const geometry = new THREE.PlaneGeometry(100, 20, 100, 100);
+      const geometry = new THREE.CylinderGeometry(1, 1, 50, 50, 100, true);
+      const material = new THREE.ShaderMaterial({
+        vertexShader,
+        fragmentShader,
+        uniforms: this.uniforms,
+        side: THREE.DoubleSide,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        lights: true,
+        // wireframe: true,
+      });
+      this.uniforms.opacity.value = 0.1;
+      this.uniforms.shininess.value = 100;
+      this.uniforms.specular.value = new THREE.Color(0x0000ff);
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.scale.z =  5;
+      mesh.rotation.z = Math.PI / 2;
+      this.scene.add(mesh);
+    };
+
+    createLights = () => {
+      const ambientLight = new THREE.AmbientLight(0xffffff, .05);
+      this.scene.add(ambientLight);
+
+      const light = new THREE.DirectionalLight(0xffffff, .5);
+      light.position.set(0, 10, 30);
+
+      const lightDebug = new THREE.DirectionalLightHelper(light, 1);
+      // this.scene.add(lightDebug);
+
+      this.scene.add(light);
+    };
+
+    render = (state: BaseSceneState) => {
+      // this.mesh.position.y = Math.sin(state.time * 2) / 2;
+    };
+  }
+
+  class WaveShader extends THREE.ShaderMaterial {
+    constructor(params: THREE.ShaderMaterialParameters) {
+      super(params);
+    }
+
+    insertPhongMaterialChunks = (material: THREE.ShaderMaterial) => {
+      material.onBeforeCompile = (shader) => {};
+    };
+  }
+
+  const scene = new Scene();
+</script>
