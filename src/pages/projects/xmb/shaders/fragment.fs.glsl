@@ -1,86 +1,26 @@
-#define PHONG
-
-uniform vec3 diffuse;
-uniform vec3 emissive;
-uniform vec3 specular;
-uniform float shininess;
-uniform float opacity;
-
-#include <common>
-#include <packing>
-#include <dithering_pars_fragment>
-#include <color_pars_fragment>
-#include <uv_pars_fragment>
-#include <map_pars_fragment>
-#include <alphamap_pars_fragment>
-#include <alphatest_pars_fragment>
-#include <alphahash_pars_fragment>
-#include <aomap_pars_fragment>
-#include <lightmap_pars_fragment>
-#include <emissivemap_pars_fragment>
-#include <envmap_common_pars_fragment>
-#include <envmap_pars_fragment>
-#include <fog_pars_fragment>
-#include <bsdfs>
-#include <lights_pars_begin>
-#include <normal_pars_fragment>
-#include <lights_phong_pars_fragment>
-#include <shadowmap_pars_fragment>
-#include <bumpmap_pars_fragment>
-#include <normalmap_pars_fragment>
-#include <specularmap_pars_fragment>
-#include <logdepthbuf_pars_fragment>
-#include <clipping_planes_pars_fragment>
-
 
 uniform sampler2D noiseTexture;
 varying vec2 vUv;
+varying vec3 vPosition;
+uniform vec3 fresnelColor;
+uniform float fresnelPower;
+varying vec3 vViewPosition;
+varying vec3 vNormal;
+varying vec3 vWorldNormal;
+uniform float uTime;
 
 void main() {
-
-	#include <clipping_planes_fragment>
-
-	vec4 diffuseColor = vec4( diffuse, opacity );
-	ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
-	vec3 totalEmissiveRadiance = emissive;
-
-	#include <logdepthbuf_fragment>
-	#include <map_fragment>
-	#include <color_fragment>
-	#include <alphamap_fragment>
-	#include <alphatest_fragment>
-	#include <alphahash_fragment>
-	#include <specularmap_fragment>
-	#include <normal_fragment_begin>
-	#include <normal_fragment_maps>
-	#include <emissivemap_fragment>
-
-	// // accumulation
-	#include <lights_phong_fragment>
-	#include <lights_fragment_begin>
-	#include <lights_fragment_maps>
-	#include <lights_fragment_end>
-
-	// // modulation
-	#include <aomap_fragment>
-
-	vec3 outgoingLight = reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
-
-	#include <envmap_fragment>
-	#include <opaque_fragment>
-	#include <tonemapping_fragment>
-	#include <colorspace_fragment>
-	#include <fog_fragment>
-	#include <premultiplied_alpha_fragment>
-	#include <dithering_fragment>
-
-  outgoingLight += vec3(0.1);
-
-  vec3 dx = dFdx(vViewPosition);
+  vec3 noise = texture2D(noiseTexture, vec2(vUv * 100.0)).rgb;
+  float fresnel = 1.0 - dot(vViewPosition, vWorldNormal);
+  vec3 primaryColor = vec3(0.02, 0.0, 0.05);
   vec3 dy = dFdy(vViewPosition);
-  // vec3 normal = normalize(cross(dx, dy));
-  float edgeFactor = pow(1.0 - dot(normalize(vViewPosition), normal), 2.0);
 
-  outgoingLight += (1.0 - edgeFactor);
- gl_FragColor = vec4(dy, 1.0);
+
+  // primaryColor *= primaryColor * pow(fresnel, fresnelPower);
+  primaryColor += primaryColor * (1. - fresnel);
+
+  primaryColor *= 2.0;
+
+
+  gl_FragColor = vec4(primaryColor, .3);
 }

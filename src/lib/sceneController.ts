@@ -27,8 +27,9 @@ const gui = useGUI.get();
 export const isReady = atom(false);
 export const loadingProgress = atom(-1);
 
+// TODO: add all of these to gui
 let settings: BaseSceneSettings = {
-  axesHelper: false,
+  axesHelper: true,
   cameraPosition: [0, 0, 1],
   aspect: window.innerWidth / window.innerHeight,
   near: 0.1,
@@ -143,6 +144,7 @@ const BaseScene = ({
       const gridHelper = new THREE.GridHelper(10, 10);
       scene.add(gridHelper);
     }
+
 
     stats = new Stats();
     stats.dom.style.display = 'inline-block';
