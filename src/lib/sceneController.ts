@@ -81,14 +81,14 @@ const BaseScene = ({
   };
 
   const textureLoader = new THREE.TextureLoader();
-  textureLoader.load('/assets/textures/noise.png', (texture) => {
+  textureLoader.load('/assets/textures/perlinTexture.png', (texture) => {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
 
     texture.repeat.set(1, 1);
-
+    console.log(texture);
     uniforms.noiseTexture.value = texture;
   });
 

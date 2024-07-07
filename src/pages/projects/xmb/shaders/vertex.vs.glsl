@@ -6,33 +6,38 @@ varying vec2 vUv;
 varying vec3 vPosition;
 uniform float uTime;
 uniform sampler2D noiseTexture;
-
+uniform float frequencyX;
+uniform float frequencyY;
+uniform float amplitudeX;
+uniform float amplitudeY;
+uniform float speed;
+varying vec2 vNoise;
 
 
 float tangentFactor = 0.1;
 
 
 vec3 waves(vec3 position) {
-  float speed = 0.1;
   float time = uTime * speed;
-
-  float frequencyY = 5.0;
-  float frequencyX = .5;
-  float amplitudeY = 12.0;
-  float amplitudeX = 1.0;
-  float amplitudeZ = .5;
-  float frequencyZ = 5.0;
   vec3 offsetPosition = position.xyz;
-  float offsetX1 = (sin(offsetPosition.y * frequencyX + time) * 0.5 + 1.0) * amplitudeX;
-  float offsetZ1 = (sin(offsetPosition.z * frequencyZ + time) * 0.5 + 1.0) * amplitudeZ;
 
-  offsetPosition.x += offsetX1;
-  offsetPosition.x += offsetZ1;
+  vec2 noise = vNoise;
+  vec4 worldPosition = modelMatrix * vec4(offsetPosition, 1.0);
 
-  offsetPosition.y += offsetZ1;
-  offsetPosition.x += offsetZ1;
+  offsetPosition.x += sin(time + position.y * frequencyY) * amplitudeY;
 
-  offsetPosition.x -= amplitudeX + amplitudeZ;
+  // one octave down and up
+  // offsetPosition.x += sin(time + position.y * frequencyY * 2.0) * amplitudeY * 0.5;
+  // offsetPosition.x += sin(time + position.y * frequencyY * 0.5) * amplitudeY * 0.5;
+
+
+  offsetPosition.x += sin(time + position.z * frequencyX * 2.0) * amplitudeX;
+
+  // one octave down and up
+  // offsetPosition.x += sin(time + position.z * frequencyX * 2.0) * amplitudeX * 0.5;
+  // offsetPosition.x += sin(time + position.z * frequencyX * 0.5) * amplitudeX * 0.5;
+
+
 
   return offsetPosition;
 }
@@ -43,12 +48,11 @@ vec3 orthogonal(vec3 v) {
 }
 
 void main() {
-  vec3 noise = texture2D(noiseTexture, vec2(vUv.x, 0.0)).rgb;
   vUv = uv;
+  vec2 noise = texture2D(noiseTexture, vec2(vUv)).rg;
+  vNoise = noise;
 
   vNormal = normal;
-
-
   vec3 offsetPosition = waves(position);
 
   // Recalculate normals https://observablehq.com/@k9/calculating-normals-for-distorted-vertices
@@ -63,9 +67,9 @@ void main() {
   vViewPosition = -mvPosition.xyz;
 
   vNormal = normalize(cross(offset2 - offsetPosition, offset3 - offsetPosition));
-    vWorldNormal = normalize(normalMatrix * vNormal);
-
+  vWorldNormal = normalize(normalMatrix * vNormal);
   vPosition = offsetPosition;
+
   vec4 worldPosition = modelMatrix * vec4(offsetPosition, 1.0);
   gl_Position = projectionMatrix * viewMatrix * vec4(worldPosition);
 }
