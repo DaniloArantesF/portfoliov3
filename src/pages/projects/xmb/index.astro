@@ -9,10 +9,26 @@ const title = 'Instanced Stars';
 <script>
   import * as THREE from 'three';
   import BaseScene, { isReady } from '@lib/sceneController';
+  import pointsFragShader from './shaders/points.fs.glsl';
+  import pointsVertexShader from './shaders/points.vs.glsl';
   import fragmentShader from './shaders/fragment.fs.glsl';
   import vertexShader from './shaders/vertex.vs.glsl';
   import type { BaseSceneState } from '~/lib/types';
   import type { Pane } from 'tweakpane';
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
+
+  type BokehUniforms = {
+    aperture: THREE.IUniform<number>;
+    aspect: THREE.IUniform<number>;
+    farClip: THREE.IUniform<number>;
+    focus: THREE.IUniform<number>;
+    maxblur: THREE.IUniform<number>;
+    nearClip: THREE.IUniform<number>;
+    tColor: THREE.IUniform<THREE.Texture | null>;
+    tDepth: THREE.IUniform<THREE.Texture | null>;
+  };
+
   class Scene {
     canvas = document.getElementById('app-view')! as HTMLCanvasElement;
     scene: THREE.Scene;
@@ -22,6 +38,9 @@ const title = 'Instanced Stars';
     mesh!: THREE.Mesh;
     gui: Pane;
     guiSettings: { [key: string]: any };
+    composer: EffectComposer;
+
+    streamLength = 50;
 
     constructor() {
       const { state, registerRenderCallback, utils } = BaseScene({
@@ -37,14 +56,15 @@ const title = 'Instanced Stars';
       this.scene = state.scene;
       this.camera = state.camera;
       this.renderer = state.renderer;
+      this.composer = state.composer;
       this.uniforms = {
         ...state.uniforms,
         ...THREE.ShaderLib.phong.uniforms,
         fresnelColor: { value: new THREE.Color(0x00ff00) },
         fresnelPower: { value: 2.0 },
-        frequencyY: { value: .5 },
-        frequencyX: { value: 2. },
-        amplitudeY: { value: .5 },
+        frequencyY: { value: 0.5 },
+        frequencyX: { value: 2 },
+        amplitudeY: { value: 0.5 },
         amplitudeX: { value: 0.5 },
         speed: { value: 0.5 },
       };
@@ -55,17 +75,22 @@ const title = 'Instanced Stars';
         amplitudeY: this.uniforms.amplitudeY.value,
         amplitudeX: this.uniforms.amplitudeX.value,
         speed: this.uniforms.speed.value,
+        bokehEnabled: false,
+        bokehFocus: 5.5,
+        bokehAperture: 0.005,
+        bokehMaxblur: 0.008,
       };
 
-      // this.createLights();
       this.createWave();
       this.setupGUI();
+      this.initPostProcessing();
+      this.addParticles();
       registerRenderCallback(this.render);
       isReady.set(true);
     }
 
     createWave = () => {
-      const geometry = new THREE.CylinderGeometry(1, 1, 50, 200, 200, true);
+      const geometry = new THREE.CylinderGeometry(1, 1, this.streamLength, 200, 200, true);
       const material = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
@@ -107,9 +132,9 @@ const title = 'Instanced Stars';
         .addBinding(this.guiSettings, 'frequencyX', {
           min: 0,
           max: 10,
-          step: .01,
+          step: 0.01,
         })
-        .on('change', ({value}) => {
+        .on('change', ({ value }) => {
           this.uniforms.frequencyX.value = value;
         });
 
@@ -117,9 +142,9 @@ const title = 'Instanced Stars';
         .addBinding(this.guiSettings, 'frequencyY', {
           min: 0,
           max: 10,
-          step: .01,
+          step: 0.01,
         })
-        .on('change', ({value}) => {
+        .on('change', ({ value }) => {
           this.uniforms.frequencyY.value = value;
         });
 
@@ -127,9 +152,9 @@ const title = 'Instanced Stars';
         .addBinding(this.guiSettings, 'amplitudeX', {
           min: -5,
           max: 2,
-          step: .01,
+          step: 0.01,
         })
-        .on('change', ({value}) => {
+        .on('change', ({ value }) => {
           this.uniforms.amplitudeX.value = value;
         });
 
@@ -137,9 +162,9 @@ const title = 'Instanced Stars';
         .addBinding(this.guiSettings, 'amplitudeY', {
           min: -5,
           max: 5,
-          step: .01,
+          step: 0.01,
         })
-        .on('change', ({value}) => {
+        .on('change', ({ value }) => {
           this.uniforms.amplitudeY.value = value;
         });
 
@@ -147,9 +172,9 @@ const title = 'Instanced Stars';
         .addBinding(this.guiSettings, 'speed', {
           min: 0,
           max: 1,
-          step: .01,
+          step: 0.01,
         })
-        .on('change', ({value}) => {
+        .on('change', ({ value }) => {
           this.uniforms.speed.value = value;
         });
     }
@@ -157,15 +182,84 @@ const title = 'Instanced Stars';
     render = (state: BaseSceneState) => {
       // this.mesh.rotation.y = state.time / 100.0;
     };
-  }
 
-  class WaveShader extends THREE.ShaderMaterial {
-    constructor(params: THREE.ShaderMaterialParameters) {
-      super(params);
-    }
+    addParticles = () => {
+      const geometry = new THREE.CylinderGeometry(5, 10, 50, 5, 20);
+      const material = new THREE.ShaderMaterial({
+        vertexShader: pointsVertexShader,
+        fragmentShader: pointsFragShader,
+        uniforms: {
+          ...this.uniforms,
+          sphereNormalTexture: {
+            value: new THREE.TextureLoader().load('/assets/textures/sphere-normal.png'),
+          }
+        },
+        defines: {
+          'TOTAL_LENGTH': this.streamLength.toFixed(1),
+        },
+        transparent: true,
+        depthTest: false,
+      })
+      const particles = new THREE.Points(geometry, material);
+      particles.scale.y = 2;
+      // particles.scale.x = 2;
+      particles.position.y = 2;
+      particles.rotation.z = Math.PI / 2;
+      this.scene.add(particles);
+    };
 
-    insertPhongMaterialChunks = (material: THREE.ShaderMaterial) => {
-      material.onBeforeCompile = (shader) => {};
+    initPostProcessing = () => {
+      const bokehParams = {
+        focus: this.guiSettings.bokehFocus,
+        aperture: this.guiSettings.bokehAperture,
+        maxblur: this.guiSettings.bokehMaxblur,
+      };
+      const bokehPass = new BokehPass(this.scene, this.camera, bokehParams);
+      const bokehUniforms = bokehPass.uniforms as BokehUniforms;
+      this.composer.addPass(bokehPass);
+
+      if (!this.guiSettings.bokehEnabled) {
+        bokehPass.enabled = false;
+      }
+      this.gui
+        .addBinding(this.guiSettings, 'bokehEnabled')
+        .on('change', ({ value }) => {
+          bokehPass.enabled = value;
+        });
+
+      this.gui
+        .addBinding(this.guiSettings, 'bokehFocus', {
+          min: -1,
+          max: 20,
+          step: 0.1,
+        })
+        .on('change', ({ value }) => {
+          bokehUniforms.focus.value = value;
+        });
+
+      this.gui
+        .addBinding(this.guiSettings, 'bokehAperture', {
+          min: 0,
+          max: 0.1,
+          step: 0.001,
+        })
+        .on('change', ({ value }) => {
+          bokehUniforms.aperture.value = value;
+        });
+
+      this.gui
+        .addBinding(this.guiSettings, 'bokehMaxblur', {
+          min: 0,
+          max: 0.1,
+          step: 0.001,
+        })
+        .on('change', ({ value }) => {
+          bokehUniforms.maxblur.value = value;
+        });
+
+      this.guiSettings.bokehFocus = bokehUniforms.focus.value;
+      this.guiSettings.bokehAperture = bokehUniforms.aperture.value;
+      this.guiSettings.bokehMaxblur = bokehUniforms.maxblur.value;
     };
   }
 

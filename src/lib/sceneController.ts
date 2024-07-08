@@ -88,7 +88,6 @@ const BaseScene = ({
     texture.magFilter = THREE.LinearFilter;
 
     texture.repeat.set(1, 1);
-    console.log(texture);
     uniforms.noiseTexture.value = texture;
   });
 
@@ -97,6 +96,7 @@ const BaseScene = ({
 
   function init() {
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x090c1b);
     renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: settings.antialias,
