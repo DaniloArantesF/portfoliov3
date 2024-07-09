@@ -7,7 +7,7 @@ import path from 'path';
 const DEBUG = true;
 dotenv.config();
 
-const databaseId = process.env.DATABASE_ID;
+const databaseId = process.env.NOTION_DATABASE_ID;
 const notion = new Client({
   auth: process.env.NOTION_KEY,
 });

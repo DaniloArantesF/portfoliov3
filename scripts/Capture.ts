@@ -22,7 +22,7 @@ export function getProjectLink(project: Project, href = true) {
     : codesandbox
       ? codesandbox
       : github ||
-        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 const createIntegration = (): AstroIntegration => ({
@@ -39,7 +39,7 @@ const createIntegration = (): AstroIntegration => ({
 class MediaCaptureManager {
   browser!: Puppeteer.Browser;
 
-  constructor() {}
+  constructor() { }
 
   async init() {
     this.browser = await Puppeteer.launch({ headless: false });
@@ -147,7 +147,7 @@ if (process.argv.length >= 2) {
         for (const project of projects) {
           let url = getProjectLink(project, false);
           if (!url.startsWith('http')) {
-            url = `${process.env.ASTRO_URL}/${url}`;
+            url = `${process.env.CLIENT_URL}/${url}`;
           }
 
           const filePath = path.resolve('media', `${project.slug}.webp`);

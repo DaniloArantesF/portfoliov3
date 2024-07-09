@@ -44,8 +44,8 @@ const createMediaIntegration = (): AstroIntegration => ({
         const projectDir = path.join('public', 'assets', 'projects');
         const pictureUrl =
           typeof project.image === 'string'
-            ? `${process.env.ASTRO_URL}/${project.image}`
-            : `${process.env.PAYLOAD_URL}${project.image.url}`;
+            ? `${process.env.CLIENT_URL}/${project.image}`
+            : `${process.env.PAYLOAD_PUBLIC_APP_URL}${project.image.url}`;
         if (!pictureUrl) {
           continue;
         }

@@ -21,7 +21,7 @@ export function getProjectLink(project: Project, href = true) {
     : codesandbox
       ? codesandbox
       : github ||
-        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 async function apiFetch(url: string, options: any = {}) {
@@ -54,9 +54,9 @@ export async function getProjects(
     { addQueryPrefix: true },
   );
 
-  const url = import.meta?.env?.PAYLOAD_URL
-    ? import.meta.env?.PAYLOAD_URL
-    : process.env?.PAYLOAD_URL;
+  const url = import.meta?.env?.PAYLOAD_PUBLIC_APP_URL
+    ? import.meta.env?.PAYLOAD_PUBLIC_APP_URL
+    : process.env?.PAYLOAD_PUBLIC_APP_URL;
   const data = (await apiFetch(
     `${url}/api/projects${stringifiedQuery}`,
   )) as PayloadCollection<Project>;
@@ -65,8 +65,8 @@ export async function getProjects(
 
 export async function getProject(slug: string): Promise<Project> {
   const url = import.meta?.env
-    ? import.meta.env.PAYLOAD_URL
-    : process.env.PAYLOAD_URL;
+    ? import.meta.env.PAYLOAD_PUBLIC_APP_URL
+    : process.env.PAYLOAD_PUBLIC_APP_URL;
 
   const stringifiedQuery = qs.stringify(
     {
@@ -90,8 +90,8 @@ export async function uploadMedia(filePath: string): Promise<Project> {
   formData.append('file', new Blob([file]), `file.png`);
 
   const url = import.meta?.env
-    ? import.meta.env.PAYLOAD_URL
-    : process.env.PAYLOAD_URL;
+    ? import.meta.env.PAYLOAD_PUBLIC_APP_URL
+    : process.env.PAYLOAD_PUBLIC_APP_URL;
   const data = await apiFetch(`${url}/api/media`, {
     method: 'POST',
     headers: {
@@ -143,7 +143,7 @@ export function getCardData(projects: Project[]) {
   ];
   data.forEach((card) => {
     if (typeof card.image === 'object') {
-      card.image.url = `${import.meta.env.PAYLOAD_URL}${card.image.url}`;
+      card.image.url = `${import.meta.env.PAYLOAD_PUBLIC_APP_URL}${card.image.url}`;
     }
   });
   return data.sort(
