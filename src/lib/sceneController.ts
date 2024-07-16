@@ -46,7 +46,7 @@ let settings: BaseSceneSettings = {
 const BaseScene = ({
   canvas,
   settings: customSettings,
-  onResize = () => { },
+  onResize = () => {},
 }: BaseSceneProps) => {
   if (!canvas) throw new Error('Canvas is undefined!');
 
@@ -76,8 +76,8 @@ const BaseScene = ({
     fftTexture: { value: null },
     fft: { value: 0 },
     noiseTexture: {
-      value: null
-    }
+      value: null,
+    },
   };
 
   const textureLoader = new THREE.TextureLoader();
@@ -144,7 +144,6 @@ const BaseScene = ({
       const gridHelper = new THREE.GridHelper(10, 10);
       scene.add(gridHelper);
     }
-
 
     stats = new Stats();
     stats.dom.style.display = 'inline-block';
@@ -343,7 +342,7 @@ const BaseScene = ({
   }
 
   // TODO
-  function cleanup() { }
+  function cleanup() {}
 
   return init();
 };

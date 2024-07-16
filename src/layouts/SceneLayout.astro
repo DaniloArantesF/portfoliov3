@@ -22,7 +22,7 @@ let project = null;
 if (slug) {
   project = await getProject(slug);
   title = project?.title ?? '';
-  plainTextDescription = serializeToString(project?.description as any);
+  plainTextDescription = serializeToString(project?.description);
 }
 ---
 

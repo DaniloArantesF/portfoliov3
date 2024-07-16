@@ -29,6 +29,7 @@ import {
   IS_SUPERSCRIPT,
   IS_UNDERLINE,
 } from './nodeFormat';
+import type { Project } from '~/payload-types';
 
 interface Props {
   nodes: SerializedLexicalNode[];
@@ -217,7 +218,18 @@ export function serializeLexical({ nodes }: Props): JSX.Element {
   );
 }
 
-export function serializeToString(nodes: SerializedLexicalNode[]): string {
-  // TODO
-  return "";
+export function serializeToString(
+  description: Pick<Project, 'description'>['description'],
+): string {
+  let result = '';
+  description?.root?.children.forEach((node) => {
+    if (node.type === 'paragraph') {
+      (node as SerializedElementNode).children?.forEach((child) => {
+        if (child.type === 'text') {
+          result += (child as SerializedTextNode).text;
+        }
+      });
+    }
+  });
+  return result;
 }

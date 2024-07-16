@@ -90,7 +90,14 @@ const title = 'Instanced Stars';
     }
 
     createWave = () => {
-      const geometry = new THREE.CylinderGeometry(1, 1, this.streamLength, 200, 200, true);
+      const geometry = new THREE.CylinderGeometry(
+        1,
+        1,
+        this.streamLength,
+        200,
+        200,
+        true,
+      );
       const material = new THREE.ShaderMaterial({
         vertexShader,
         fragmentShader,
@@ -191,15 +198,17 @@ const title = 'Instanced Stars';
         uniforms: {
           ...this.uniforms,
           sphereNormalTexture: {
-            value: new THREE.TextureLoader().load('/assets/textures/sphere-normal.png'),
-          }
+            value: new THREE.TextureLoader().load(
+              '/assets/textures/sphere-normal.png',
+            ),
+          },
         },
         defines: {
-          'TOTAL_LENGTH': this.streamLength.toFixed(1),
+          TOTAL_LENGTH: this.streamLength.toFixed(1),
         },
         transparent: true,
         depthTest: false,
-      })
+      });
       const particles = new THREE.Points(geometry, material);
       particles.scale.y = 2;
       // particles.scale.x = 2;
