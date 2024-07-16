@@ -9,7 +9,7 @@ import RichText from './RichText';
 export interface CardProps {
   slug: string;
   title: string;
-  image: string | Pick<Project, 'image'>['image'];
+  image: string | Pick<Project, 'images'>['images'][0];
   subtitle?: string;
   href: string;
   date?: string | number;
@@ -136,7 +136,7 @@ export default function Card({
                     key={tagTitle}
                     target="_blank"
                     role="link"
-                    href={tagHref}
+                    href={tagHref ?? '#'}
                     aria-label={`${tagTitle}`}
                     rel="noopener"
                     className="tag"

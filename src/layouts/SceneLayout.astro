@@ -6,7 +6,7 @@ import Header from '../components/Header.astro';
 import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
 import { getProject } from '~/api';
-import { richTextToString } from '~/components/RichText/serialize';
+import { serializeToString } from '~/components/RichText/serialize';
 import SceneInfo from '~/components/SceneInfo';
 
 export interface Props {
@@ -21,8 +21,8 @@ let project = null;
 
 if (slug) {
   project = await getProject(slug);
-  title = project.title;
-  plainTextDescription = richTextToString(project.description as any);
+  title = project?.title ?? '';
+  plainTextDescription = serializeToString(project?.description as any);
 }
 ---
 

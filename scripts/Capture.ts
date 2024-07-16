@@ -22,7 +22,7 @@ export function getProjectLink(project: Project, href = true) {
     : codesandbox
       ? codesandbox
       : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 const createIntegration = (): AstroIntegration => ({
@@ -39,7 +39,7 @@ const createIntegration = (): AstroIntegration => ({
 class MediaCaptureManager {
   browser!: Puppeteer.Browser;
 
-  constructor() { }
+  constructor() {}
 
   async init() {
     this.browser = await Puppeteer.launch({ headless: false });

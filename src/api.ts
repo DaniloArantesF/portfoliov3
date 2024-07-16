@@ -21,7 +21,7 @@ export function getProjectLink(project: Project, href = true) {
     : codesandbox
       ? codesandbox
       : github ||
-      `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
+        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
 }
 
 async function apiFetch(url: string, options: any = {}) {
@@ -127,7 +127,7 @@ export function getCardData(projects: Project[]) {
         subtitle: '',
         description: project.description,
         tags,
-        image: project.image,
+        image: project.images[0],
         github: github,
         live: live,
         sandbox: codesandbox,
@@ -142,8 +142,10 @@ export function getCardData(projects: Project[]) {
     }),
   ];
   data.forEach((card) => {
-    if (typeof card.image === 'object') {
-      card.image.url = `${import.meta.env.PAYLOAD_PUBLIC_APP_URL}${card.image.url}`;
+    if (typeof card.image === 'object' && card.image?.url) {
+      card.image.url = `${import.meta.env.PAYLOAD_PUBLIC_APP_URL}${
+        card.image.url
+      }`;
     }
   });
   return data.sort(

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import SideDrawer from '~/components/SideDrawer';
 import Tabs from '~/components/Tabs';
 import type { Project } from '~/payload-types';
-import { richTextToString } from '../RichText/serialize';
 import RichText from '../RichText';
 import { useStore } from '@nanostores/react';
 import { layout } from '~/lib/store/store';
