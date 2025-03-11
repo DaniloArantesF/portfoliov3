@@ -3,10 +3,9 @@ import { Analytics } from '@vercel/analytics/react';
 import { SEO } from 'astro-seo';
 import LoadingOverlay from 'src/components/LoadingOverlay.astro';
 import Header from '../components/Header.astro';
-import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
-import { richTextToString } from '~/components/RichText/serialize';
 import SceneInfo from '~/components/SceneInfo';
+import '../globals.css';
 
 export interface Props {
   slug?: string;
