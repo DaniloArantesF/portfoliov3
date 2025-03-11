@@ -329,19 +329,19 @@ import SceneLayout from 'src/layouts/SceneLayout.astro';
       lightGeometry = (model.scene.children[1] as THREE.Mesh).geometry;
       bodyGeometry = (model.scene.children[0].children[0] as THREE.Mesh)
         .geometry;
-      lWingGeometry = BufferGeometryUtils.mergeBufferGeometries(
+      lWingGeometry = BufferGeometryUtils.mergeGeometries(
         (model.scene.children[2] as THREE.Group).children.map(
           (c) => (c as THREE.Mesh).geometry,
         ),
       );
-      rWingGeometry = BufferGeometryUtils.mergeBufferGeometries(
+      rWingGeometry = BufferGeometryUtils.mergeGeometries(
         (model.scene.children[3] as THREE.Group).children.map(
           (c) => (c as THREE.Mesh).geometry,
         ),
       );
       eyesGeometry = (model.scene.children[0].children[3] as THREE.Mesh)
         .geometry;
-      legsGeometry = BufferGeometryUtils.mergeBufferGeometries([
+      legsGeometry = BufferGeometryUtils.mergeGeometries([
         (model.scene.children[0].children[1] as THREE.Mesh).geometry,
         (model.scene.children[0].children[2] as THREE.Mesh).geometry,
       ]);
