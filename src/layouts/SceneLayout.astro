@@ -5,7 +5,6 @@ import LoadingOverlay from 'src/components/LoadingOverlay.astro';
 import Header from '../components/Header.astro';
 import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
-import { getProject } from '~/api';
 import { richTextToString } from '~/components/RichText/serialize';
 import SceneInfo from '~/components/SceneInfo';
 
@@ -19,11 +18,11 @@ let plainTextDescription = '',
   title = '';
 let project = null;
 
-if (slug) {
-  project = await getProject(slug);
-  title = project.title;
-  plainTextDescription = richTextToString(project.description as any);
-}
+// if (slug) {
+//   project = await getProject(slug);
+//   title = project.title;
+//   plainTextDescription = richTextToString(project.description as any);
+// }
 ---
 
 <!doctype html>

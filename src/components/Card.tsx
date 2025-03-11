@@ -5,22 +5,9 @@ import type { Project, Tag } from 'src/payload-types';
 import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
 
 import RichText from './RichText';
+import type { ProjectProps } from '~/pages/projects.astro';
 
-export interface CardProps {
-  slug: string;
-  title: string;
-  image: string | Pick<Project, 'image'>['image'];
-  subtitle?: string;
-  href: string;
-  date?: string | number;
-  description?: string | Pick<Project, 'description'>['description'];
-  tags: Tag[];
-  live?: string;
-  github?: string;
-  sandbox?: string;
-  visibility: 'visible' | 'hidden' | 'private';
-  type: Pick<Project, 'type'>['type'];
-}
+export interface CardProps extends ProjectProps { }
 
 export function useGsapContext(scope?: string | object | Element) {
   const ctx = useMemo(
@@ -36,7 +23,7 @@ export default function Card({
   subtitle,
   href,
   image,
-  date,
+  lastUpdated,
   description,
   tags,
   live,
@@ -110,7 +97,7 @@ export default function Card({
         <div className={`card_body ${description ? 'with_description' : ''}`}>
           <div className="body_title">
             <h3>{title}</h3>
-            <span>{date}</span>
+            <span>{lastUpdated}</span>
           </div>
           <span>{subtitle ?? ''}</span>
         </div>

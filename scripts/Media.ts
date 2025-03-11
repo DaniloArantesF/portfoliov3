@@ -1,10 +1,9 @@
 import type { AstroIntegration } from 'astro';
 import fs from 'fs';
-import fetch from 'node-fetch';
 import path from 'path';
 import { pipeline } from 'stream';
-import { getProjects } from '../src/api';
 import { promisify } from 'util';
+// import { getLocalProjects } from '~/pages/projects.astro';
 
 /**
  *
@@ -30,7 +29,7 @@ export const downloadPicture = async (
         .catch(console.error);
     }
     const pipe = promisify(pipeline);
-    await pipe(res.body, fileStream);
+    await pipe(res.body as any, fileStream);
     resolve(`${savePath}/${fileName}`);
   });
 };
@@ -39,13 +38,10 @@ const createMediaIntegration = (): AstroIntegration => ({
   name: 'Media',
   hooks: {
     'astro:build:start': async () => {
-      const projects = await getProjects();
-      for (const project of projects.docs) {
+      const projects = [] as any[]; //await getLocalProjects();
+      for (const project of projects) {
         const projectDir = path.join('public', 'assets', 'projects');
-        const pictureUrl =
-          typeof project.image === 'string'
-            ? `${process.env.ASTRO_URL}/${project.image}`
-            : `${process.env.PAYLOAD_URL}${project.image.url}`;
+        const pictureUrl = `${process.env.ASTRO_URL}/${project.image}`;
         if (!pictureUrl) {
           continue;
         }
