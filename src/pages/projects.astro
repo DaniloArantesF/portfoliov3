@@ -1,5 +1,4 @@
 ---
-import { getCardData, getProjects, getProjectLink } from 'src/api';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
 import type { Tag } from '../payload-types';
@@ -13,9 +12,12 @@ export interface ProjectProps {
   image: string;
   sandbox?: string;
   subtitle: string;
+  href?: string;
+  slug?: string;
   tags: Tag[];
   title: string;
   visibility?: 'visible' | 'hidden' | 'private';
+  type?: 'project' | 'scene' | 'game';
 }
 
 export async function getLocalProjects(all = false) {
@@ -35,19 +37,15 @@ export async function getLocalProjects(all = false) {
     await Astro.glob<ProjectProps>('/src/pages/projects/**/*.md')
   ).filter(({ frontmatter }) => visible(frontmatter.visibility ?? ''));
 
-  return { projects, demos };
+  return [...projects, ...demos];
 }
 
-let { docs: projects } = await getProjects(true);
-projects = projects.filter((p) => p.visible);
-
-// Map project data
-const cards = getCardData(projects);
+const projects: ProjectProps[] = (await getLocalProjects(true)).map((p) => p.frontmatter);
 ---
 
 <Layout title="Portfolio">
   <main>
-    <CardList name="Projects" client:load cards={cards} />
+    <CardList name="Projects" client:load cards={projects} />
   </main>
 </Layout>
 

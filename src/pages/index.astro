@@ -1,25 +1,22 @@
 ---
-import { getProjects, getCardData } from 'src/api';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
 
-let { docs: projects } = await getProjects();
-projects = projects.filter((project) => project.featured && project.visible);
-const featuredCards = getCardData(projects);
+const featuredCards = []
 ---
 
 <Layout title="DaniloArantesF">
   <main>
     <Hero />
     <section>
-      <CardList
+      <!-- <CardList
         name="Projects and Experiments"
         viewAll="/projects"
         cards={featuredCards}
         client:load
-      />
+      /> -->
     </section>
     <ContactPrompt text="Let's get in touch!" />
   </main>

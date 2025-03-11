@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import type { AstroIntegration } from 'astro';
 import * as Puppeteer from 'puppeteer';
-import { getProjects, uploadMedia } from '../src/api';
 import type { Project } from '~/payload-types';
 import { sleep } from '~/utils/utils';
 dotenv.config();
@@ -14,8 +13,9 @@ export function getProjectLink(project: Project, href = true) {
   const codesandbox = project.links?.find(
     ({ source }) => source === 'codesandbox',
   )?.url;
-  const codepen = project.links?.find(({ source }) => source === 'codepen')
-    ?.url;
+  const codepen = project.links?.find(
+    ({ source }) => source === 'codepen',
+  )?.url;
 
   return live
     ? live
@@ -124,10 +124,11 @@ if (process.argv.length >= 2) {
           `runner.png`,
         );
 
-        const { docs: projects } = await getProjects();
+        // const { docs: projects } = await getProjects();
+        const projects = [] as any[];
         for (const project of projects) {
           // TODO: test this
-          const data = await uploadMedia(filePath);
+          // const data = await uploadMedia(filePath);
         }
       })();
       break;
@@ -137,7 +138,8 @@ if (process.argv.length >= 2) {
     default:
       (async () => {
         const manager = new MediaCaptureManager();
-        let { docs: projects } = await getProjects();
+        // const { docs: projects } = await getProjects();
+        let projects = [] as any[];
 
         const projectSlug = process.argv[2];
         if (projectSlug) {
