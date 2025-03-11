@@ -25,7 +25,7 @@ export type StoreState = ConfigSlice &
         | StoreState
         | Partial<StoreState>
         | ((state: StoreState) => StoreState | Partial<StoreState>),
-      replace?: boolean | undefined,
+      replace?: boolean  ,
     ) => void;
   };
 

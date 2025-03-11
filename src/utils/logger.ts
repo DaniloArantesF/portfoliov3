@@ -24,7 +24,7 @@ export class Logger implements ILogger {
   }
 
   private log(msg: string, prefix = '') {
-    // eslint-disable-next-line no-console
+     
     console.log(
       `%s${this.packageName}:%s ${msg}\n`,
       prefix,

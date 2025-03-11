@@ -48,12 +48,11 @@ export default [
       regexp: regexpEslint,
     },
     rules: {
-      // These off/configured-differently-by-default rules fit well for us
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
       '@typescript-eslint/no-shadow': 'error',
       'no-console': 'off',
 
-      // Todo: do we want these?
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
@@ -86,11 +85,12 @@ export default [
       '@typescript-eslint/unbound-method': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
 
-      // Used by Biome
       '@typescript-eslint/consistent-type-imports': 'off',
-      // These rules enabled by the preset configs don't work well for us
+
       '@typescript-eslint/await-thenable': 'off',
       'prefer-const': 'off',
+
+      'regexp/no-unused-capturing-group': 'warn',
 
       // In some cases, using explicit letter-casing is more performant than the `i` flag
       'regexp/use-ignore-case': 'off',

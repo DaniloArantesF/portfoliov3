@@ -8,7 +8,7 @@ export default function useDebug(debugMode = false) {
       didIRun.current = true;
     }
     if (debugMode === true) {
-      // eslint-disable-next-line no-console
+       
       console.info(
         `%c   mount :) ${new Date().toUTCString()} ${performance
           .now()
@@ -18,7 +18,7 @@ export default function useDebug(debugMode = false) {
     }
     return () => {
       if (debugMode === true) {
-        // eslint-disable-next-line no-console
+         
         console.info(
           `%c unmount :( ${new Date().toUTCString()} ${performance
             .now()

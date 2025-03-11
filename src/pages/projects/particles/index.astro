@@ -109,46 +109,39 @@ const title = 'Embers';
           THREE.UniformsLib.lights,
           {
             textureDefaultPosition: {
-              type: 't',
               value: this.fbo.defaultPositionTexture,
             },
-            texturePosition: { type: 't', value: null },
-            dim: { type: 'f', value: 0 },
-            sizeRatio: { type: 'f', value: 0 },
-            lightPos: { type: 'v3', value: this.lights.position },
-            color1: { type: 'c', value: this.color1 },
-            color2: { type: 'c', value: this.color2 },
-            camera: { type: 'v3', value: camera.position },
+            texturePosition: { value: null },
+            dim: { value: 0 },
+            sizeRatio: { value: 0 },
+            lightPos: { value: this.lights.position },
+            color1: { value: this.color1 },
+            color2: { value: this.color2 },
+            camera: { value: camera.position },
             befEnlargementNear: {
-              type: 'f',
               value: this.settings.befEnlargementNear,
             },
             befEnlargementFar: {
-              type: 'f',
               value: this.settings.befEnlargementFar,
             },
             befEnlargementFactor: {
-              type: 'f',
               value: this.settings.befEnlargementFactor,
             },
             aftEnlargementNear: {
-              type: 'f',
               value: this.settings.aftEnlargementNear,
             },
             aftEnlargementFar: {
-              type: 'f',
               value: this.settings.aftEnlargementFar,
             },
             aftEnlargementFactor: {
-              type: 'f',
               value: this.settings.aftEnlargementFactor,
             },
-            befOpacityNear: { type: 'f', value: this.settings.befOpacityNear },
-            befOpacityFar: { type: 'f', value: this.settings.befOpacityFar },
-            befOpacityBase: { type: 'f', value: this.settings.befOpacityBase },
-            aftOpacityNear: { type: 'f', value: this.settings.aftOpacityNear },
-            aftOpacityFar: { type: 'f', value: this.settings.aftOpacityFar },
-            aftOpacityBase: { type: 'f', value: this.settings.aftOpacityBase },
+            befOpacityNear: { value: this.settings.befOpacityNear },
+            befOpacityFar: { value: this.settings.befOpacityFar },
+            befOpacityBase: { value: this.settings.befOpacityBase },
+            aftOpacityNear: { value: this.settings.aftOpacityNear },
+            aftOpacityFar: { value: this.settings.aftOpacityFar },
+            aftOpacityBase: { value: this.settings.aftOpacityBase },
           },
         ]),
         defines: {
@@ -392,7 +385,7 @@ const title = 'Embers';
       this.copyTexture(this.positionTexture1.texture, this.positionTexture2);
     }
 
-    createDataTexture(data: BufferSource): THREE.DataTexture {
+    createDataTexture(data: ArrayBufferView): THREE.DataTexture {
       const texture = new THREE.DataTexture(
         data,
         FBO.TEXTURE_HEIGHT,

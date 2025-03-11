@@ -30,19 +30,19 @@ interface ObstacleData {
   args: [number, number, number];
   index: number;
   position: THREE.Vector3;
-  type: (...args: any) => JSX.Element;
+  type: (...args: any) => React.ReactElement;
 }
 
 interface TileData {
   index: number;
-  group: RefObject<THREE.Group>;
+  group: RefObject<THREE.Group | null>;
   obstacles: ObstacleData[];
   wrapCount: number;
 }
 
 export interface TileSlice {
-  Tiles: JSX.Element;
-  ref: React.RefObject<THREE.InstancedMesh>;
+  Tiles: React.ReactElement;
+  ref: RefObject<THREE.InstancedMesh | null>;
   tiles: TileData[];
   tracks: THREE.Vector3[];
   randomizeTile: (i: number, run: number) => void;
@@ -122,22 +122,22 @@ function getTiles() {
         wrapCount: 0,
       };
     }),
-  ];
+  ] as TileData[];
 }
 
 // Get random position for obstacle
 // Removes position from available spots in place
-export function getRandomObstacle(availableSpots: THREE.Vector3[]) {
-  const index = Math.floor(Math.random() * availableSpots.length);
-  const position = availableSpots[index].clone();
-  availableSpots.splice(index, 1);
+export function getRandomObstacle(curAvailableSpots: THREE.Vector3[]) {
+  const index = Math.floor(Math.random() * curAvailableSpots.length);
+  const position = curAvailableSpots[index].clone();
+  curAvailableSpots.splice(index, 1);
   return position;
 }
 
-export function getRandomCoin(availableSpots: THREE.Vector3[]) {
-  const index = Math.floor(Math.random() * availableSpots.length);
-  const position = availableSpots[index].clone();
-  availableSpots.splice(index, 1);
+export function getRandomCoin(curAvailableSpots: THREE.Vector3[]) {
+  const index = Math.floor(Math.random() * curAvailableSpots.length);
+  const position = curAvailableSpots[index].clone();
+  curAvailableSpots.splice(index, 1);
   return position;
 }
 

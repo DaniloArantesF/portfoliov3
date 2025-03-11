@@ -6,7 +6,7 @@ import {
   Grid,
 } from '@react-three/drei';
 import { useRef } from 'react';
-import { useTweaks, makeButton } from 'use-tweaks';
+import { useTweaks } from 'use-tweaks';
 import { useStore } from './store';
 
 export function GUI() {
@@ -18,7 +18,11 @@ export function GUI() {
     {
       // ...makeButton('Debug', () => set({ debug: !get().debug })),
     },
-    { container: ref },
+    {
+      container: (ref === null ? undefined : ref) as
+        | React.RefObject<HTMLDivElement>
+        | undefined,
+    },
   );
 
   return (
