@@ -5,9 +5,9 @@ import type { Project, Tag } from 'src/payload-types';
 import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
 
 import RichText from './RichText';
-import type { ProjectProps } from '~/pages/projects.astro';
+import type { ProjectProps } from '~/lib/projects';
 
-export interface CardProps extends ProjectProps { }
+export interface CardProps extends ProjectProps {}
 
 export function useGsapContext(scope?: string | object | Element) {
   const ctx = useMemo(
@@ -25,12 +25,11 @@ export default function Card({
   image,
   lastUpdated,
   description,
-  tags,
   live,
   github,
   sandbox,
 }: CardProps) {
-  const [tagsData, setTagsData] = useState<Tag[]>(tags);
+  const [tagsData, setTagsData] = useState<Tag[]>([]);
   const cardRef = useRef(null);
   const ctx = useGsapContext(cardRef);
 
@@ -83,14 +82,14 @@ export default function Card({
             <source
               height="1200"
               width="1600"
-              srcSet={`/assets/projects/${slug}.webp`}
+              srcSet={`/assets/projects/${image}`}
               media="(min-width: 800px)"
             />
             <img
               height="450"
               width="600"
               alt={`${title} demo`}
-              src={`/assets/projects/${slug}.webp`}
+              src={`/assets/projects/${image}`}
             />
           </picture>
         </div>

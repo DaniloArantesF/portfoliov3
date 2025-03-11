@@ -3,6 +3,7 @@ import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js
 import type Stats from 'three/examples/jsm/libs/stats.module.js';
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import type { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+// import type { Tag } from '~/payload-types';
 
 export type useFrame = (state: BaseSceneState) => void;
 

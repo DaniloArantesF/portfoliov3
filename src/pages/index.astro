@@ -1,22 +1,23 @@
 ---
+import { getLocalProjects } from '~/lib/projects';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
 
-const featuredCards = []
+const featuredCards = (await getLocalProjects()).map((p) => p.frontmatter);
 ---
 
 <Layout title="DaniloArantesF">
   <main>
     <Hero />
     <section>
-      <!-- <CardList
+      <CardList
         name="Projects and Experiments"
         viewAll="/projects"
         cards={featuredCards}
         client:load
-      /> -->
+      />
     </section>
     <ContactPrompt text="Let's get in touch!" />
   </main>
