@@ -1,6 +1,6 @@
 export const formatPagePath = (
   collection: string,
-  doc: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  doc: any,  
 ): string => {
   const { slug } = doc;
 

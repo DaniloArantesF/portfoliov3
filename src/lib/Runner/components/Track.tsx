@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { useLayoutEffect, useMemo, useRef } from 'react';
 import { useStore } from '../lib/store';
 import { TILE_COUNT, TILE_LENGTH } from '../lib/tileSlice';
-import useDebug from '../lib/useDebug';
 
 const o = new THREE.Object3D();
 
@@ -49,22 +48,26 @@ function Track() {
   return (
     <>
       {Tiles}
-      {obstacles.map(({ tileIndex, obstacles, wrapCount, groupRef }, i) => {
-        return (
-          <group key={`${i}${wrapCount}`} ref={groupRef}>
-            {obstacles.map(({ position, args, type: Obstacle, index }, j) => (
-              <Obstacle
-                key={`${j}`}
-                position={position}
-                tileIndex={tileIndex}
-                wrapCount={wrapCount}
-                args={args}
-                index={index}
-              />
-            ))}
-          </group>
-        );
-      })}
+      {obstacles.map(
+        ({ tileIndex, obstacles: curObstacles, wrapCount, groupRef }, i) => {
+          return (
+            <group key={`${i}${wrapCount}`} ref={groupRef}>
+              {curObstacles.map(
+                ({ position, args, type: Obstacle, index }, j) => (
+                  <Obstacle
+                    key={`${j}`}
+                    position={position}
+                    tileIndex={tileIndex}
+                    wrapCount={wrapCount}
+                    args={args}
+                    index={index}
+                  />
+                ),
+              )}
+            </group>
+          );
+        },
+      )}
     </>
   );
 }
