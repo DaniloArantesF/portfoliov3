@@ -11,10 +11,39 @@ export interface ProjectProps {
   subtitle: string;
   href?: string;
   slug?: string;
-  // tags: Tag[];
+  tags: string[];
   title: string;
   visibility?: 'visible' | 'hidden' | 'private';
   type?: 'project' | 'scene' | 'game';
+  credits: { label: string; href: string }[];
+}
+
+export function extractProjectSlugFromFilePath() {
+  // Extract the last path preceding "/readme.md"
+  const slugRegex = /\/[^/]+\/([^/]*)\/[^/]+$/;
+}
+
+export function getProjectUrl(file: MarkdownInstance<ProjectProps>) {
+  const project = file.frontmatter;
+  let url = file.url?.replace('/readme', '') ?? '';
+
+  // Explicit url
+  url = project.href || url;
+  url = project.live || url;
+
+  return url;
+}
+
+export async function loadMarkdownFiles<T extends Record<string, any>>(
+  files: Record<string, () => Promise<MarkdownInstance<T>>>,
+): Promise<MarkdownInstance<T>[]> {
+  return (
+    await Promise.all(
+      Object.keys(files).map(async (file) => {
+        return await files[file]();
+      }),
+    )
+  ).flat();
 }
 
 export async function getLocalProjects(all = false) {
@@ -28,10 +57,7 @@ export async function getLocalProjects(all = false) {
     '/src/projects/*.md',
   );
 
-  let projects = await Promise.all(
-    Object.keys(projectsFiles).map(async (file) => await projectsFiles[file]()),
-  );
-
+  let projects = await loadMarkdownFiles(projectsFiles);
   projects = projects.filter(({ frontmatter }) =>
     visible(frontmatter.visibility ?? ''),
   );
@@ -41,13 +67,15 @@ export async function getLocalProjects(all = false) {
   const demoFiles = import.meta.glob<MarkdownInstance<ProjectProps>>(
     '/src/pages/projects/**/*.md',
   );
-  let demos = await Promise.all(
-    Object.keys(demoFiles).map(async (file) => await demoFiles[file]()),
-  );
-
+  let demos = await loadMarkdownFiles(demoFiles);
   demos = demos.filter(({ frontmatter }) =>
     visible(frontmatter.visibility ?? ''),
   );
 
   return [...projects, ...demos];
+}
+
+export async function getLocalProject(slug: string) {
+  const files = await getLocalProjects();
+  return files.find((f) => f.frontmatter.slug === slug);
 }
