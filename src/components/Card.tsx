@@ -7,7 +7,22 @@ import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect'
 import RichText from './RichText';
 import type { ProjectProps } from '~/lib/projects';
 
-export interface CardProps extends ProjectProps {}
+export interface CardProps {
+  description: string;
+  featured: boolean;
+  github?: string;
+  lastUpdated: string;
+  live?: string;
+  image: string;
+  sandbox?: string;
+  subtitle: string;
+  href: string;
+  slug?: string;
+  tags: string[];
+  title: string;
+  visibility?: 'visible' | 'hidden' | 'private';
+  type?: 'project' | 'scene' | 'game';
+}
 
 export function useGsapContext(scope?: string | object | Element) {
   const ctx = useMemo(

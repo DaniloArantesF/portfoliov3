@@ -5,6 +5,8 @@ import LoadingOverlay from 'src/components/LoadingOverlay.astro';
 import Header from '../components/Header.astro';
 import { PlayerController } from '../components/PlayerController';
 import SceneInfo from '~/components/SceneInfo';
+import { getLocalProject } from '~/lib/projects';
+import type { ProjectProps } from '~/lib/projects';
 import '../globals.css';
 
 export interface Props {
@@ -15,13 +17,12 @@ export interface Props {
 const { slug, audio = false } = Astro.props;
 let plainTextDescription = '',
   title = '';
-let project = null;
-
-// if (slug) {
-//   project = await getProject(slug);
-//   title = project.title;
-//   plainTextDescription = richTextToString(project.description as any);
-// }
+let project: ProjectProps | null = null;
+if (slug) {
+  project = (await getLocalProject(slug))?.frontmatter ?? null;
+  title = project?.title ?? '';
+  plainTextDescription = project?.description ?? '';
+}
 ---
 
 <!doctype html>

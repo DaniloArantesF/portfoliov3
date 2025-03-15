@@ -1,16 +1,21 @@
 ---
+import type { CardProps } from '~/components/Card';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
-import { getLocalProjects, type ProjectProps } from '~/lib/projects';
+import {
+  getLocalProjects,
+  getProjectUrl,
+} from '~/lib/projects';
 
-const projects: ProjectProps[] = (await getLocalProjects(true)).map(
-  (p) => p.frontmatter,
-);
+const cards: CardProps[] = (await getLocalProjects(true)).map((p) => ({
+  ...p.frontmatter,
+  href: getProjectUrl(p),
+}));
 ---
 
 <Layout title="Portfolio">
   <main>
-    <CardList name="Projects" client:load cards={projects} />
+    <CardList name="Projects" client:load cards={cards} />
   </main>
 </Layout>
 

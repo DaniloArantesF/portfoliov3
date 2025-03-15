@@ -1,11 +1,14 @@
 ---
-import { getLocalProjects } from '~/lib/projects';
+import { getLocalProjects, getProjectUrl } from '~/lib/projects';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
 
-const featuredCards = (await getLocalProjects()).map((p) => p.frontmatter);
+const featuredCards = (await getLocalProjects()).map((p) => ({
+  ...p.frontmatter,
+  href: getProjectUrl(p),
+}));
 ---
 
 <Layout title="DaniloArantesF">
