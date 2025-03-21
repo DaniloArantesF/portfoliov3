@@ -2,9 +2,9 @@
 title: Tiles
 subtitle: ThreeJS
 description:
-image: projects/project-desktop-sample.webp
+image: tiles.webp
 featured: false
-visibility: private
+visibility: visible
 tags: ['threejs', 'typescript']
 ---
 
