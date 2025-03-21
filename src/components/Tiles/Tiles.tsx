@@ -1,34 +1,8 @@
-import { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import type { ProjectProps } from '~/pages/projects.astro';
-import { Mesh, Color } from 'three';
 import classes from './Tiles.module.css';
-import { OrbitControls } from '@react-three/drei';
-
-function Box(props: any) {
-  const ref = useRef<Mesh>(null);
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
-
-  useFrame((state, delta) => {
-    if (!ref.current) return;
-    ref.current.rotation.x += delta;
-  });
-
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={(event) => click(!clicked)}
-      onPointerOver={(event) => hover(true)}
-      onPointerOut={(event) => hover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-    </mesh>
-  );
-}
+import { Html, OrbitControls } from '@react-three/drei';
+import type { HtmlProps } from '@react-three/drei/web/Html';
 
 function SceneSetup() {
   return (
@@ -40,17 +14,38 @@ function SceneSetup() {
   );
 }
 
+function Tile({ project, ...props }: { project: ProjectProps } & HtmlProps) {
+  return (
+    <Html transform scale={0.1} {...props}>
+      <div className={classes.tile}>
+        <img src={`/assets/${project.image}`}></img>
+      </div>
+    </Html>
+  );
+}
+
 export type TilesProps = {
   data: ProjectProps[];
 };
 
 export const Tiles = ({ data }: TilesProps) => {
+  const maxColumns = 3;
+  const gap = 1;
+  const scale = 1.5;
+
+  const calculateTilePosition = (index: number): [number, number, number] => {
+    const column = (index % maxColumns) - maxColumns / 2;
+    const row = Math.floor(index / maxColumns);
+    return [scale * column, scale * row, 0];
+  };
+
   return (
     <div className={classes.tiles}>
       <Canvas>
+        {data.map((p, index) => {
+          return <Tile project={p} position={calculateTilePosition(index)} />;
+        })}
         <SceneSetup />
-        <Box position={[-1.2, 0, 0]} />
-        <Box position={[1.2, 0, 0]} />
         <gridHelper args={[20, 20, 0xff0000, 'teal']} />
         <OrbitControls enablePan={false} />
       </Canvas>

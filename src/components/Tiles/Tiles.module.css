@@ -7,3 +7,12 @@
   display: block;
   z-index: 99;
 }
+
+.tile {
+  width: 500px;
+}
+
+.tile img {
+  width: 100%;
+  object-fit: cover;
+}
