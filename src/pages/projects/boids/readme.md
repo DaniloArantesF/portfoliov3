@@ -1,11 +1,11 @@
 ---
 slug: boids
-title: FireflyDisco
+title: Firefly Disco
 subtitle: ThreeJS
-description:
-image: projects/project-desktop-sample.webp
+description: A fascinating dive into boid systems. Implementing the principles of emergent behaviors, each firefly in this system exhibits complex, coordinated behavior that mimics the patterns observed in nature.
+image: boids.webp
 featured: false
-visibility: private
+visibility: visible
 tags: ['threejs', 'typescript']
 credits:
   [
