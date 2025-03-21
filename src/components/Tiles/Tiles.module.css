@@ -1,0 +1,9 @@
+.tiles {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4/3;
+  position: relative;
+  overflow: hidden;
+  display: block;
+  z-index: 99;
+}

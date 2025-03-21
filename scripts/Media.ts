@@ -1,6 +1,6 @@
 import type { AstroIntegration } from 'astro';
 import fs from 'fs';
-import fetch from 'node-fetch';
+// import fetch from 'node-fetch';
 import path from 'path';
 import { pipeline } from 'stream';
 import { getProjects } from '../src/api';
@@ -30,7 +30,7 @@ export const downloadPicture = async (
         .catch(console.error);
     }
     const pipe = promisify(pipeline);
-    await pipe(res.body, fileStream);
+    await pipe(res.body as any, fileStream);
     resolve(`${savePath}/${fileName}`);
   });
 };

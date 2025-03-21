@@ -121,7 +121,8 @@ export default function Card({
             {typeof description === 'string' ? (
               description
             ) : (
-              <RichText content={description} />
+                <>unknown</>
+              // <RichText content={description} />
             )}
           </>
         )}

@@ -6,7 +6,6 @@ import Header from '../components/Header.astro';
 import '../globals.css';
 import { PlayerController } from '../components/PlayerController';
 import { getProject } from '~/api';
-import { richTextToString } from '~/components/RichText/serialize';
 import SceneInfo from '~/components/SceneInfo';
 
 export interface Props {
@@ -22,7 +21,7 @@ let project = null;
 if (slug) {
   project = await getProject(slug);
   title = project.title;
-  plainTextDescription = richTextToString(project.description as any);
+  // plainTextDescription = richTextToString(project.description as any);
 }
 ---
 
@@ -41,7 +40,7 @@ if (slug) {
     <main id="container">
       <LoadingOverlay />
       <div id="gui_container"></div>
-      <SceneInfo client:only="react" project={project} />
+      <!-- <SceneInfo client:only="react" project={project} /> -->
       <canvas id="app-view"></canvas>
       {
         audio && (

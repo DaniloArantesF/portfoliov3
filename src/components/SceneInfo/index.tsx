@@ -1,15 +1,13 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import SideDrawer from '~/components/SideDrawer';
 import Tabs from '~/components/Tabs';
-import type { Project } from '~/payload-types';
-import { richTextToString } from '../RichText/serialize';
-import RichText from '../RichText';
 import { useStore } from '@nanostores/react';
 import { layout } from '~/lib/store/store';
 import { useGUI } from '~/lib/sceneController';
+import type { ProjectProps } from '~/pages/projects.astro';
 
 type SceneInfoProps = {
-  project: Project | null;
+  project: ProjectProps | null;
 };
 
 const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
@@ -40,7 +38,7 @@ const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
               content: (
                 <div>
                   <h1>{project?.title}</h1>
-                  <RichText content={project?.description as any} />
+                  {project?.description}
                 </div>
               ),
             },
@@ -49,7 +47,7 @@ const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
               content: (
                 <div>
                   <h2>Credits</h2>
-                  <RichText content={project?.credits as any} />
+                  {/* {project?.credits} */}
                 </div>
               ),
             },
