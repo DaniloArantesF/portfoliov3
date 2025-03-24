@@ -106,3 +106,8 @@ textarea {
   font-size: var(--text-sm);
   font-weight: 300;
 }
+
+
+body.locked {
+  overflow: hidden;
+}

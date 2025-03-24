@@ -62,6 +62,9 @@ importers:
       immer:
         specifier: ^10.0.3
         version: 10.1.1
+      maath:
+        specifier: ^0.10.8
+        version: 0.10.8(@types/three@0.158.3)(three@0.158.0)
       meshline:
         specifier: ^3.1.7
         version: 3.3.1(three@0.158.0)

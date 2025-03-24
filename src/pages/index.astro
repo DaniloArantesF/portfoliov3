@@ -3,7 +3,7 @@ import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
-import { Tiles } from '~/components/Tiles/Tiles';
+import { Tiles, TilesScene } from '~/components/Tiles/Tiles';
 import { getLocalProjects } from '~/pages/projects.astro';
 
 const { projects, demos } = await getLocalProjects();
@@ -15,9 +15,9 @@ const cards = [...projects, ...demos].map((p) => p.frontmatter);
   <main>
     <!-- <Hero /> -->
     <section>
-      <Tiles data={cards} client:only/>
+      <TilesScene data={cards} client:only />
     </section>
-    <ContactPrompt text="Let's get in touch!" />
+    <!-- <ContactPrompt text="Let's get in touch!" /> -->
   </main>
 </Layout>
 

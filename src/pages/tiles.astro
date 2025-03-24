@@ -1,0 +1,63 @@
+---
+import CardList from '../components/CardList';
+import ContactPrompt from '../components/ContactPrompt.astro';
+import Hero from '../components/Hero.astro';
+import Layout from '../layouts/Layout.astro';
+import { TilesScene } from '~/components/Tiles/Tiles';
+import { getLocalProjects } from '~/pages/projects.astro';
+
+const { projects, demos } = await getLocalProjects();
+const cards = [...projects, ...demos].map((p) => p.frontmatter);
+// const featuredCards = getCardData(projects);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <div id="container">
+      <TilesScene data={cards} client:only />
+    </div>
+    <style>
+      #container {
+        height: 100vh;
+        max-height: 100vh;
+        display: flex;
+        overflow: hidden;
+      }
+    </style>
+    <style>
+      *,
+      *::before,
+      *::after {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
+      html {
+        width: 100vw;
+      }
+
+      body {
+        width: 100%;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        background: var(--color-background);
+        overflow-y: visible;
+        overflow-x: hidden;
+      }
+    </style>
+  </body>
+</html>
