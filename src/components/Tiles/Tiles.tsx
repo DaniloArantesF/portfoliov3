@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import type { ProjectProps } from '~/pages/projects.astro';
 import classes from './Tiles.module.css';
-import { Html } from '@react-three/drei';
+import { Center, Html, Stage } from '@react-three/drei';
 import type { HtmlProps } from '@react-three/drei/web/Html';
 import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import { Group } from 'three';
@@ -76,7 +76,7 @@ export const Tiles = ({ data, tileWidth = 23 }: TilesProps) => {
     [data],
   );
 
-  return <group ref={groupRef}>{items}</group>;
+  return <group ref={groupRef} position={[0, 0, -1.25 * radius]}>{items}</group>;
 };
 
 export const TilesScene = ({ data }: TilesProps) => {
@@ -94,7 +94,6 @@ export const TilesScene = ({ data }: TilesProps) => {
         }}
       >
         <Canvas
-          camera={{ position: [0, 0, 23 * 3.65] }}
           className={classes.canvas}
         >
           <SceneSetup />
