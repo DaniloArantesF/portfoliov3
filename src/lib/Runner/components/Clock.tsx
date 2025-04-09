@@ -6,7 +6,7 @@ function Clock() {
   const status = useStore((state) => state.status);
   const time = useRef(0);
   const ref = useRef<HTMLSpanElement>(null);
-  const interval = useRef<NodeJS.Timeout>(null);
+  const interval = useRef<NodeJS.Timeout | null>(null);
 
   useLayoutEffect(() => {
     ref.current!.innerText = getTimeString();

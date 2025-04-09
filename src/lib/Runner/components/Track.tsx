@@ -50,8 +50,12 @@ function Track() {
       {Tiles}
       {obstacles.map(
         ({ tileIndex, obstacles: curObstacles, wrapCount, groupRef }, i) => {
+          const setGroupRef = (element: THREE.Group) => {
+            (groupRef as React.MutableRefObject<THREE.Group | null>).current = element;
+          };
+
           return (
-            <group key={`${i}${wrapCount}`} ref={groupRef}>
+            <group key={`${i}${wrapCount}`} ref={setGroupRef}>
               {curObstacles.map(
                 ({ position, args, type: Obstacle, index }, j) => (
                   <Obstacle
