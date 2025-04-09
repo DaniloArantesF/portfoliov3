@@ -8,6 +8,7 @@ import SceneInfo from '~/components/SceneInfo';
 import { getLocalProject } from '~/lib/projects';
 import type { ProjectProps } from '~/lib/projects';
 import '../globals.css';
+import BaseHead from '~/components/BaseHead.astro';
 
 export interface Props {
   slug?: string;
@@ -28,12 +29,7 @@ if (slug) {
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <SEO title={title} description={plainTextDescription} />
-    <title>{title}</title>
+    <BaseHead title={title} description={plainTextDescription} />
   </head>
   <body>
     <Header stealth />

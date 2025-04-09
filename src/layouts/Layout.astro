@@ -2,7 +2,7 @@
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import { Analytics } from '@vercel/analytics/react';
-import { SEO } from 'astro-seo';
+import BaseHead from '../components/BaseHead.astro';
 import '../globals.css';
 
 export interface Props {
@@ -16,16 +16,7 @@ const { title, description } = Astro.props;
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <SEO
-      title={title}
-      description={description ??
-        'A software engineer focused on front-end development'}
-    />
-    <title>{title}</title>
+    <BaseHead title={title} description={description} />
   </head>
   <body>
     <Header />
