@@ -9,7 +9,6 @@ export interface Props {
 const { title, description } = Astro.props;
 ---
 
-
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width" />
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
@@ -20,3 +19,16 @@ const { title, description } = Astro.props;
     'A software engineer focused on front-end development'}
 />
 <title>{title}</title>
+
+<script
+  defer
+  data-domain={`${import.meta.env.PROD ? '' : 'dev.'}daniloarantesf.me`}
+  src={`https://analytics.darflix.dev/js/script.outbound-links.tagged-events${import.meta.env.PROD ? '' : '.local'}.js`}
+></script>
+<script is:inline>
+  window.plausible =
+    window.plausible ||
+    function () {
+      (window.plausible.q = window.plausible.q || []).push(arguments);
+    };
+</script>
