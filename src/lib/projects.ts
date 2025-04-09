@@ -57,7 +57,7 @@ export async function getLocalProjects(all = false) {
     '/src/projects/*.md',
   );
 
-  let projects = await loadMarkdownFiles(projectsFiles);
+  let projects = await loadMarkdownFiles<ProjectProps>(projectsFiles);
   projects = projects.filter(({ frontmatter }) =>
     visible(frontmatter.visibility ?? ''),
   );
@@ -67,7 +67,7 @@ export async function getLocalProjects(all = false) {
   const demoFiles = import.meta.glob<MarkdownInstance<ProjectProps>>(
     '/src/pages/projects/**/*.md',
   );
-  let demos = await loadMarkdownFiles(demoFiles);
+  let demos = await loadMarkdownFiles<ProjectProps>(demoFiles);
   demos = demos.filter(({ frontmatter }) =>
     visible(frontmatter.visibility ?? ''),
   );
@@ -76,6 +76,6 @@ export async function getLocalProjects(all = false) {
 }
 
 export async function getLocalProject(slug: string) {
-  const files = await getLocalProjects();
+  const files = await getLocalProjects(true);
   return files.find((f) => f.frontmatter.slug === slug);
 }
