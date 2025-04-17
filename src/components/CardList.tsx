@@ -28,9 +28,6 @@ const Filter: React.FC<{
 };
 
 function CardList({ viewAll, name, cards }: Props) {
-  console.log({
-    cards
-  })
   return (
     <div className="cardlist-container">
       <div

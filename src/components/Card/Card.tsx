@@ -108,6 +108,7 @@ export const ProjectCard: React.FC<CardProps> = ({
   const linksRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+  const titleWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!cardRef.current) return;
@@ -154,7 +155,6 @@ export const ProjectCard: React.FC<CardProps> = ({
         });
       }
 
-      // Continue animation loop
       rafId = requestAnimationFrame(animate);
     };
 
@@ -171,14 +171,40 @@ export const ProjectCard: React.FC<CardProps> = ({
     };
 
     const handleMouseEnter = () => {
-      // Show description
+      const hoverTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
       if (contentRef.current) {
-        gsap.to(contentRef.current, {
-          opacity: 1,
-          y: 0,
-          duration: 0.3,
-          ease: 'power2.out',
-        });
+        hoverTl.to(
+          contentRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.3,
+          },
+          0,
+        );
+      }
+
+      if (titleWrapperRef.current) {
+        hoverTl.to(
+          titleWrapperRef.current,
+          {
+            y: -30,
+            duration: 0.3,
+          },
+          0,
+        );
+      }
+
+      if (glowRef.current) {
+        hoverTl.to(
+          glowRef.current,
+          {
+            opacity: 0.25,
+            duration: 0.3,
+          },
+          0,
+        );
       }
 
       if (rafId === null) {
@@ -189,13 +215,40 @@ export const ProjectCard: React.FC<CardProps> = ({
     const handleMouseLeave = () => {
       if (!card) return;
 
+      const exitTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+
       if (contentRef.current) {
-        gsap.to(contentRef.current, {
-          opacity: 0,
-          y: 10,
-          duration: 0.3,
-          ease: 'power2.out',
-        });
+        exitTl.to(
+          contentRef.current,
+          {
+            opacity: 0,
+            y: 10,
+            duration: 0.3,
+          },
+          0,
+        );
+      }
+
+      if (titleWrapperRef.current) {
+        exitTl.to(
+          titleWrapperRef.current,
+          {
+            y: 0,
+            duration: 0.3,
+          },
+          0,
+        );
+      }
+
+      if (glowRef.current) {
+        exitTl.to(
+          glowRef.current,
+          {
+            opacity: 0,
+            duration: 0.3,
+          },
+          0,
+        );
       }
 
       mouseX = 0.5;
@@ -217,13 +270,6 @@ export const ProjectCard: React.FC<CardProps> = ({
             currentRotateY = 0;
           },
         });
-
-        if (glowRef.current) {
-          gsap.to(glowRef.current, {
-            opacity: 0,
-            duration: 0.3,
-          });
-        }
       }, 100);
     };
 
@@ -272,7 +318,7 @@ export const ProjectCard: React.FC<CardProps> = ({
               />
 
               <div className={styles.imageOverlay}>
-                <div className={styles.titleWrapper}>
+                <div className={styles.titleWrapper} ref={titleWrapperRef}>
                   <h3 className={styles.title}>{title}</h3>
                   <p className={styles.subtitle}>{subtitle}</p>
                 </div>
