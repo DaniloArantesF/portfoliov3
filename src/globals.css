@@ -1,108 +1,93 @@
+@import 'tailwindcss';
+
 @font-face {
   font-family: ibm-plex-sans, sans-serif;
   src: url('https://use.typekit.net/jvm2oyf.css');
   font-display: swap;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-:root {
-  --color-accent: #4143e1;
-  --color-accent-1: #42d6ff;
-  --color-accent-2: #697df7;
-  --color-accent-3: #620fc7;
-  --color-accent-4: #494963;
-
-  --color-background: #090c1b;
-  --color-surface-0: #000015;
-  --color-surface-1: #2a2c38;
-  --color-surface-2: #121522;
-  --color-surface-3: #151925;
-  --color-surface-4: #191c29;
-
-  --color-text-main: #dddddd;
-  --color-text-sub: #aaaaaa;
-  --color-text-success: hsl(123, 40%, 55%);
-  --color-text-error: hsl(350, 60%, 55%);
-
-  --text-xxs: 0.75rem;
-  --text-xs: 0.85rem;
-  --text-sm: 1rem;
-  --text-default: 1rem;
-  --text-md: 1.25rem;
-  --text-lg: 1.5rem;
-  --text-xl: 2.25rem;
-  --text-2xl: 3rem;
-
-  --padding-y: 1.5rem;
-  --padding-x: 1.25rem;
-  --main-margin-y: 2rem;
-  --main-margin-x: 1rem;
-  --border-radius: 4px;
-  --content-max-width: 1600px;
-  --header-height: 5.5rem;
-
-  --box-shadow: 0 3px 20px 1px rgba(0, 0, 0, 0.2);
-  --box-shadow-low: 0 1px 20px 0px rgba(0, 0, 30, 0.5);
-
-  color: var(--color-text-main);
-  font-family: ibm-plex-sans, sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-
-  /* z-index layers */
-  --ui-layer: 100;
-  --foreground-layer: 75;
-  --midground-layer: 50;
-  --background-layer: -50;
-}
-
-html {
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-surface-1) var(--color-surface-2);
-}
-
-@media only screen and (min-width: 900px) {
+@layer base {
   :root {
-    --main-margin-x: 2rem;
-    --main-margin-y: 3rem;
+    --color-accent: #4143e1;
+    --color-accent-1: #42d6ff;
+    --color-accent-2: #697df7;
+    --color-accent-3: #620fc7;
+    --color-accent-4: #494963;
+    --color-background: #090c1b;
+    --color-surface-0: #000015;
+    --color-surface-1: #2a2c38;
+    --color-surface-2: #121522;
+    --color-surface-3: #151925;
+    --color-surface-4: #191c29;
+    --color-text-main: #dddddd;
+    --color-text-sub: #aaaaaa;
+    --color-text-success: hsl(123, 40%, 55%);
+    --color-text-error: hsl(350, 60%, 55%);
+    --text-xxs: 0.75rem;
+    --text-xs: 0.85rem;
+    --text-sm: 1rem;
+    --text-default: 1rem;
+    --text-md: 1.25rem;
+    --text-lg: 1.5rem;
+    --text-xl: 2.25rem;
+    --text-2xl: 3rem;
+    --padding-y: 1.5rem;
+    --padding-x: 1.25rem;
+    --main-margin-y: 2rem;
+    --main-margin-x: 1rem;
+    --border-radius: 4px;
+    --content-max-width: 1600px;
+    --header-height: 5.5rem;
+    --box-shadow: 0 3px 20px 1px rgba(0, 0, 0, 0.2);
+    --box-shadow-low: 0 1px 20px 0px rgba(0, 0, 30, 0.5);
+    --ui-layer: 100;
+    --foreground-layer: 75;
+    --midground-layer: 50;
+    --background-layer: -50;
   }
-}
 
-@media only screen and (min-width: 1200px) {
   html {
-    font-size: 18px;
+    @reference font-ibm-plex;
+    color: var(--color-text-main);
+    background-color: var(--color-background);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-surface-1) var(--color-surface-2);
   }
-}
 
-html::-webkit-scrollbar {
-  width: 0.5em;
-}
+  html::-webkit-scrollbar {
+    width: 0.5em;
+  }
 
-html::-webkit-scrollbar-track {
-}
+  html::-webkit-scrollbar-thumb {
+    background-color: var(--color-surface-1);
+  }
 
-html::-webkit-scrollbar-thumb {
-  background-color: var(--color-surface-1);
-}
+  a {
+    @reference no-underline text-inherit;
+  }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
+  input,
+  textarea {
+    @reference text-sm font-light;
+  }
 
-input,
-textarea {
-  font-size: var(--text-sm);
-  font-weight: 300;
+  @media only screen and (min-width: 900px) {
+    :root {
+      --main-margin-x: 2rem;
+      --main-margin-y: 3rem;
+    }
+  }
+
+  @media only screen and (min-width: 1200px) {
+    html {
+      font-size: 18px;
+    }
+  }
 }
