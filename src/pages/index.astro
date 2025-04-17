@@ -4,10 +4,13 @@ import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
+import type { CardProps } from '~/components/Card/Card';
 
-const featuredCards = (await getLocalProjects()).map((p) => ({
-  ...p.frontmatter,
-  href: getProjectUrl(p),
+const featuredCards: CardProps[] = (await getLocalProjects()).map((p) => ({
+  project: {
+    ...p.frontmatter,
+    href: getProjectUrl(p),
+  },
 }));
 ---
 

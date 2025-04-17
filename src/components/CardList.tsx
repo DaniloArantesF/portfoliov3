@@ -1,7 +1,7 @@
 import '@styles/cardList.scss';
 import button from '@styles/button.module.css';
-import type { CardProps } from './Card';
-import Card from './Card';
+import type { CardProps } from './Card/Card';
+import Card from './Card/Card';
 import { useMemo, useState, useCallback } from 'react';
 
 interface Props {
@@ -28,6 +28,9 @@ const Filter: React.FC<{
 };
 
 function CardList({ viewAll, name, cards }: Props) {
+  console.log({
+    cards
+  })
   return (
     <div className="cardlist-container">
       <div
@@ -46,9 +49,9 @@ function CardList({ viewAll, name, cards }: Props) {
       </div>
       <div className="cards-container">
         {cards
-          .filter((card) => card.visibility === 'visible')
+          .filter((card) => card.project.visibility === 'visible')
           .map((props) => (
-            <Card key={props.href} {...props} />
+            <Card key={props.project.href} project={props.project} />
           ))}
       </div>
     </div>
