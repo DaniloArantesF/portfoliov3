@@ -5,6 +5,7 @@ subtitle: ThreeJS
 description: My first try playing around with ray marchers. It implements a simple diffusion light model and it displaces a sphere SDF with a blend of sine functions.
 image: ray-marcher.webp
 featured: true
+date: 2023-01-01T00:00:00.000Z
 visibility: visible
 tags: ['threejs', 'typescript']
 credits:

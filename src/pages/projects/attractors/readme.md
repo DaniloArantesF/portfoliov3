@@ -6,9 +6,7 @@ image: attractors.webp
 featured: false
 visibility: visible
 tags: ['threejs', 'typescript']
+
+date: 2023-01-01T00:00:00.000Z
+credits: []
 ---
-
-### Todos
-
-- improve camera movement
-- color paths
