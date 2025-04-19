@@ -11,7 +11,9 @@
       "@styles/*": ["src/styles/*"],
       "@payload-types": ["src/payloads-types.ts"]
     },
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    // "strictNullChecks": true,
+    "verbatimModuleSyntax": true
   },
   "include": ["**/*", ".eslintrc.cjs"],
   "exclude": ["node_modules", "dist", "out", "build", "public"]
