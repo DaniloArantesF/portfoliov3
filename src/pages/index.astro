@@ -1,14 +1,18 @@
 ---
-import { getLocalProjects, getProjectUrl } from '~/lib/projects';
+import {
+  extractSlugFromFilePath,
+  getProjectUrl,
+} from '~/lib/projects';
 import CardList from '../components/CardList';
 import ContactPrompt from '../components/ContactPrompt.astro';
 import Hero from '../components/Hero.astro';
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import type { CardProps } from '~/components/Card';
 
-const featuredCards = (await getLocalProjects()).map((p) => ({
-  ...p.frontmatter,
-  href: getProjectUrl(p),
-}));
+const projectsCollection = await getCollection('projects');
+const featuredCards: CardProps[] = projectsCollection.map(p => ({ ...p.data, slug: extractSlugFromFilePath(p.filePath), href: getProjectUrl(p), }))
+
 ---
 
 <Layout title="DaniloArantesF">
