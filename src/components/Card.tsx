@@ -1,12 +1,11 @@
 import { type BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import '../styles/card.scss';
-import type { Project, Tag } from 'src/payload-types';
 import { useIsomorphicLayoutEffect } from '@lib/hooks/useIsomorphicLayoutEffect';
 
 import RichText from './RichText';
-import type { ProjectProps } from '~/lib/projects';
 import type { CollectionEntry } from 'astro:content';
+import type { Project } from '~/content.config';
 
 export type CardProps = CollectionEntry<'projects'>['data'] & {
   slug: string;
@@ -33,7 +32,7 @@ export default function Card({
   github,
   sandbox,
 }: CardProps) {
-  const [tagsData, setTagsData] = useState<Tag[]>([]);
+  const [tagsData, setTagsData] = useState<Project['tags'][]>([]);
   const cardRef = useRef(null);
   const ctx = useGsapContext(cardRef);
 
@@ -118,7 +117,7 @@ export default function Card({
       </div>
       <div className="card_footer">
         <div className="tags">
-          {tagsData &&
+          {/* {tagsData &&
             tagsData.map(
               ({ label: tagTitle, url: tagHref }) =>
                 title && (
@@ -134,7 +133,7 @@ export default function Card({
                     {tagTitle}
                   </a>
                 ),
-            )}
+            )} */}
         </div>
         <div className="links">
           {live && (

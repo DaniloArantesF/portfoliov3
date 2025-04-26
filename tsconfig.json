@@ -9,7 +9,6 @@
       "@utils/*": ["src/utils/*"],
       "@components/*": ["src/components/*"],
       "@styles/*": ["src/styles/*"],
-      "@payload-types": ["src/payloads-types.ts"]
     },
     "esModuleInterop": true,
     // "strictNullChecks": true,
