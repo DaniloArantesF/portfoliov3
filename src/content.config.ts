@@ -26,7 +26,7 @@ const ProjectSchema = z.object({
 
 const projects = defineCollection({
   loader: glob({
-    pattern: '**/projects/**/*.md',
+    pattern: '**/(projects|games)/**/*.md',
   }),
   schema: ProjectSchema,
 });
