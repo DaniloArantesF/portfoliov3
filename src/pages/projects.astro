@@ -3,12 +3,15 @@ import type { CardProps } from '~/components/Card';
 import CardList from '../components/CardList';
 import Layout from '../layouts/Layout.astro';
 import {
-  getLocalProjects,
+  extractSlugFromFilePath,
   getProjectUrl,
 } from '~/lib/projects';
+import { getCollection } from 'astro:content';
 
-const cards: CardProps[] = (await getLocalProjects(true)).map((p) => ({
-  ...p.frontmatter,
+const projectsCollection = await getCollection('projects');
+const cards: CardProps[] = projectsCollection.map((p) => ({
+  ...p.data,
+  slug: extractSlugFromFilePath(p.filePath),
   href: getProjectUrl(p),
 }));
 ---
