@@ -29,20 +29,20 @@ export default function Card({
   );
 
   return (
-    <a
-      role="link"
-      href={href}
-      target="_blank"
-      aria-label={`${title}`}
-      rel="noopener"
+    <div
+      ref={cardRef}
+      className={cn(
+        'group relative flex flex-col gap-2 h-full',
+        'border border-border rounded shadow-sm ,hover:shadow-lg',
+        'overflow-hidden',
+      )}
     >
-      <div
-        ref={cardRef}
-        className={cn(
-          'group relative flex flex-col gap-2 h-full',
-          'border border-border rounded shadow-sm ,hover:shadow-lg',
-          'overflow-hidden',
-        )}
+      <a
+        role="link"
+        href={href}
+        target="_blank"
+        aria-label={`${title}`}
+        rel="noopener"
       >
         <div className={cn('w-full aspect-[4/3] rounded')}>
           <picture>
@@ -60,25 +60,34 @@ export default function Card({
             />
           </picture>
         </div>
+      </a>
 
-        <div
-          className={cn(
-            'absolute top-0 left-0 w-full h-full z-30',
-            'rounded-lg',
-            'transition-opacity duration-200 ease-out',
-            'group-hover:opacity-100 opacity-0',
-            'group-hover:backdrop-blur-sm',
-            'group-hover:backdrop-saturate-150',
-            'group-hover:backdrop-brightness-50',
-            'bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,0.7)_100%)]',
-          )}
-        ></div>
-        <div
-          className={cn(
-            'absolute top-0 left-0 w-full h-full z-40',
-            'flex flex-col gap-2 justify-between',
-            'p-4',
-          )}
+      <div
+        className={cn(
+          'absolute top-0 left-0 w-full h-full z-30',
+          'rounded-lg',
+          'transition-opacity duration-200 ease-out',
+          'group-hover:opacity-100 opacity-0',
+          'group-hover:backdrop-blur-sm',
+          'group-hover:backdrop-saturate-150',
+          'group-hover:backdrop-brightness-50',
+          'bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,0.7)_100%)]',
+        )}
+      ></div>
+      <div
+        className={cn(
+          'absolute top-0 left-0 w-full h-full z-40',
+          'flex flex-col gap-2 justify-between',
+          'p-4',
+        )}
+      >
+        <a
+          role="link"
+          href={href}
+          target="_blank"
+          aria-label={`${title}`}
+          rel="noopener"
+          className="contents"
         >
           <div className={cn('')}>
             <div
@@ -107,51 +116,51 @@ export default function Card({
           >
             {description && <>{description}</>}
           </div>
+        </a>
 
-          <div
-            className={cn(
-              'mt-auto py-4',
-              // 'border-t border-[var(--color-text-sub)]',
+        <div
+          className={cn(
+            'mt-auto py-4',
+            // 'border-t border-[var(--color-text-sub)]',
+          )}
+        >
+          <div className={cn('flex gap-2 mt-auto')}>
+            {live && (
+              <a
+                target="_blank"
+                href={live}
+                aria-label={`Live version link`}
+                rel="noopener"
+                className={linkClassName}
+              >
+                Live
+              </a>
             )}
-          >
-            <div className={cn('flex gap-2 mt-auto')}>
-              {live && (
-                <a
-                  target="_blank"
-                  href={live}
-                  aria-label={`Live version link`}
-                  rel="noopener"
-                  className={linkClassName}
-                >
-                  Live
-                </a>
-              )}
-              {github && (
-                <a
-                  target="_blank"
-                  href={github}
-                  aria-label={`Github link`}
-                  rel="noopener"
-                  className={linkClassName}
-                >
-                  Github
-                </a>
-              )}
-              {sandbox && (
-                <a
-                  target="_blank"
-                  href={sandbox}
-                  aria-label={`Sandbox link`}
-                  rel="noopener"
-                  className={linkClassName}
-                >
-                  Sandbox
-                </a>
-              )}
-            </div>
+            {github && (
+              <a
+                target="_blank"
+                href={github}
+                aria-label={`Github link`}
+                rel="noopener"
+                className={linkClassName}
+              >
+                Github
+              </a>
+            )}
+            {sandbox && (
+              <a
+                target="_blank"
+                href={sandbox}
+                aria-label={`Sandbox link`}
+                rel="noopener"
+                className={linkClassName}
+              >
+                Sandbox
+              </a>
+            )}
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 }
