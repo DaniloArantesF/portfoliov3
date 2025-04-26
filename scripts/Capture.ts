@@ -3,27 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import type { AstroIntegration } from 'astro';
 import * as Puppeteer from 'puppeteer';
-import type { Project } from '~/payload-types';
 import { sleep } from '~/utils/utils';
+import { getProjectUrl } from '~/lib/projects';
 dotenv.config();
 
-export function getProjectLink(project: Project, href = true) {
-  const live = project.links?.find(({ source }) => source === 'custom')?.url;
-  const github = project.links?.find(({ source }) => source === 'github')?.url;
-  const codesandbox = project.links?.find(
-    ({ source }) => source === 'codesandbox',
-  )?.url;
-  const codepen = project.links?.find(
-    ({ source }) => source === 'codepen',
-  )?.url;
-
-  return live
-    ? live
-    : codesandbox
-      ? codesandbox
-      : github ||
-        `${project.type !== 'game' ? 'projects' : 'games'}/${project.slug}`;
-}
 
 const createIntegration = (): AstroIntegration => ({
   name: 'thumbnail',
@@ -147,7 +130,7 @@ if (process.argv.length >= 2) {
         }
 
         for (const project of projects) {
-          let url = getProjectLink(project, false);
+          let url = getProjectUrl(project);
           if (!url.startsWith('http')) {
             url = `${process.env.ASTRO_URL}/${url}`;
           }

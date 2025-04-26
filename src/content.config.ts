@@ -1,5 +1,7 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection, z, type CollectionEntry } from 'astro:content';
 import { glob } from 'astro/loaders';
+
+export type Project = CollectionEntry<'projects'>['data'];
 
 const CreditSchema = z.object({
   label: z.string(),

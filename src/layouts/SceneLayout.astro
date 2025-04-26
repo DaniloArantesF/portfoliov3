@@ -1,14 +1,13 @@
 ---
 import { Analytics } from '@vercel/analytics/react';
-import { SEO } from 'astro-seo';
 import LoadingOverlay from 'src/components/LoadingOverlay.astro';
 import Header from '../components/Header.astro';
 import { PlayerController } from '../components/PlayerController';
 import SceneInfo from '~/components/SceneInfo';
-import { getLocalProject } from '~/lib/projects';
-import type { ProjectProps } from '~/lib/projects';
 import '../globals.css';
 import BaseHead from '~/components/BaseHead.astro';
+import { getEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 
 export interface Props {
   slug?: string;
@@ -18,11 +17,9 @@ export interface Props {
 const { slug, audio = false } = Astro.props;
 let plainTextDescription = '',
   title = '';
-let project: ProjectProps | null = null;
+let project: CollectionEntry<'projects'> | null = null;
 if (slug) {
-  project = (await getLocalProject(slug))?.frontmatter ?? null;
-  title = project?.title ?? '';
-  plainTextDescription = project?.description ?? '';
+  project = (await getEntry('projects', slug ?? '')) ?? null;
 }
 ---
 
@@ -36,7 +33,7 @@ if (slug) {
     <main id="container">
       <LoadingOverlay />
       <div id="gui_container"></div>
-      <SceneInfo client:only="react" project={project} />
+      <SceneInfo client:only="react" project={project?.data ?? null} />
       <canvas id="app-view"></canvas>
       {
         audio && (

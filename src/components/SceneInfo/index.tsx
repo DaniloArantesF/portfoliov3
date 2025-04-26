@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react';
 import SideDrawer from '~/components/SideDrawer';
 import Tabs from '~/components/Tabs';
-import { richTextToString } from '../RichText/serialize';
 import RichText from '../RichText';
 import { useStore } from '@nanostores/react';
 import { layout } from '~/lib/store/store';
 import { useGUI } from '~/lib/sceneController';
-import type { ProjectProps } from '~/lib/projects';
+import type { Project } from '~/content.config';
 
 type SceneInfoProps = {
-  project: ProjectProps | null;
+  project: Project | null;
 };
 
 const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
@@ -49,7 +48,7 @@ const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
               content: (
                 <div>
                   <h2>Credits</h2>
-                  {project?.credits.map((c) => <a href={c.href}>{c.label}</a>)}
+                  {project?.credits?.map((c) => <a href={c.href}>{c.label}</a>)}
                 </div>
               ),
             },
