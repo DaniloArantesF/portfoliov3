@@ -6,88 +6,106 @@
   font-display: swap;
 }
 
-@layer base {
+:root {
+  --color-accent: #4143e1;
+  --color-accent-1: #42d6ff;
+  --color-accent-2: #697df7;
+  --color-accent-3: #620fc7;
+  --color-accent-4: #494963;
+  --color-background: hsl(231 50% 8%);
+  --color-surface-0: hsl(240 100% 4%);
+  --color-surface-1: hsl(231 14% 20%);
+  --color-surface-2: hsl(231 30% 10%);
+  --color-surface-3: hsl(231 25% 12%);
+  --color-surface-4: hsl(231 22% 14%);
+  --color-text-main: hsl(0 0% 87%);
+  --color-text-sub: hsl(0 0% 67%);
+  --color-text-success: hsl(123 40% 55%);
+  --color-text-error: hsl(350 60% 55%);
+  --text-xxs: 0.75rem;
+  --text-xs: 0.85rem;
+  --text-sm: 1rem;
+  --text-default: 1rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5rem;
+  --text-xl: 2.25rem;
+  --text-2xl: 3rem;
+  --padding-y: 1.5rem;
+  --padding-x: 1.25rem;
+  --main-margin-y: 2rem;
+  --main-margin-x: 1rem;
+  --border-radius: 4px;
+  --content-max-width: 1600px;
+  --header-height: 5.5rem;
+  --box-shadow: 0 3px 20px 1px rgba(0, 0, 0, 0.2);
+  --box-shadow-low: 0 1px 20px 0px rgba(0, 0, 30, 0.5);
+  --ui-layer: 100;
+  --foreground-layer: 75;
+  --midground-layer: 50;
+  --background-layer: -50;
+
+  --color-border: hsl(0 0% 17%);
+}
+
+@theme inline {
+  --color-accent: var(--color-accent);
+  --color-accent-1: var(--color-accent-1);
+  --color-accent-2: var(--color-accent-2);
+  --color-accent-3: var(--color-accent-3);
+  --color-accent-4: var(--color-accent-4);
+  --color-background: var(--color-background);
+  --color-surface-0: var(--color-surface-0);
+  --color-surface-1: var(--color-surface-1);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+  --color-surface-4: var(--color-surface-4);
+  --color-text-main: var(--color-text-main);
+  --color-text-sub: var(--color-text-sub);
+  --color-text-success: var(--color-text-success);
+  --color-text-error: var(--color-text-error);
+  --color-border: var(--color-border);
+}
+
+html {
+  @reference font-ibm-plex;
+  color: var(--color-text-main);
+  background-color: var(--color-background);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-1) var(--color-surface-2);
+}
+
+html::-webkit-scrollbar {
+  width: 0.5em;
+}
+
+html::-webkit-scrollbar-thumb {
+  background-color: var(--color-surface-1);
+}
+
+a {
+  @reference no-underline text-inherit;
+}
+
+input,
+textarea {
+  @reference text-sm font-light;
+}
+
+@media only screen and (min-width: 900px) {
   :root {
-    --color-accent: #4143e1;
-    --color-accent-1: #42d6ff;
-    --color-accent-2: #697df7;
-    --color-accent-3: #620fc7;
-    --color-accent-4: #494963;
-    --color-background: #090c1b;
-    --color-surface-0: #000015;
-    --color-surface-1: #2a2c38;
-    --color-surface-2: #121522;
-    --color-surface-3: #151925;
-    --color-surface-4: #191c29;
-    --color-text-main: #dddddd;
-    --color-text-sub: #aaaaaa;
-    --color-text-success: hsl(123, 40%, 55%);
-    --color-text-error: hsl(350, 60%, 55%);
-    --text-xxs: 0.75rem;
-    --text-xs: 0.85rem;
-    --text-sm: 1rem;
-    --text-default: 1rem;
-    --text-md: 1.25rem;
-    --text-lg: 1.5rem;
-    --text-xl: 2.25rem;
-    --text-2xl: 3rem;
-    --padding-y: 1.5rem;
-    --padding-x: 1.25rem;
-    --main-margin-y: 2rem;
-    --main-margin-x: 1rem;
-    --border-radius: 4px;
-    --content-max-width: 1600px;
-    --header-height: 5.5rem;
-    --box-shadow: 0 3px 20px 1px rgba(0, 0, 0, 0.2);
-    --box-shadow-low: 0 1px 20px 0px rgba(0, 0, 30, 0.5);
-    --ui-layer: 100;
-    --foreground-layer: 75;
-    --midground-layer: 50;
-    --background-layer: -50;
+    --main-margin-x: 2rem;
+    --main-margin-y: 3rem;
   }
+}
 
+@media only screen and (min-width: 1200px) {
   html {
-    @reference font-ibm-plex;
-    color: var(--color-text-main);
-    background-color: var(--color-background);
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    -webkit-text-size-adjust: 100%;
-
-    /* Firefox scrollbar */
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-surface-1) var(--color-surface-2);
-  }
-
-  html::-webkit-scrollbar {
-    width: 0.5em;
-  }
-
-  html::-webkit-scrollbar-thumb {
-    background-color: var(--color-surface-1);
-  }
-
-  a {
-    @reference no-underline text-inherit;
-  }
-
-  input,
-  textarea {
-    @reference text-sm font-light;
-  }
-
-  @media only screen and (min-width: 900px) {
-    :root {
-      --main-margin-x: 2rem;
-      --main-margin-y: 3rem;
-    }
-  }
-
-  @media only screen and (min-width: 1200px) {
-    html {
-      font-size: 18px;
-    }
+    font-size: 18px;
   }
 }

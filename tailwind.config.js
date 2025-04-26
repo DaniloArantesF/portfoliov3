@@ -40,6 +40,9 @@ export default {
         'main-margin-y': 'var(--spacing-main-margin-y)',
         'main-margin-x': 'var(--spacing-main-margin-x)',
       },
+      borderColor: {
+        DEFAULT: 'var(--color-border)',
+      },
       borderRadius: {
         DEFAULT: 'var(--rounded)',
       },
