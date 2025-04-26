@@ -1,7 +1,7 @@
-import { useRef } from 'react';
-
-import type { CollectionEntry } from 'astro:content';
+import { useRef, useEffect, useState } from 'react';
 import { cn } from '~/utils/utils';
+import type { CollectionEntry } from 'astro:content';
+import { motion } from 'motion/react';
 
 export type CardProps = CollectionEntry<'projects'>['data'] & {
   slug: string;
@@ -20,7 +20,63 @@ export default function Card({
   github,
   sandbox,
 }: CardProps) {
-  const cardRef = useRef(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    const card = cardRef.current;
+    let rafId: number | null = null;
+    let mouseX = 0.5;
+    let mouseY = 0.5;
+    let currentX = 0.5;
+    let currentY = 0.5;
+    const maxRotate = 5;
+    const lerp = 0.1;
+    let isMouseOver = false;
+
+    const animate = () => {
+      currentX += (mouseX - currentX) * lerp;
+      currentY += (mouseY - currentY) * lerp;
+
+      const rotateX = (currentY - 0.5) * maxRotate;
+      const rotateY = (currentX - 0.5) * -maxRotate;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+
+      rafId = requestAnimationFrame(animate);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = card.getBoundingClientRect();
+      mouseX = (e.clientX - rect.left) / rect.width;
+      mouseY = (e.clientY - rect.top) / rect.height;
+      if (!isMouseOver) {
+        isMouseOver = true;
+        if (rafId === null) {
+          rafId = requestAnimationFrame(animate);
+        }
+      }
+    };
+
+    const handleMouseLeave = () => {
+      mouseX = 0.5;
+      mouseY = 0.5;
+      isMouseOver = false;
+    };
+
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
+
+    rafId = requestAnimationFrame(animate);
+
+    return () => {
+      card.removeEventListener('mousemove', handleMouseMove);
+      card.removeEventListener('mouseleave', handleMouseLeave);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   const linkClassName = cn(
     'group relative flex flex-col gap-2 h-full py-1 px-2 rounded-sm',
     'transition-transform duration-200 ease-out',
@@ -29,11 +85,11 @@ export default function Card({
   );
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       className={cn(
         'group relative flex flex-col gap-2 h-full',
-        'border border-border rounded shadow-sm ,hover:shadow-lg',
+        'border border-border rounded shadow-sm hover:shadow-lg',
         'overflow-hidden',
       )}
     >
@@ -74,6 +130,7 @@ export default function Card({
           'bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,0.7)_100%)]',
         )}
       ></div>
+
       <div
         className={cn(
           'absolute top-0 left-0 w-full h-full z-40',
@@ -100,7 +157,6 @@ export default function Card({
               </h3>
               <span>{date.getFullYear()}</span>
             </div>
-
             <span className="text-text-sub px-2 bg-background rounded-md">
               {subtitle ?? ''}
             </span>
@@ -118,12 +174,7 @@ export default function Card({
           </div>
         </a>
 
-        <div
-          className={cn(
-            'mt-auto py-4',
-            // 'border-t border-[var(--color-text-sub)]',
-          )}
-        >
+        <div className={cn('mt-auto py-4')}>
           <div className={cn('flex gap-2 mt-auto')}>
             {live && (
               <a
@@ -161,6 +212,6 @@ export default function Card({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
