@@ -1,9 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -28,13 +25,13 @@ export default {
         'text-error': 'var(--color-text-error)',
       },
       fontSize: {
-        'xxs': 'var(--text-xxs)',
-        'xs': 'var(--text-xs)',
-        'sm': 'var(--text-sm)',
-        'default': 'var(--text-default)',
-        'md': 'var(--text-md)',
-        'lg': 'var(--text-lg)',
-        'xl': 'var(--text-xl)',
+        xxs: 'var(--text-xxs)',
+        xs: 'var(--text-xs)',
+        sm: 'var(--text-sm)',
+        default: 'var(--text-default)',
+        md: 'var(--text-md)',
+        lg: 'var(--text-lg)',
+        xl: 'var(--text-xl)',
         '2xl': 'var(--text-2xl)',
       },
       spacing: {
@@ -47,20 +44,20 @@ export default {
         DEFAULT: 'var(--rounded)',
       },
       maxWidth: {
-        'content': 'var(--width-content)',
+        content: 'var(--width-content)',
       },
       height: {
-        'header': 'var(--height-header)',
+        header: 'var(--height-header)',
       },
       boxShadow: {
         DEFAULT: 'var(--shadow)',
-        'low': 'var(--shadow-low)',
+        low: 'var(--shadow-low)',
       },
       zIndex: {
-        'ui': 'var(--z-ui)',
-        'foreground': 'var(--z-foreground)',
-        'midground': 'var(--z-midground)',
-        'background': 'var(--z-background)',
+        ui: 'var(--z-ui)',
+        foreground: 'var(--z-foreground)',
+        midground: 'var(--z-midground)',
+        background: 'var(--z-background)',
       },
       fontFamily: {
         'ibm-plex': ['ibm-plex-sans', 'sans-serif'],
@@ -68,4 +65,4 @@ export default {
     },
   },
   plugins: [],
-}
+};
