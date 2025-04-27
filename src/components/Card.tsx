@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { cn } from '~/utils/utils';
 import type { CollectionEntry } from 'astro:content';
 import { motion } from 'motion/react';
+import { GlowingEffect } from './GlowingEffect';
 
 export type CardProps = CollectionEntry<'projects'>['data'] & {
   slug: string;
@@ -90,9 +91,16 @@ export default function Card({
       className={cn(
         'group relative flex flex-col gap-2 h-full',
         'border border-border rounded shadow-sm hover:shadow-lg',
-        'overflow-hidden',
       )}
     >
+      <GlowingEffect
+        spread={40}
+        glow={true}
+        disabled={false}
+        proximity={150}
+        inactiveZone={0.01}
+        borderWidth={2}
+      ></GlowingEffect>
       <a
         role="link"
         href={href}
