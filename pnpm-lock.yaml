@@ -20,6 +20,9 @@ importers:
       '@astrojs/vercel':
         specifier: ^8.1.2
         version: 8.1.2(astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(sass@1.85.1)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0))(react@19.0.0)(rollup@4.35.0)
+      '@lucide/astro':
+        specifier: ^0.503.0
+        version: 0.503.0(astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(sass@1.85.1)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0))
       '@nanostores/react':
         specifier: ^0.8.4
         version: 0.8.4(nanostores@0.11.4)(react@19.0.0)
@@ -71,6 +74,9 @@ importers:
       immer:
         specifier: ^10.1.1
         version: 10.1.1
+      lucide-react:
+        specifier: ^0.503.0
+        version: 0.503.0(react@19.0.0)
       meshline:
         specifier: ^3.3.1
         version: 3.3.1(three@0.174.0)
@@ -714,6 +720,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@lucide/astro@0.503.0':
+    resolution: {integrity: sha512-dmHgsCH8wNcSRmjq4NNK7qYRVdmUhIyRkLZjWyHG9YZRNDs6PYYSjyVk09+tJxswRJ5VItzd8XcAkZDilg4qXA==}
+    peerDependencies:
+      astro: ^4 || ^5
 
   '@mapbox/node-pre-gyp@2.0.0':
     resolution: {integrity: sha512-llMXd39jtP0HpQLVI37Bf1m2ADlEb35GYSh1SDSLsBhR+5iCxiNGlT31yqbNtVHygHAtMy6dWFERpU2JgufhPg==}
@@ -2701,6 +2712,11 @@ packages:
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
+
+  lucide-react@0.503.0:
+    resolution: {integrity: sha512-HGGkdlPWQ0vTF8jJ5TdIqhQXZi6uh3LnNgfZ8MHiuxFfX3RZeA79r2MW2tHAZKlAVfoNE8esm3p+O6VkIvpj6w==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   maath@0.10.8:
     resolution: {integrity: sha512-tRvbDF0Pgqz+9XUa4jjfgAQ8/aPKmQdWXilFu2tMy4GWj4NOsx99HlULO4IeREfbO3a0sA145DZYyvXPkybm0g==}
@@ -4724,6 +4740,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@lucide/astro@0.503.0(astro@5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(sass@1.85.1)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0))':
+    dependencies:
+      astro: 5.4.3(@types/node@22.13.10)(jiti@2.4.2)(lightningcss@1.29.2)(rollup@4.35.0)(sass@1.85.1)(tsx@4.19.3)(typescript@5.8.2)(yaml@2.7.0)
 
   '@mapbox/node-pre-gyp@2.0.0':
     dependencies:
@@ -6841,6 +6861,10 @@ snapshots:
       yallist: 3.1.1
 
   lru-cache@7.18.3: {}
+
+  lucide-react@0.503.0(react@19.0.0):
+    dependencies:
+      react: 19.0.0
 
   maath@0.10.8(@types/three@0.174.0)(three@0.174.0):
     dependencies:
