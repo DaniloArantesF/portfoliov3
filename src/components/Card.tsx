@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { GlowingEffect } from './GlowingEffect';
 import { ExternalLinkIcon } from 'lucide-react';
 
+
 export type CardProps = CollectionEntry<'projects'>['data'] & {
   slug: string;
   href: string;
@@ -203,7 +204,11 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Live <ExternalLinkIcon className="h-4 w-4" />
+                Live{' '}
+                <ExternalLinkIcon
+                  className="h-4 w-4"
+                  suppressHydrationWarning
+                />
               </a>
             )}
             {github && (
@@ -214,7 +219,11 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Github <ExternalLinkIcon className="h-4 w-4" />
+                Github{' '}
+                <ExternalLinkIcon
+                  className="h-4 w-4"
+                  suppressHydrationWarning
+                />
               </a>
             )}
             {sandbox && (
@@ -225,7 +234,11 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Sandbox <ExternalLinkIcon className="h-4 w-4" />
+                Sandbox{' '}
+                <ExternalLinkIcon
+                  className="h-4 w-4"
+                  suppressHydrationWarning
+                />
               </a>
             )}
           </div>

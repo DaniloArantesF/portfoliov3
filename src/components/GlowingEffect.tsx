@@ -166,6 +166,7 @@ const GlowingEffect = memo(
             className,
             disabled && '!hidden',
           )}
+          suppressHydrationWarning
         >
           <div
             className={cn(
