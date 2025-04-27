@@ -3,6 +3,7 @@ import { cn } from '~/utils/utils';
 import type { CollectionEntry } from 'astro:content';
 import { motion } from 'motion/react';
 import { GlowingEffect } from './GlowingEffect';
+import { ExternalLinkIcon } from 'lucide-react';
 
 export type CardProps = CollectionEntry<'projects'>['data'] & {
   slug: string;
@@ -79,10 +80,12 @@ export default function Card({
   }, []);
 
   const linkClassName = cn(
-    'group relative flex flex-col gap-2 h-full py-1 px-2 rounded-sm',
-    'transition-transform duration-200 ease-out',
-    'hover:scale-[1.02]',
-    'bg-background',
+    'group relative flex items-center gap-2 h-full',
+    'pointer-events-auto',
+    'py-1 px-2 rounded-sm',
+    'transition-all duration-200 ease-out',
+    'hover:scale-105 hover:bg-surface-2 hover:text-accent',
+    'bg-background text-text-main',
   );
 
   return (
@@ -126,23 +129,31 @@ export default function Card({
         </div>
       </a>
 
-      <div
-        className={cn(
-          'absolute top-0 left-0 w-full h-full z-30',
-          'rounded-lg',
-          'transition-opacity duration-200 ease-out',
-          'group-hover:opacity-100 opacity-0',
-          'group-hover:backdrop-blur-sm',
-          'group-hover:backdrop-saturate-150',
-          'group-hover:backdrop-brightness-50',
-          'bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,0.7)_100%)]',
-        )}
-      ></div>
+      <a
+        role="link"
+        href={href}
+        target="_blank"
+        aria-label={`${title}`}
+        rel="noopener"
+      >
+        <div
+          className={cn(
+            'absolute top-0 left-0 w-full h-full z-30',
+            'rounded-lg',
+            'transition-opacity duration-200 ease-out',
+            'group-hover:opacity-100 opacity-0',
+            'group-hover:backdrop-blur-sm',
+            'group-hover:backdrop-saturate-150',
+            'group-hover:backdrop-brightness-50',
+            'bg-[radial-gradient(ellipse_at_center,_rgba(0,0,0,0)_0%,_rgba(0,0,0,0.7)_100%)]',
+          )}
+        ></div>
+      </a>
 
       <div
         className={cn(
           'absolute top-0 left-0 w-full h-full z-40',
-          'flex flex-col gap-2 justify-between',
+          'flex flex-col gap-2 justify-between pointer-events-none',
           'p-4',
         )}
       >
@@ -192,7 +203,7 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Live
+                Live <ExternalLinkIcon className="h-4 w-4" />
               </a>
             )}
             {github && (
@@ -203,7 +214,7 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Github
+                Github <ExternalLinkIcon className="h-4 w-4" />
               </a>
             )}
             {sandbox && (
@@ -214,7 +225,7 @@ export default function Card({
                 rel="noopener"
                 className={linkClassName}
               >
-                Sandbox
+                Sandbox <ExternalLinkIcon className="h-4 w-4" />
               </a>
             )}
           </div>
