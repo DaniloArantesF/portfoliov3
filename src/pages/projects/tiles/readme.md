@@ -1,6 +1,7 @@
 ---
 title: Tiles
 subtitle: ThreeJS
+slug: tiles
 description: A nice image carousel made entirely with Three.js
 image: tiles.webp
 featured: false

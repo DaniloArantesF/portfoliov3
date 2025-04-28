@@ -3,14 +3,21 @@ import { Analytics } from '@vercel/analytics/react';
 import Header from '../components/Header.astro';
 import '../globals.css';
 import BaseHead from '~/components/BaseHead.astro';
+import type { CollectionEntry } from 'astro:content';
+import { getProjectBySlug } from '~/lib/projects';
 
 export interface Props {
   title: string;
   description?: string;
   audio?: boolean;
+  slug: string;
 }
 
-const { title, description = '' } = Astro.props;
+const { title, description = '', slug } = Astro.props;
+let project: CollectionEntry<'projects'> | null = null;
+if (slug) {
+  project = await getProjectBySlug(slug);
+}
 ---
 
 <!doctype html>

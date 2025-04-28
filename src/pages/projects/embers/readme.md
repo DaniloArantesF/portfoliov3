@@ -1,7 +1,7 @@
 ---
-slug: embers
 title: Embers
 subtitle: ThreeJS
+slug: embers
 description: Implemented a particle system to generate the effect of flying embers using GPGPU. The position of each particle is influenced by curl noise to create the appearance of embers drifting through the air.
 image: embers.webp
 featured: true
