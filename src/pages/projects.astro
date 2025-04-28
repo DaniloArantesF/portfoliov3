@@ -5,10 +5,11 @@ import Layout from '../layouts/Layout.astro';
 import {
   extractSlugFromFilePath,
   getProjectUrl,
+sortProjects,
 } from '~/lib/projects';
 import { getCollection } from 'astro:content';
 
-const projectsCollection = await getCollection('projects');
+const projectsCollection = sortProjects(await getCollection('projects'), "date", "desc");
 const cards: CardProps[] = projectsCollection.map((p) => ({
   ...p.data,
   slug: extractSlugFromFilePath(p.filePath),

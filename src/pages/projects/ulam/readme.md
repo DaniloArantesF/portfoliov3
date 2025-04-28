@@ -4,7 +4,7 @@ subtitle: ThreeJS
 slug: "ulam"
 description: An implementation of the Ulam Spiral. It combines the simple principles of sine waves with post-processing shaders to create beautiful visuals and patterns.
 image: ulam.webp
-date: 2022-09-29T15:05:00.000Z
+date: 2023-09-29T15:05:00.000Z
 featured: true
 visibility: visible
 tags: ['threejs', 'typescript']
