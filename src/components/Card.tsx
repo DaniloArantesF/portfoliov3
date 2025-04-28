@@ -112,7 +112,7 @@ export default function Card({
         aria-label={`${title}`}
         rel="noopener"
       >
-        <div className={cn('w-full aspect-[4/3] rounded')}>
+        <div className={cn('w-full aspect-[4/3] rounded-md overflow-hidden p-[1px]')}>
           <picture>
             <source
               height="1200"
@@ -140,7 +140,7 @@ export default function Card({
         <div
           className={cn(
             'absolute top-0 left-0 w-full h-full z-30',
-            'rounded-lg',
+            'rounded-md',
             'transition-opacity duration-200 ease-out',
             'group-hover:opacity-100 opacity-0',
             'group-hover:backdrop-blur-sm',
@@ -175,7 +175,7 @@ export default function Card({
               <h3 className="text-lg font-bold bg-background px-2 rounded-md">
                 {title}
               </h3>
-              <span>{date.getFullYear()}</span>
+              <span className='px-2 bg-background rounded-md'>{date.getFullYear()}</span>
             </div>
             <span className="text-text-sub px-2 bg-background rounded-md">
               {subtitle ?? ''}
