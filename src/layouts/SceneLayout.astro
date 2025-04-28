@@ -6,11 +6,12 @@ import { PlayerController } from '../components/PlayerController';
 import SceneInfo from '~/components/SceneInfo';
 import '../globals.css';
 import BaseHead from '~/components/BaseHead.astro';
-import { getEntry } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
+import { getProjectBySlug } from '../lib/projects';
+import { getCollection } from 'astro:content';
 
 export interface Props {
-  slug?: string;
+  slug: string;
   audio?: boolean;
 }
 
@@ -19,7 +20,7 @@ let plainTextDescription = '',
   title = '';
 let project: CollectionEntry<'projects'> | null = null;
 if (slug) {
-  project = (await getEntry('projects', slug ?? '')) ?? null;
+  project = await getProjectBySlug(slug);
 }
 ---
 

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import SideDrawer from '~/components/SideDrawer';
 import Tabs from '~/components/Tabs';
-import RichText from '../RichText';
 import { useStore } from '@nanostores/react';
 import { layout } from '~/lib/store/store';
 import { useGUI } from '~/lib/sceneController';
@@ -39,7 +38,7 @@ const SceneInfo: React.FC<SceneInfoProps> = ({ project }) => {
               content: (
                 <div>
                   <h1>{project?.title}</h1>
-                  <RichText content={project?.description as any} />
+                  { project?.description }
                 </div>
               ),
             },
