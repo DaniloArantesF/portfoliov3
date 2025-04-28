@@ -40,3 +40,20 @@ export async function getProjectBySlug(slug: string) {
   }
   return entry;
 }
+
+export function sortProjects(
+  projects: CollectionEntry<'projects'>[],
+  sortBy: 'date' | 'title',
+  order: 'asc' | 'desc',
+) {
+  return projects.sort((a, b) => {
+    const aValue = sortBy === 'date' ? new Date(a.data.date) : a.data.title;
+    const bValue = sortBy === 'date' ? new Date(b.data.date) : b.data.title;
+
+    if (order === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+}
