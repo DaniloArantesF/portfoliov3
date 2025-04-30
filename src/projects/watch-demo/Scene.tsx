@@ -1,4 +1,4 @@
-import { Canvas, } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import {
   Backdrop,
   ContactShadows,
@@ -7,8 +7,7 @@ import {
   Loader,
   PresentationControls,
 } from '@react-three/drei';
-import {
-  PermissionsPrompt,
+import DeviceOrientationPermission, {
   useDeviceOrientation,
 } from '~/lib/DeviceOrientation';
 import { Model } from './Watch';
@@ -20,13 +19,13 @@ function Scene() {
 
   return (
     <>
-      <div className="absolute top-16 left-4 z-40 bg-surface-3 p-4 rounded-md">
+      <div className="absolute top-16 left-4 z-40 bg-surface-3 p-4 rounded-md flex flex-col gap-4">
         <div className="sensor_data">
-          <div>alpha(z):{alpha}</div>
-          <div>beta(x): {beta}</div>
-          <div>gamma(y): {gamma}</div>
+          <div>Alpha(z):{alpha}</div>
+          <div>Beta(x): {beta}</div>
+          <div>Gamma(y): {gamma}</div>
         </div>
-        <PermissionsPrompt />
+        <DeviceOrientationPermission />
       </div>
       <Loader
         containerStyles={{
@@ -142,20 +141,19 @@ function Scene() {
               rotation={[0, 0.3, 0]}
               polar={[-Math.PI / 3, Math.PI / 3]}
               azimuth={[-Math.PI / 1.4, Math.PI / 2]}
-              zoom={2}
+              zoom={1.5}
             >
               <Model />
-
-              <Backdrop
-                receiveShadow
-                floor={1}
-                segments={20}
-                position={[0, -1, -1.75]}
-                scale={[10, 10, 10]}
-              >
-                <meshStandardMaterial color="#203F58" />
-              </Backdrop>
             </PresentationControls>
+            <Backdrop
+              receiveShadow
+              floor={1}
+              segments={20}
+              position={[0, -1, -1.75]}
+              scale={[20, 10, 10]}
+            >
+              <meshStandardMaterial color="#203F58" />
+            </Backdrop>
             <ContactShadows
               position={[0, -0.75, 0]}
               opacity={0.75}
