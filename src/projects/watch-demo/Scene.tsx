@@ -1,8 +1,9 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, extend } from '@react-three/fiber';
 import {
   Backdrop,
   Environment,
   Lightformer,
+  Loader,
   OrbitControls,
   Stats,
 } from '@react-three/drei';
@@ -25,6 +26,18 @@ function Scene() {
         </div>
         <PermissionsPrompt />
       </div>
+      <Loader
+        containerStyles={{
+          background: `var(--color-background)`,
+        }}
+        barStyles={{
+          backgroundColor: 'var(--color-accent)',
+          borderRadius: 'var(--border-radius)',
+          transition: 'width 0.3s ease-in-out',
+          backgroundImage:
+            'linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-2) 100%)',
+        }}
+      />
       <div className="w-full" style={{ height: '100vh', position: 'relative' }}>
         <div
           style={{
@@ -35,23 +48,10 @@ function Scene() {
             height: '100%',
           }}
         >
-          <Canvas
-            shadows
-            id="app-view"
-            className="min-h-[100dvh] h-full"
-            camera={
-              {
-                // position: [0, 0, 1],
-                // left: -2,
-                // right: 2,
-                // top: 2,
-                // bottom: -2,
-                // zoom: 1,
-              }
-            }
-          >
+          <Canvas shadows id="app-view" className="min-h-[100dvh] h-full">
             <ambientLight intensity={0.1} />
             {/* <Stats showPanel={0} className="stats" /> */}
+
             <spotLight
               intensity={0.9}
               angle={0.1}
@@ -59,8 +59,6 @@ function Scene() {
               position={[10, 15, 10]}
               castShadow
             />
-            {/* <gridHelper /> */}
-            <color attach="background" args={['#101f2b']} />
             <Environment resolution={512}>
               {/* Ceiling */}
               <Lightformer
@@ -135,7 +133,7 @@ function Scene() {
               floor={1} // Stretches the floor segment, 0.25 by default
               segments={20} // Mesh-resolution, 20 by default
               position={[0, -1, -1]}
-              scale={[3, 3, 1]}
+              scale={[10, 3, 1]}
             >
               <meshStandardMaterial color="#203F58" />
             </Backdrop>
