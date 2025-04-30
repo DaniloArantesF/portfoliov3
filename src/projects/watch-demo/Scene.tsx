@@ -21,9 +21,9 @@ function Scene() {
     <>
       <div className="absolute top-16 left-4 z-40 bg-surface-3 p-4 rounded-md flex flex-col gap-4">
         <div>
-          <div>Alpha(z):{alpha}</div>
-          <div>Beta(x): {beta}</div>
-          <div>Gamma(y): {gamma}</div>
+          <div>Alpha(z):{alpha.toFixed(2)}</div>
+          <div>Beta(x): {beta.toFixed(2)}</div>
+          <div>Gamma(y): {gamma.toFixed(2)}</div>
         </div>
         <DeviceOrientationPermission />
       </div>
