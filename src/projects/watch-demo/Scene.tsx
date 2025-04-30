@@ -126,7 +126,15 @@ function Scene() {
                 onUpdate={(self) => self.lookAt(0, 0, 0)}
               />
             </Environment>
-            <OrbitControls />
+            <OrbitControls
+              maxPolarAngle={Math.PI * 0.75}
+              minPolarAngle={Math.PI / 8}
+              minAzimuthAngle={-Math.PI / 2}
+              maxAzimuthAngle={Math.PI / 2}
+              minDistance={0.65}
+              maxDistance={0.85}
+              enablePan={false}
+            />
             <Model />
             <Backdrop
               receiveShadow

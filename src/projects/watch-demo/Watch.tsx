@@ -121,7 +121,7 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
     <group
       receiveShadow
       castShadow
-      position={[0, 0, 0]}
+      position={[0, 0.05, 0]}
       scale={0.25}
       ref={watchGroupRef}
       {...props}
