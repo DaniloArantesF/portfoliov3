@@ -6,7 +6,7 @@ source: https://sketchfab.com/3d-models/rolex-yacht-master-watch-a0ab5e9b6d8d4f2
 title: Rolex Yacht Master Watch
 */
 import * as THREE from 'three';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, } from 'react';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -32,8 +32,10 @@ type GLTFResult = GLTF & {
   };
 };
 
-export function Model(props: JSX.IntrinsicElements['group']) {
-  const { nodes, materials } = useGLTF('/assets/models/watch.glb') as GLTFResult;
+export function Model(props: React.JSX.IntrinsicElements['group']) {
+  const { nodes, materials } = useGLTF(
+    '/assets/models/watch.glb',
+  ) as unknown as GLTFResult;
   const watchGroupRef = useRef<Group>(null);
   const deviceOrientation = useRef({ alpha: 0, beta: 90, gamma: 0 });
   const initialOffset = useRef<number>(0);
