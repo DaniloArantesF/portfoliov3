@@ -1,24 +1,26 @@
-import { Canvas, extend } from '@react-three/fiber';
+import { Canvas, } from '@react-three/fiber';
 import {
   Backdrop,
+  ContactShadows,
   Environment,
   Lightformer,
   Loader,
-  OrbitControls,
-  Stats,
+  PresentationControls,
 } from '@react-three/drei';
 import {
   PermissionsPrompt,
   useDeviceOrientation,
 } from '~/lib/DeviceOrientation';
 import { Model } from './Watch';
+import React from 'react';
 
 function Scene() {
   const { alpha, beta, gamma } = useDeviceOrientation();
+  const guiRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <>
-      <div className="absolute top-16 left-4 z-40">
+      <div className="absolute top-16 left-4 z-40 bg-surface-3 p-4 rounded-md">
         <div className="sensor_data">
           <div>alpha(z):{alpha}</div>
           <div>beta(x): {beta}</div>
@@ -48,7 +50,14 @@ function Scene() {
             height: '100%',
           }}
         >
-          <Canvas shadows id="app-view" className="min-h-[100dvh] h-full">
+          <Canvas
+            shadows
+            id="app-view"
+            className="min-h-[100dvh] h-full"
+            camera={{
+              position: [0, -0.15, 1],
+            }}
+          >
             <ambientLight intensity={0.1} />
             {/* <Stats showPanel={0} className="stats" /> */}
 
@@ -126,25 +135,34 @@ function Scene() {
                 onUpdate={(self) => self.lookAt(0, 0, 0)}
               />
             </Environment>
-            <OrbitControls
-              maxPolarAngle={Math.PI * 0.75}
-              minPolarAngle={Math.PI / 8}
-              minAzimuthAngle={-Math.PI / 2}
-              maxAzimuthAngle={Math.PI / 2}
-              minDistance={0.65}
-              maxDistance={0.85}
-              enablePan={false}
-            />
-            <Model />
-            <Backdrop
-              receiveShadow
-              floor={1} // Stretches the floor segment, 0.25 by default
-              segments={20} // Mesh-resolution, 20 by default
-              position={[0, -1, -1]}
-              scale={[10, 3, 1]}
+            {/* <OrbitControls></OrbitControls> */}
+            <PresentationControls
+              global
+              config={{ mass: 2, tension: 500 }}
+              rotation={[0, 0.3, 0]}
+              polar={[-Math.PI / 3, Math.PI / 3]}
+              azimuth={[-Math.PI / 1.4, Math.PI / 2]}
+              zoom={2}
             >
-              <meshStandardMaterial color="#203F58" />
-            </Backdrop>
+              <Model />
+
+              <Backdrop
+                receiveShadow
+                floor={1}
+                segments={20}
+                position={[0, -1, -1.75]}
+                scale={[10, 10, 10]}
+              >
+                <meshStandardMaterial color="#203F58" />
+              </Backdrop>
+            </PresentationControls>
+            <ContactShadows
+              position={[0, -0.75, 0]}
+              opacity={0.75}
+              scale={10}
+              blur={1.5}
+              far={5}
+            />
 
             {/* <Effects /> */}
           </Canvas>
