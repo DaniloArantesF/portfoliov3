@@ -20,7 +20,7 @@ function Scene() {
   return (
     <>
       <div className="absolute top-16 left-4 z-40 bg-surface-3 p-4 rounded-md flex flex-col gap-4">
-        <div className="sensor_data">
+        <div>
           <div>Alpha(z):{alpha}</div>
           <div>Beta(x): {beta}</div>
           <div>Gamma(y): {gamma}</div>
@@ -137,7 +137,7 @@ function Scene() {
             {/* <OrbitControls></OrbitControls> */}
             <PresentationControls
               global
-              config={{ mass: 2, tension: 500 }}
+              // config={{ mass: 2, tension: 500 }}
               rotation={[0, 0.3, 0]}
               polar={[-Math.PI / 3, Math.PI / 3]}
               azimuth={[-Math.PI / 1.4, Math.PI / 2]}
