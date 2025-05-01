@@ -7,7 +7,8 @@ import {
   Loader,
   PresentationControls,
 } from '@react-three/drei';
-import DeviceOrientationPermission, {
+import {
+  PermissionsPrompt as DeviceOrientationPermission,
   useDeviceOrientation,
 } from '~/lib/DeviceOrientation';
 import { Model } from './Watch';
