@@ -14,7 +14,8 @@ import { Model } from './Watch';
 import React from 'react';
 
 function Scene() {
-  const { alpha, beta, gamma } = useDeviceOrientation();
+  const { alpha, beta, gamma, permission, hasDeviceOrientation } =
+    useDeviceOrientation();
   const guiRef = React.useRef<HTMLDivElement>(null);
 
   return (
@@ -24,6 +25,14 @@ function Scene() {
           <div>Alpha(z):{alpha.toFixed(2)}</div>
           <div>Beta(x): {beta.toFixed(2)}</div>
           <div>Gamma(y): {gamma.toFixed(2)}</div>
+          <div>
+            Permission:
+            {permission}
+          </div>
+          <div>
+            Device Orientation:
+            {hasDeviceOrientation ? 'Available' : 'Not Available'}
+          </div>
         </div>
         <DeviceOrientationPermission />
       </div>

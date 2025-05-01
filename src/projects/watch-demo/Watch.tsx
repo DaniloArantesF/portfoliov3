@@ -6,12 +6,15 @@ source: https://sketchfab.com/3d-models/rolex-yacht-master-watch-a0ab5e9b6d8d4f2
 title: Rolex Yacht Master Watch
 */
 import * as THREE from 'three';
-import React, { useEffect, useRef, } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Group } from 'three';
-import { useDeviceOrientation } from '@lib/DeviceOrientation';
+import {
+  useDeviceOrientation,
+  type DeviceOrientationEventiOS,
+} from '@lib/DeviceOrientation';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -42,6 +45,13 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
   const alphaOffset = useRef<number>(0);
   const { camera } = useThree();
   const { setOrientation, permission, setPermission } = useDeviceOrientation();
+  const hasDeviceOrientation = useMemo(
+    () =>
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof (DeviceOrientationEvent as unknown as DeviceOrientationEventiOS)
+        .requestPermission === 'function',
+    [],
+  );
 
   useEffect(() => {
     // Request permissions if IOS
@@ -53,6 +63,9 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
   }, []);
 
   function handleOrientation(event: DeviceOrientationEvent) {
+    if (!hasDeviceOrientation) {
+      return;
+    }
     if (permission !== 1) {
       setPermission(1);
     }

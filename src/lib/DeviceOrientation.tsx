@@ -5,17 +5,20 @@ import styles from '../styles/button.module.css';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertCircle, Smartphone, ComputerIcon } from 'lucide-react';
 
-interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
+export interface DeviceOrientationEventiOS extends DeviceOrientationEvent {
   requestPermission?: () => Promise<'granted' | 'denied'>;
 }
 
-interface DeviceOrientationState {
+export interface DeviceOrientationState {
   alpha: number;
   beta: number;
   gamma: number;
   permission: -1 | 0 | 1; // -1 -> need permissions, not granted, 0 -> need to check, 1 -> granted
   setOrientation: (alpha: number, beta: number, gamma: number) => void;
   setPermission: (permission: -1 | 0 | 1) => void;
+
+  hasDeviceOrientation: boolean;
+  setHasDeviceOrientation: (hasDeviceOrientation: boolean) => void;
 }
 
 export const useDeviceOrientation = create<DeviceOrientationState>()((set) => ({
@@ -26,10 +29,14 @@ export const useDeviceOrientation = create<DeviceOrientationState>()((set) => ({
   setOrientation: (alpha, beta, gamma) =>
     set((state) => ({ alpha, beta, gamma })),
   setPermission: (permission) => set((state) => ({ permission })),
+  hasDeviceOrientation: false,
+  setHasDeviceOrientation: (hasDeviceOrientation) =>
+    set((state) => ({ hasDeviceOrientation })),
 }));
 
 const DeviceOrientationPermission: React.FC = () => {
-  const { permission, setPermission } = useDeviceOrientation();
+  const { permission, setPermission, setHasDeviceOrientation } =
+    useDeviceOrientation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const hasDeviceOrientation = useMemo(
@@ -39,6 +46,10 @@ const DeviceOrientationPermission: React.FC = () => {
         .requestPermission === 'function',
     [],
   );
+
+  useEffect(() => {
+    setHasDeviceOrientation(hasDeviceOrientation);
+  }, [hasDeviceOrientation]);
 
   useEffect(() => {
     const checkMobile = () => {
