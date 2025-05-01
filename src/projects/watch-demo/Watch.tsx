@@ -6,7 +6,7 @@ source: https://sketchfab.com/3d-models/rolex-yacht-master-watch-a0ab5e9b6d8d4f2
 title: Rolex Yacht Master Watch
 */
 import * as THREE from 'three';
-import React, { useEffect, useRef, } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import type { GLTF } from 'three-stdlib';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -37,7 +37,11 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
     '/assets/models/watch.glb',
   ) as unknown as GLTFResult;
   const watchGroupRef = useRef<Group>(null);
-  const deviceOrientation = useRef({ alpha: 0, beta: 90, gamma: 0 });
+  const deviceOrientation = useRef({
+    alpha: 0,
+    beta: 90,
+    gamma: 0,
+  });
   const initialOffset = useRef<number>(0);
   const alphaOffset = useRef<number>(0);
   const { camera } = useThree();
@@ -47,6 +51,12 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
     // Request permissions if IOS
     window.addEventListener('deviceorientation', handleOrientation, true);
 
+    setOrientation(
+      deviceOrientation.current.alpha,
+      deviceOrientation.current.beta,
+      deviceOrientation.current.gamma,
+    );
+
     if (watchGroupRef.current) {
       watchGroupRef.current.rotation.order = 'ZXY';
     }
@@ -54,7 +64,7 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
 
   function handleOrientation(event: DeviceOrientationEvent) {
     if (permission !== 1) {
-      setPermission(1);
+      return;
     }
 
     if (!initialOffset.current) {
@@ -70,6 +80,7 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
       alpha += 360;
     }
 
+    console.log({ alpha, beta: event.beta, gamma: event.gamma });
     const beta = event.beta ?? 0;
     const gamma = event.gamma ?? 0;
     deviceOrientation.current = { alpha, beta, gamma };
@@ -97,12 +108,13 @@ export function Model(props: React.JSX.IntrinsicElements['group']) {
 
   useFrame((state) => {
     if (!watchGroupRef.current) return;
+
     const alpha = deviceOrientation.current.alpha
-      ? THREE.MathUtils.degToRad(deviceOrientation.current.alpha) +
-        alphaOffset.current
+      ? THREE.MathUtils.degToRad(deviceOrientation.current.alpha)
       : 0; // Z
     const beta = deviceOrientation.current.beta
-      ? THREE.MathUtils.degToRad(deviceOrientation.current.beta)
+      ? THREE.MathUtils.degToRad(deviceOrientation.current.beta) +
+        alphaOffset.current
       : 0; // X'
     const gamma = deviceOrientation.current.gamma
       ? THREE.MathUtils.degToRad(deviceOrientation.current.gamma)
