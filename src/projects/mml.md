@@ -1,5 +1,5 @@
 ---
-title: 3D Audio Visualizer
+title: MML Shaders
 subtitle: Frontend & WebGL
 description: Contributed improvements to the MML project, and actively maintained an experimental fork in collaboration with @TheCodeTherapy. Added support for custom shaders to MML through m-shader tags.
 image: mml-shaders.webp
